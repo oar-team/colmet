@@ -1,0 +1,76 @@
+Colmet - Collecting metrics about jobs running in a distributed environnemen
+
+Introduction
+------------
+
+This document provides some development guidelines for colmet. It does not
+pretend to be complete.
+
+
+Organisation
+------------
+ 
+.
+|-- bin                      // the main scripts
+|-- colmet                   // the colmet python library
+|   |-- backends             // the backends for colmet
+|   `-- metrics              // the metrics for colmet
+`-- profiling
+
+
+
+Backends
+~~~~~~~~
+
+The backends are used for collecting and for transporting the metrics. There
+are currently several backends:
+
+  - taskstats: to get metrics from the linux kernel
+  - stdout: to print the metrics
+  - zeromq: to transport the metrics across the network
+  - hdf5: to store the metrics
+
+Each backend can be used as input or output backend if it provide the right
+method:
+
+  - pull() as input
+  - push() as output 
+
+An output backend doesn't need to depend on the input backend. It need only to
+known how to manipulate a metric as it is defined in
+colmet.metrics.base.BaseCounters
+
+
+Metrics
+~~~~~~~
+
+A metric is a set of counters and heades (metadata associated). There is
+currently one metric, the default one for the taskstats input backend.
+
+You can add a metric by specifying a new module in colmet.metrics. This module
+must provide at least the method get_counters_class() the need to return a
+class derived from colmet.metrics.base.BaseCounters.
+
+
+Repository
+----------
+
+Colmet is currently hosted in the git repository of OAR in
+sources/extra/colmet. If this software grow, there will be a dedicated
+repository.
+
+    git clone git://scm.gforge.inria.fr/oar/oar.git colmet.git
+    cd colmet.git
+    git checkout 2.5-colmet
+    cd sources/extra/colmet
+    
+For the same reason, the feature-request/bug tracking system is hosted on the INRIA GForge.
+
+    https://gforge.inria.fr/tracker/?group_id=125
+
+
+Contact
+-------
+
+You can contact me directly at philippe.le-brouster@imag.fr or contact the OAR
+Team at oar-devel@lists.gforge.inria.fr

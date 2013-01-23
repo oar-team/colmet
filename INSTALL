@@ -1,0 +1,26 @@
+INTRODUCTION
+============
+
+This file describes the basic steps to install colmet on your oar server. For additional information, please contact the OAR Team at http://oar.imag.fr/contact
+
+REQUIREMENTS
+============
+
+* a Linux kernel that supports
+   - Taskstats
+
+* Python Version 2.6 or newer
+   - python-zmq 2.2.0 or newer
+   - python-tables 2.3.1 or newer
+   - python-h5py 2.0.1 or newer
+
+INSTALLATION
+============
+
+* System-wide installation :
+    
+    python setup.py install
+
+* User installation :
+    
+    python setup.py install --prefix=~/.local

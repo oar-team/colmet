@@ -1,0 +1,55 @@
+Colmet - Collecting metrics about jobs running in a distributed environnement
+
+Introduction:
+-------------
+Colmet is a monitoring tool to collect metrics about jobs running in a
+distributed environnement, especially for gathering metrics on clusters and
+grids. It provides currently several backends :
+    - taskstats: fetch task metrics from the linux kernel
+    - stdout: display the metrics on the terminal
+    - zeromq: transport the metrics across the network
+    - hdf5: store the metrics on the filesystem
+
+Installation:
+-------------
+For detailed instructions on how to install Colmet on your plateform, please
+refer to the INSTALL document in the same directory as this document. Please
+carefully read the REQUIREMENTS section of the INSTALL instructions.
+
+Usage:
+------
+Colmet has one main scripts:
+    'colmet.py' to run on the nodes.
+
+One example :
+
+    for the nodes :
+
+        sudo colmet -vvv \
+            -i taskstats -p 1 -j 42 \
+            -o zeromq --zeromq-uri tcp://127.0.0.1:5556
+    
+    for the aggregator :
+    
+        colmet -vvv -d 10  \
+            -i zeromq_aggregator --zeromq-bind-uri tcp://127.0.0.1:5556 \
+            -o zeromq --zeromq-uri tcp://127.0.0.1:5557
+    
+    for the collector :
+    
+        colmet -vvv \
+             -i zeromq --zeromq-bind-uri tcp://127.0.0.1:5557 \
+             -o none
+    
+    You will see the number of counters retrieved in the debug log.
+
+
+For more information, please refer to the help of these script (colmet.py
+--help)
+
+Licensing:
+----------
+This product is distributed under the GNU General Public License Version2.
+Please read through the file LICENSE for more information about our license.
+
+
