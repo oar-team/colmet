@@ -1,0 +1,11 @@
+Todo List
+==========
+
+Todo list for colmet
+
+Todo
+====
+
+* replace optparse, which is deprecated by argparse
+* do we need to support multiple cgroups by job on the same jobs
+ 

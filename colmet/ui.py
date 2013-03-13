@@ -42,8 +42,18 @@ class TaskMonBatch(object):
         self.input_backends = input_backends
         self.output_backends = output_backends
 
-    def timeout_handler(self,signum, frame):
+        signal.signal(signal.SIGUSR1, self.update_job_list)
+
+    def timeout_handler(self, signum, frame):
         raise TimeoutException
+
+    def update_job_list(self, signum, frame):
+        LOG.debug("Catch signal %s, update job list to scan" % signum)
+        for ib in self.input_backends:
+          print "ib_backend_name:", ib._get_backend_name()
+          if ib._get_backend_name() == 'taskstats':
+            print "call update job list"
+            ib.update_job_list()
 
     def run(self):
         iterations = 0
@@ -53,6 +63,13 @@ class TaskMonBatch(object):
 
         try:
             poll = select.poll()
+            #TODO only for DEV
+            #for ib in self.input_backends:
+            #    print "ib_backend_name:", ib._get_backend_name()
+            #    if ib._get_backend_name() == 'taskstats':
+            #        print "call update job list"
+            #        ib.update_job_list()
+
             while self.options.iterations is None or \
                 iterations < self.options.iterations:
                 LOG.debug("Gathering the metrics")
@@ -148,7 +165,6 @@ def main():
     parser.add_option('--logfile', dest='logfile',type="str",
                       help='pid file when running as daemon [/var/log/colmet.log]',
                       default="/var/log/colmet.log")
-
     
     parser.add_option('-j', '--job', type='int', dest='job_id',
                       default = [], action='append',
@@ -190,8 +206,14 @@ def main():
     group.add_option('-t', '--tid', type='int', dest='tids', 
                       action='append', default = [],
                       help='task ids to monitor', metavar='TID')
-    parser.add_option_group(group)
+    group.add_option('--cpuset_rootpath', type='str', dest='cpuset_rootpath',
+                      action='append', default = [],
+                      help='cpuset root path', metavar='CPUSETROOTPATH')
+    group.add_option('--regex_job_id', type='str', dest='regex_job_id',
+                      action='append', default = ['_(\d+)$'],
+                      help='regular expression to extract job_id from cpuset directory name', metavar='REGEXJOBID')
 
+    parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, "[backend] zeromq")
     group.add_option( "--zeromq-uri", type = 'str', 
@@ -202,7 +224,7 @@ def main():
     parser.add_option_group(group)
 
 
-    parser.add_option_group(group)
+    parser.add_option_group(group) # TODO ???
 
     group = optparse.OptionGroup(parser, "[backend] hdf5 (output)")
     group.add_option( "--hdf5-output-filepath", type = 'str',

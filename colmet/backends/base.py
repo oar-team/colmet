@@ -26,10 +26,6 @@ class InputBaseBackend(BaseBackend):
         if options.job_min_id != None and options.job_max_id != None:
             self.job_id_list += range(options.job_min_id,options.job_max_id+1)
 
-        if len(self.job_id_list) == 0:
-            self.job_id_list = None
-
-
 
     def pull(self, request, timestamp):
         raise BackendMethodNotImplemented("pull")

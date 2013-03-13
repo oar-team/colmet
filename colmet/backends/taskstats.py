@@ -1,6 +1,8 @@
-
+import os
+import re
 import errno
 import struct
+import copy
 
 from colmet.metrics.taskstats_default import get_taskstats_class
 from colmet.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError, OnlyOneJobIsSupportedError
@@ -16,14 +18,23 @@ class TaskStatsNodeBackend(InputBaseBackend):
     def __init__(self, options):
         InputBaseBackend.__init__(self,options)
         self.options = options
+        self.jobs = {}
+
         self.taskstats_nl = TaskStatsNetlink(options)
-
-        if len(self.job_id_list) < 1:
+ 
+        print "yop:" ,self.options.cpuset_rootpath
+        print "poy:" ,self.options.regex_job_id
+        
+        if (len(self.job_id_list) < 1) and (self.options.cpuset_rootpath =='') :
             raise JobNeedToBeDefinedError()
-        if len(self.job_id_list) > 1:
-            raise OnlyOneJobIsSupportedError()
-
-        self.job = Job(self,self.job_id_list[0],options)
+        if len(self.job_id_list) == 1:
+            job_id = self.job_id_list[0]
+            self.jobs[job_id] = Job(self, job_id, options) #get all options
+        else:
+            for i, job_id in enumerate(self.job_id_list):
+                #j_options = OptionJob(["yop","yop"]) #TODO need to distinct options per job
+                j_options = options
+                self.jobs[job_id] = Job(self,job_id,j_options)
     
     @classmethod
     def _get_backend_name(cls):
@@ -37,13 +48,48 @@ class TaskStatsNodeBackend(InputBaseBackend):
         return counters
 
     def pull(self):
-        self.job.update_stats()
-        return self.job.get_stats()
+        for job in self.jobs.values():
+            job.update_stats()
+        return [job.get_stats() for job in self.jobs.values()]
 
     def get_counters_class(self):
         return Counters
+    
+    def create_options_job_cgroups(self, cgroups):
+        #options are duplicated to allow modification per jobs, here cgroups parametter
+        options = copy.copy(self.options) 
+        options.cgroups = cgroups
+        return options
 
+    def update_job_list(self):
+        """Used to maintained job list upto date by adding new jobs and removing ones 
+        to monitor accordingly to cpuset_rootpath and regex_job_id.
+        """
+            
+        print "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYOOOOOOOOOOOOPPPPPPPPPPPPPPPPPPP"    
+         
+        cpuset_rootpath = self.options.cpuset_rootpath[0]
+        regex_job_id    = self.options.regex_job_id[0]
 
+        print "yop:" ,self.options.cpuset_rootpath
+        print "poy:" ,self.options.regex_job_id
+
+        job_ids = set([])
+        filenames = {}
+        for filename in os.listdir(cpuset_rootpath):
+            jid = re.findall(regex_job_id, filename)
+            if len(jid)>0:
+                job_ids.add(jid[0])
+                filenames[jid[0]] = filename
+
+        print "Ids of jobs to monitor: ", job_ids
+        monitored_job_ids =  set(self.job_id_list)
+        #Add new jobs
+        for job_id in (job_ids - monitored_job_ids):
+            self.jobs[job_id] = Job(self, job_id, self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]])) 
+        #Del ended jobs
+        for job_id in (monitored_job_ids-job_ids):
+            del self.jobs[job_id]
 
 #
 # Taskstats Netlink
