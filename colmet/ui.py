@@ -24,7 +24,8 @@ import locale
 import optparse
 import sys
 import signal
-import select
+#import select TODO rm
+import time 
 import errno
 import logging
 
@@ -61,46 +62,36 @@ class TaskMonBatch(object):
             signal.signal(signal.SIGALRM,self.timeout_handler)
             signal.alarm(self.options.walltime)
 
-        try:
-            poll = select.poll()
-            #TODO only for DEV
-            #for ib in self.input_backends:
-            #    print "ib_backend_name:", ib._get_backend_name()
-            #    if ib._get_backend_name() == 'taskstats':
-            #        print "call update job list"
-            #        ib.update_job_list()
+        period = self.options.sampling_period
+        
+        while self.options.iterations is None or \
+            iterations < self.options.iterations:
 
-            while self.options.iterations is None or \
-                iterations < self.options.iterations:
-                LOG.debug("Gathering the metrics")
-                counters_list = []
-                for backend in self.input_backends:
-                    pulled_counters = backend.pull()
-                    counters_list += pulled_counters
-                    LOG.debug("%s metrics has been pulled width %s" % (len(pulled_counters),backend._get_backend_name()))
+            #sleep to next sampling
+            #absolute time is used and based on seconds since 1970-01-01 00:00:00 UTC  
+            now = time.time()
+            time_towait = ((now // period) + 1) * period - now 
+            time.sleep(time_towait)
+            
+            now = time.time()
+            LOG.debug("Gathering the metrics")
+            counters_list = []
+            for backend in self.input_backends:
+                pulled_counters = backend.pull()
+                counters_list += pulled_counters
+                LOG.debug("%s metrics has been pulled width %s" % (len(pulled_counters),backend._get_backend_name()))
+                LOG.debug("time to take measure: %s sec" % (time.time()-now))
 
-                for backend in self.output_backends:
-                    backend.push(counters_list)
-                    LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
-                
-                if self.options.iterations is not None:
-                    iterations += 1
-                    if iterations >= self.options.iterations:
-                        break
-                    elif iterations == 0:
-                        iterations = 1
-                if self.options.delay_seconds > 0:
-                    try:
-                        LOG.debug("Waiting for %s secondes..." % (self.options.delay_seconds))
-                        poll.poll(self.options.delay_seconds * 1000.0)
-                    except select.error, e:
-                        if e.args and e.args[0] == errno.EINTR:
-                            pass
-                        else:
-                            raise
-        except TimeoutException:
-            pass
-
+            for backend in self.output_backends:
+                backend.push(counters_list)
+                LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
+            
+            if self.options.iterations is not None:
+                iterations += 1
+                if iterations >= self.options.iterations:
+                    break
+                elif iterations == 0:
+                    iterations = 1
 
 def run_colmet(options):
     LOG.info("Starting Colmet")
@@ -154,6 +145,10 @@ def main():
     parser.add_option('-d', '--delay', type='float', dest='delay_seconds',
                       help='delay between iterations [1 second]',
                       metavar='SEC', default=1)
+
+    parser.add_option('-s', '--sample-period', type='float', dest='sampling_period',
+                      help='sampling period of measuring [5 second]',
+                      metavar='SEC', default=5)
 
     parser.add_option('--daemon', dest='run_as_daemon',
                       help='Run as daemon [False]',
@@ -222,9 +217,6 @@ def main():
                      dest ='zeromq_bind_uri', default= 'tcp://0.0.0.0:5556')
 
     parser.add_option_group(group)
-
-
-    parser.add_option_group(group) # TODO ???
 
     group = optparse.OptionGroup(parser, "[backend] hdf5 (output)")
     group.add_option( "--hdf5-output-filepath", type = 'str',
