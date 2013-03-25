@@ -7,11 +7,18 @@ Todo
 ====
 
 * replace optparse, which is deprecated by argparse
+* see 2.5-colmet-ctl (argparse, message.py, general structure evolution)
 * do we need to support multiple cgroups by job on the same jobs
-* add node monitoring
+* add IO node monitoring
+* complete analysis tool
+* rest api (via flask)
+* default graphs
+* add unit for stat cpu (jiffies unit)
+* stress test on G5K
+* website (news on oar mailing-liste
 
 ChangeLog
 =========
-
+* add node monitoring (procstat)
 * Use absolute time to trigger measures
 *  
