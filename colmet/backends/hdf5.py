@@ -51,7 +51,6 @@ class HDF5OutputBackend(OutputBaseBackend):
         '''
         counters_dict = dict()
         for counters in counters_list:
-            print "yopyop",counters.__class__.__name__
             job_id = counters._get_header('job_id')
             if job_id not in counters_dict:
                 counters_dict[job_id] = list()
@@ -91,10 +90,6 @@ class HDF5InputBackend(InputBaseBackend):
             metrics_list += job_metrics_list
 
         return metrics_list
-
-
-
-
 
 class FileAccess(object):
     '''

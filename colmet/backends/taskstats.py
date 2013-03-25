@@ -22,8 +22,8 @@ class TaskStatsNodeBackend(InputBaseBackend):
 
         self.taskstats_nl = TaskStatsNetlink(options)
  
-        print "yop:" ,self.options.cpuset_rootpath
-        print "poy:" ,self.options.regex_job_id
+        #print "yop:" ,self.options.cpuset_rootpath
+        #print "poy:" ,self.options.regex_job_id
         
         if (len(self.job_id_list) < 1) and (self.options.cpuset_rootpath =='') :
             raise JobNeedToBeDefinedError()
@@ -65,14 +65,12 @@ class TaskStatsNodeBackend(InputBaseBackend):
         """Used to maintained job list upto date by adding new jobs and removing ones 
         to monitor accordingly to cpuset_rootpath and regex_job_id.
         """
-            
-        print "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYOOOOOOOOOOOOPPPPPPPPPPPPPPPPPPP"    
          
         cpuset_rootpath = self.options.cpuset_rootpath[0]
         regex_job_id    = self.options.regex_job_id[0]
 
-        print "yop:" ,self.options.cpuset_rootpath
-        print "poy:" ,self.options.regex_job_id
+        #print "yop:" ,self.options.cpuset_rootpath
+        #print "poy:" ,self.options.regex_job_id
 
         job_ids = set([])
         filenames = {}
@@ -148,7 +146,7 @@ class TaskStatsNetlink(object):
             # Short reply
             return
         taskstats_version = struct.unpack('H', taskstats_data[:2])[0]
-        assert taskstats_version >= 4
+        assert taskstats_version == 4
         return Counters(taskstats_buffer = taskstats_data)
 
 

@@ -40,8 +40,8 @@ setup(
     description = ("A utility to monitor the jobs ressources in a HPC"
                    "environment, espacially OAR"),
     keywords = "monitoring, taskstat, oar, hpc, sciences",
-    author = "Philippe Le Brouster",
-    author_email = "philippe.le-brouster@imag.fr",
+    author = "Philippe Le Brouster, Olivier Richard",
+    author_email = "philippe.le-brouster@imag.fr, olivier.richard@imag.fr",
     url = "http://oar.imag.fr/",
     scripts=['bin/colmet'],
     packages= find_packages(),

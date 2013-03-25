@@ -44,6 +44,14 @@ class UInt64(BaseType):
     struct_code = 'Q'
     length = struct.calcsize("<%s"%struct_code)
 
+class UFloat(BaseType):
+    struct_code = 'f'
+    length = struct.calcsize("<%s"%struct_code)
+
+class UDouble(BaseType):
+    struct_code = 'd'
+    length = struct.calcsize("<%s"%struct_code)
+
 class String(BaseType):
     def __init__(self,length):
         self.struct_code = '%ss' % length
@@ -77,6 +85,8 @@ class MetaCountersType(type):
             % MetaCountersType._normalize(value, 1024, 10000, ['M', 'G', 'T']),
         "ts_date": lambda value: 
             datetime.fromtimestamp(value).strftime("%d/%m/%Y - %H:%M:%S"),
+        "sec":  lambda value: "%s (seconds)"  
+            % str(value),
         "usec": lambda value: "%s (seconds)" 
             % MetaCountersType._normalize(value, 1000, 1000, ['u', 'm', ''] ),
         "nsec": lambda value: "%s (seconds)" 
@@ -266,7 +276,7 @@ class BaseCounters(object):
     This class define the base class for a metric. It provides the basic
     functions for packing/unpacking, registering header/counter.
 
-    The counters and headers are registered by adding an entriee into
+    The counters and headers are registered by adding an entry into
     the lists '_headers' and '_counters'.
 
     By default the headers contain the 'metric_backend', the 'hostname',
@@ -281,12 +291,10 @@ class BaseCounters(object):
 
     _counters = [
     ]
-
  
     ################
     # Static methods
     ################
-
 
     @staticmethod
     def create_metric_from_raw(raw):

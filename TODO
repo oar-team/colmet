@@ -8,4 +8,10 @@ Todo
 
 * replace optparse, which is deprecated by argparse
 * do we need to support multiple cgroups by job on the same jobs
- 
+* add node monitoring
+
+ChangeLog
+=========
+
+* Use absolute time to trigger measures
+*  

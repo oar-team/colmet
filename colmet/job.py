@@ -30,7 +30,7 @@ class Info(object):
 
 class TaskInfo(Info):
     '''
-        Represent Information corresponding to a task
+    Represent Information corresponding to a task
     '''
     def __init__(self, tid, input_backend):
         Info.__init__(self, input_backend)
@@ -175,8 +175,6 @@ class CGroupInfo(Info):
         stats_delta.type =  'cgroup'
         stats_delta.id =  self.cgroup_path
 
-
-
         for tid, task in self.tasks.items():
             if  task.mark:
                 msg = (
@@ -192,6 +190,30 @@ class CGroupInfo(Info):
 
         self.stats_delta = stats_delta
         self.stats_total.accumulate(stats_delta, self.stats_total)
+
+        Info.update_stats(self, timestamp, job_id, hostname)
+
+        return True
+
+class ProcStatsInfo(Info):
+    '''
+    Represent the information corresponding to a node (not only one job)
+    '''
+    def __init__(self, input_backend):
+        Info.__init__(self, input_backend)
+        self.input_backend = self.input_backend
+
+    def update_stats(self,timestamp,job_id,hostname):
+        '''
+        Update the current metrics for the node (job_id=0)
+        '''
+        stats = self.counters_class.fetch(self.input_backend)
+        if stats:
+            if not self.stats_delta:
+                self.stats_total = stats
+                self.stats_delta = stats
+            stats.delta(self.stats_total, self.stats_delta)
+            self.stats_total = stats
 
         Info.update_stats(self, timestamp, job_id, hostname)
 
@@ -220,7 +242,10 @@ class Job(object):
             [ CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups ]
         )
 
-
+        #to monitor global node resources activities 
+        if job_id == 0:
+            self.job_childs.extend([ProcStatsInfo(input_backend)])
+             
         number_of_child = len(self.job_childs)
         if number_of_child == 0:
             raise NoJobFoundError

@@ -80,7 +80,8 @@ class TaskMonBatch(object):
                 pulled_counters = backend.pull()
                 counters_list += pulled_counters
                 LOG.debug("%s metrics has been pulled width %s" % (len(pulled_counters),backend._get_backend_name()))
-                LOG.debug("time to take measure: %s sec" % (time.time()-now))
+
+            LOG.debug("time to take measure: %s sec" % (time.time()-now))
 
             for backend in self.output_backends:
                 backend.push(counters_list)
@@ -102,6 +103,12 @@ def run_colmet(options):
         input_backend_classes = [ get_input_backend_class(ib_name) for ib_name in options.input_backends ]
         input_backends = [ cls(options) for cls in input_backend_classes ]
 
+    #if option.procstats:
+    if True:
+        LOG.info("Using procstats as additionnal input backend") 
+        input_procstat_backends = get_input_backend_class("procstats")        
+        input_backends.append(input_procstat_backends(options))
+
     if 'none' in options.output_backends or len (options.output_backends) == 0:
         LOG.warn("Disable any output backend")
         output_backends = [ ]
@@ -113,7 +120,7 @@ def run_colmet(options):
     LOG.debug("Initialize the main loop")
     
     # Currently support one input/output backend at time.
-    if len(input_backends) > 1 or len(output_backends) > 1:
+    if len(input_backends) > 2 or len(output_backends) > 1:
         raise MultipleBackendsNotYetSupported()
     
     batch = TaskMonBatch(input_backends, output_backends, options)
@@ -176,6 +183,10 @@ def main():
     parser.add_option('-w', '--walltime', type='int', dest='walltime', 
                       default = None,
                       help='Specify the maximum walltime for colmet. If specified, colmet will exit after the specified time (in seconds)')
+
+    parser.add_option('--procstats', action="store_true", dest="procstats",
+                      default = False,
+                      help='Node monitoring based on some /proc subdirectories contents. Measures are associated to the fictive job with 0 as identifier (job_id)')
 
 
     oblist = ", ".join(get_output_backend_list())
