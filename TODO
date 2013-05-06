@@ -5,7 +5,9 @@ Todo list for colmet
 
 Todo
 ====
-
+* test with different use case (distributed and failure cases
+* debug cgroup/cpuset without process issue
+* add test --cgroup path existence
 * replace optparse, which is deprecated by argparse
 * see 2.5-colmet-ctl (argparse, message.py, general structure evolution)
 * do we need to support multiple cgroups by job on the same jobs
@@ -19,6 +21,7 @@ Todo
 
 ChangeLog
 =========
+* add workaround when a newly cgroup is created without process in it (monitoring is suspended upto one process is launched) 
 * add node monitoring (procstat)
 * Use absolute time to trigger measures
 *  

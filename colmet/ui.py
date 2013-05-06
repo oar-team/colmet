@@ -24,7 +24,6 @@ import locale
 import optparse
 import sys
 import signal
-#import select TODO rm
 import time 
 import errno
 import logging
@@ -32,7 +31,7 @@ import logging
 LOG = logging.getLogger()
 
 from colmet.version import VERSION
-from colmet.exceptions import  MultipleBackendsNotYetSupported, NotEnoughInputBackend, TimeoutException
+from colmet.exceptions import  MultipleBackendsNotYetSupported, NotEnoughInputBackend, TimeoutException, NoneValueError
 from colmet.backends import  get_input_backend_class, get_output_backend_class, get_input_backend_list, get_output_backend_list
 from colmet.daemon import Daemon
 
@@ -70,7 +69,7 @@ class TaskMonBatch(object):
             #sleep to next sampling
             #absolute time is used and based on seconds since 1970-01-01 00:00:00 UTC  
             now = time.time()
-            time_towait = ((now // period) + 1) * period - now 
+            time_towait = ((now // period) + 1) * period - now
             time.sleep(time_towait)
             
             now = time.time()
@@ -94,9 +93,12 @@ class TaskMonBatch(object):
                 if len(counters_list) > 0:
                     print len(counters_list), "ooo", counters_list.__class__.__name__ 
                     
-                    backend.push(counters_list)
-                LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
-            
+                    try: 
+                        backend.push(counters_list)
+                        LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
+                    except NoneValueError:
+                        LOG.debug("Values for metrics are not there.")
+
             if self.options.iterations is not None:
                 iterations += 1
                 if iterations >= self.options.iterations:

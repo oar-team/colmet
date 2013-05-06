@@ -5,7 +5,7 @@ base functions to register/unregister counter and also pack/unpack data.
 '''
 
 from datetime import datetime
-from colmet.exceptions import CounterAlreadyExistError
+from colmet.exceptions import CounterAlreadyExistError, NoneValueError
 from colmet.importer import get_module
 
 
@@ -107,8 +107,14 @@ class MetaCountersType(type):
         'value' is divided by 'factor'.
         '''
         exp = 0
-        val = float(value)
-        while (val > limit and exp < len(exts) - 1):
+
+        try:
+            val = float(value)
+        except  TypeError:
+            # value is not available (in case of newly created cgroup with no tasks)
+            raise NoneValueError
+
+        while val > limit and exp < len(exts) - 1:
             val = val / factor
             exp += 1
         return "%.0f%s" % (val, exts[exp])
