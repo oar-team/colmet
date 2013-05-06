@@ -139,6 +139,9 @@ class CGroupInfo(Info):
         self.cgroup_path = cgroup_path
         self.tasks = {}
 
+        print "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoUUUUUUUUUUUUUUUUUUUUUU" 
+
+
     def list_tids(self):
         '''
         Return the list of tasks of the current process
@@ -167,32 +170,41 @@ class CGroupInfo(Info):
         '''
         Update the current metrics for this cgroup.
         '''
-        for tid in self.list_tids():
-            task = self.get_task(tid)
-            task.update_stats(timestamp, job_id, hostname)
 
         stats_delta = self.counters_class()
         stats_delta.type =  'cgroup'
         stats_delta.id =  self.cgroup_path
 
-        for tid, task in self.tasks.items():
-            if  task.mark:
-                msg = (
-                    "Process/Task %s no more exists."
-                    "Removing from the Job %s" 
-                    % (tid, self.cgroup_path)
-                )
-                LOG.debug(msg)
-                del self.tasks[tid]
-            else:
-                task.mark = True
-                stats_delta.accumulate(task.stats_delta, stats_delta)
+        print "UUUUUUUUUUUUUUUUUUUUUU" 
 
-        self.stats_delta = stats_delta
-        self.stats_total.accumulate(stats_delta, self.stats_total)
-
+        if len(self.list_tids()) > 0:
+            print "ZZZZZZZZZZZZZZZZ"
+            print  self.list_tids()
+            for tid in self.list_tids():
+                task = self.get_task(tid)
+                task.update_stats(timestamp, job_id, hostname)
+        
+            for tid, task in self.tasks.items():
+                if  task.mark:
+                    msg = (
+                        "Process/Task %s no more exists."
+                        "Removing from the Job %s" 
+                        % (tid, self.cgroup_path)
+                    )
+                    LOG.debug(msg)
+                    del self.tasks[tid]
+                else:
+                    task.mark = True
+                    stats_delta.accumulate(task.stats_delta, stats_delta)
+    
+            self.stats_delta = stats_delta
+            self.stats_total.accumulate(stats_delta, self.stats_total)
+    
+        else: #no task in this cgroup....
+            print "###########################################################"
+            
+                
         Info.update_stats(self, timestamp, job_id, hostname)
-
         return True
 
 class ProcStatsInfo(Info):

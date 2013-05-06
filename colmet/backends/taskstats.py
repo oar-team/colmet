@@ -84,7 +84,7 @@ class TaskStatsNodeBackend(InputBaseBackend):
         monitored_job_ids =  set(self.job_id_list)
         #Add new jobs
         for job_id in (job_ids - monitored_job_ids):
-            self.jobs[job_id] = Job(self, job_id, self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]])) 
+            self.jobs[job_id] = Job(self, int(job_id), self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]])) 
         #Del ended jobs
         for job_id in (monitored_job_ids-job_ids):
             del self.jobs[job_id]
@@ -146,7 +146,7 @@ class TaskStatsNetlink(object):
             # Short reply
             return
         taskstats_version = struct.unpack('H', taskstats_data[:2])[0]
-        assert taskstats_version == 4
+        assert taskstats_version >= 4
         return Counters(taskstats_buffer = taskstats_data)
 
 

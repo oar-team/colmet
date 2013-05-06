@@ -16,7 +16,7 @@ def get_taskstats_class():
 
 class Counters(BaseCounters):
     counters_taskstats = {
-        # 'key' : ( offset,length, type, repr, acc )
+        # 'key' : ( offset,length, type, repr, acc, init_value )
         #
         # /* The version number of this struct. This field is always set to
         #  * TAKSTATS_VERSION, which is defined in <linux/taskstats.h>.

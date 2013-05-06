@@ -467,11 +467,13 @@ class BaseCounters(object):
         '''
         Convert the data into the packed form to a specific buffer
         '''
+
         fmt_values = (
               [ self._header_definitions[key][0].before_pack(self._get_header(key)) for key in self._fmt_header_ordered_keys ]
             + [ self._counter_definitions[key][0].before_pack(self._get_counter(key)) for key in self._fmt_counter_ordered_keys ]
         )
         struct.pack_into(self._fmt,raw_buffer,offset,*fmt_values)
+
 
     def unpack_from(self,raw_buffer,offset=0):
         '''

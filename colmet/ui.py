@@ -78,13 +78,23 @@ class TaskMonBatch(object):
             counters_list = []
             for backend in self.input_backends:
                 pulled_counters = backend.pull()
-                counters_list += pulled_counters
+
+                if backend._get_backend_name() == 'taskstats':
+                    if len(pulled_counters) > 0:
+                        for counters in pulled_counters:
+                            counters_list += counters
+                else:
+                    counters_list += pulled_counters
+
                 LOG.debug("%s metrics has been pulled width %s" % (len(pulled_counters),backend._get_backend_name()))
 
             LOG.debug("time to take measure: %s sec" % (time.time()-now))
 
             for backend in self.output_backends:
-                backend.push(counters_list)
+                if len(counters_list) > 0:
+                    print len(counters_list), "ooo", counters_list.__class__.__name__ 
+                    
+                    backend.push(counters_list)
                 LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
             
             if self.options.iterations is not None:
@@ -103,8 +113,7 @@ def run_colmet(options):
         input_backend_classes = [ get_input_backend_class(ib_name) for ib_name in options.input_backends ]
         input_backends = [ cls(options) for cls in input_backend_classes ]
 
-    #if option.procstats:
-    if True:
+    if options.procstats:
         LOG.info("Using procstats as additionnal input backend") 
         input_procstat_backends = get_input_backend_class("procstats")        
         input_backends.append(input_procstat_backends(options))
