@@ -74,7 +74,6 @@ class ZMQOutputBackend(OutputBaseBackend):
         '''
         push the metrics to the output backend
         '''
-        print "YOPYOP", counters_list.__class__.__name__
 
 #        if counters_list.__class__.__name__ == 'list':
 #            counters_ll = counters_list
@@ -89,7 +88,6 @@ class ZMQOutputBackend(OutputBaseBackend):
 #
 #
 #        if counters_list.__class__.__name__ == 'list':
-#            print "yopyop"
 #            raw = BaseCounters.pack_from_list(counters_list)
 #            self.socket.send(raw)
 #        else:

@@ -43,10 +43,18 @@ class Analysis(object):
         m = self.h5_file.getNode(node_name)
         return m.read()
 
+    def get_host_metrics(self, hostname)
+        h 
+
     def get_job_metrics(self, job_id):
         return self.get_metrics('/Job_' + job_id)
 
+
+    def get_dat
+
 def main():
+
+    #plot metrics
     pass
 
 if __name__ == '__main__':

@@ -22,9 +22,6 @@ class TaskStatsNodeBackend(InputBaseBackend):
 
         self.taskstats_nl = TaskStatsNetlink(options)
  
-        #print "yop:" ,self.options.cpuset_rootpath
-        #print "poy:" ,self.options.regex_job_id
-        
         if (len(self.job_id_list) < 1) and (self.options.cpuset_rootpath =='') :
             raise JobNeedToBeDefinedError()
         if len(self.job_id_list) == 1:
@@ -69,9 +66,6 @@ class TaskStatsNodeBackend(InputBaseBackend):
         cpuset_rootpath = self.options.cpuset_rootpath[0]
         regex_job_id    = self.options.regex_job_id[0]
 
-        #print "yop:" ,self.options.cpuset_rootpath
-        #print "poy:" ,self.options.regex_job_id
-
         job_ids = set([])
         filenames = {}
         for filename in os.listdir(cpuset_rootpath):
@@ -80,7 +74,6 @@ class TaskStatsNodeBackend(InputBaseBackend):
                 job_ids.add(jid[0])
                 filenames[jid[0]] = filename
 
-        print "Ids of jobs to monitor: ", job_ids
         monitored_job_ids =  set(self.job_id_list)
         #Add new jobs
         for job_id in (job_ids - monitored_job_ids):

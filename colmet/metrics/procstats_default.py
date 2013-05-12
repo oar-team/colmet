@@ -178,7 +178,6 @@ class Counters(BaseCounters):
         elif procstats_buffer == None:
             self._empty_fill()
         else:
-            print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             for name in Counters._counter_definitions:
                 self._counter_values[name] = procstats_buffer[name]
 

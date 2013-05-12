@@ -50,9 +50,9 @@ class TaskMonBatch(object):
     def update_job_list(self, signum, frame):
         LOG.debug("Catch signal %s, update job list to scan" % signum)
         for ib in self.input_backends:
-          print "ib_backend_name:", ib._get_backend_name()
+          #print "ib_backend_name:", ib._get_backend_name()
           if ib._get_backend_name() == 'taskstats':
-            print "call update job list"
+            #print "call update job list"
             ib.update_job_list()
 
     def run(self):
@@ -91,14 +91,13 @@ class TaskMonBatch(object):
 
             for backend in self.output_backends:
                 if len(counters_list) > 0:
-                    print len(counters_list), "ooo", counters_list.__class__.__name__ 
-                    
+                    #print "nb counters_list", len(counters_list) 
                     try: 
                         backend.push(counters_list)
                         LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
-                    except NoneValueError:
+                    except (NoneValueError, TypeError):
                         LOG.debug("Values for metrics are not there.")
-
+                   
             if self.options.iterations is not None:
                 iterations += 1
                 if iterations >= self.options.iterations:

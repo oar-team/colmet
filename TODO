@@ -5,6 +5,8 @@ Todo list for colmet
 
 Todo
 ====
+
+* remover print
 * test with different use case (distributed and failure cases
 * debug cgroup/cpuset without process issue
 * add test --cgroup path existence

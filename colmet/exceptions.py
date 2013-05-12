@@ -171,9 +171,14 @@ class TimeoutException(Exception):
     '''
     pass
 
-
 class NoneValueError(Error):
     '''
     Unable to retreive value for this metric
+    '''
+    pass
+
+class VoidCpusetError(Error):
+    '''
+    This Cpuset is void
     '''
     pass

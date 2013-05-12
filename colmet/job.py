@@ -6,7 +6,7 @@ import logging
 
 LOG = logging.getLogger()
 
-from colmet.exceptions import NoJobFoundError
+from colmet.exceptions import NoJobFoundError, VoidCpusetError
 
 
 class Info(object):
@@ -139,9 +139,6 @@ class CGroupInfo(Info):
         self.cgroup_path = cgroup_path
         self.tasks = {}
 
-        print "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoUUUUUUUUUUUUUUUUUUUUUU" 
-
-
     def list_tids(self):
         '''
         Return the list of tasks of the current process
@@ -175,11 +172,7 @@ class CGroupInfo(Info):
         stats_delta.type =  'cgroup'
         stats_delta.id =  self.cgroup_path
 
-        print "UUUUUUUUUUUUUUUUUUUUUU" 
-
         if len(self.list_tids()) > 0:
-            print "ZZZZZZZZZZZZZZZZ"
-            print  self.list_tids()
             for tid in self.list_tids():
                 task = self.get_task(tid)
                 task.update_stats(timestamp, job_id, hostname)
@@ -199,11 +192,13 @@ class CGroupInfo(Info):
     
             self.stats_delta = stats_delta
             self.stats_total.accumulate(stats_delta, self.stats_total)
+
+            self.void_cpuset = False
     
         else: #no task in this cgroup....
-            print "###########################################################"
-            
-                
+            LOG.info("no taks in this cgroup")
+            #raise VoidCpusetError
+  
         Info.update_stats(self, timestamp, job_id, hostname)
         return True
 
@@ -236,29 +231,31 @@ class Job(object):
     Represent the Job to monitor
     '''
     def __init__(self, input_backend, job_id, options):
-        self.job_childs = []
+        self.job_children = []
         self.input_backend = input_backend
         self.options = options
         self.timestamp = int(time.time())
         self.duration = None
         self.job_id = job_id
         self._hostname = socket.gethostname()
+        #void_cpuset is used to avoid sending null stats to output backends TODO rm
+        self.void_cpuset = True
 
-        self.job_childs.extend( 
+        self.job_children.extend( 
             [ TaskInfo(tid, input_backend) for tid in options.tids ] 
         )
-        self.job_childs.extend( 
+        self.job_children.extend( 
             [ ProcessInfo(pid, input_backend) for pid in options.pids ]
         )
-        self.job_childs.extend( 
+        self.job_children.extend( 
             [ CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups ]
         )
 
         #to monitor global node resources activities 
         if job_id == 0:
-            self.job_childs.extend([ProcStatsInfo(input_backend)])
+            self.job_children.extend([ProcStatsInfo(input_backend)])
              
-        number_of_child = len(self.job_childs)
+        number_of_child = len(self.job_children)
         if number_of_child == 0:
             raise NoJobFoundError
         msg = "the job contains %s items" % (number_of_child)
@@ -272,7 +269,7 @@ class Job(object):
         '''
 
         tgids = []
-        for item in self.job_childs:
+        for item in self.job_children:
             tgids.extend(item.list_tgids())
 
         current_tgids = Job.list_running_tgids()
@@ -289,21 +286,22 @@ class Job(object):
     
     def update_stats(self):
         '''
-        Update the metrics for all the jobs
+        Update the metrics for all the job's children
         '''
         new_timestamp = int(time.time())
         self.duration = new_timestamp - self.timestamp
         self.timestamp = new_timestamp
 
-        for item in self.job_childs:
+        
+        for item in self.job_children:
             item.update_stats(self.timestamp,self.job_id,self._hostname)
 
-    def get_childs(self):
+    def get_children(self):
         '''
         Return the job lists
         '''
-        return self.job_childs
+        return self.job_children
 
     def get_stats(self):
-        return [ child.get_stats() for child in self.job_childs ]
+        return [child.get_stats() for child in self.job_children]
 
