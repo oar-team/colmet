@@ -3,11 +3,14 @@ import re
 import errno
 import struct
 import copy
+import logging
 
 from colmet.metrics.taskstats_default import get_taskstats_class
 from colmet.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError, OnlyOneJobIsSupportedError
 from colmet.backends.base import InputBaseBackend
 from colmet.job import Job
+
+LOG = logging.getLogger()
 
 Counters = get_taskstats_class()
 
@@ -46,6 +49,7 @@ class TaskStatsNodeBackend(InputBaseBackend):
 
     def pull(self):
         for job in self.jobs.values():
+            LOG.debug("pull job :" + str(job.job_id))
             job.update_stats()
         return [job.get_stats() for job in self.jobs.values()]
 
@@ -79,8 +83,11 @@ class TaskStatsNodeBackend(InputBaseBackend):
         for job_id in (job_ids - monitored_job_ids):
             self.jobs[job_id] = Job(self, int(job_id), self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]])) 
         #Del ended jobs
+
         for job_id in (monitored_job_ids-job_ids):
             del self.jobs[job_id]
+        #udpate job_id list to monitor
+        self.job_id_list = list(job_ids)
 
 #
 # Taskstats Netlink
