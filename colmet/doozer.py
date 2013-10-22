@@ -31,14 +31,15 @@ import matplotlib.pyplot as plt
 #
 from base64 import encodestring
 import matplotlib
-from IPython.display import display, HTML
+from IPython.display import display
 from IPython.core.pylabtools import print_figure
 from matplotlib._pylab_helpers import Gcf
 from IPython.zmq.pylab.backend_inline import flush_figures
 
+
 def png2x(fig):
     """render figure to 2x PNG via HTML"""
-    x,y = matplotlib.rcParams['figure.figsize']
+    x, y = matplotlib.rcParams['figure.figsize']
     dpi = matplotlib.rcParams['savefig.dpi']
     x2x = int(x * dpi / 2)
     y2x = int(y * dpi / 2)
@@ -46,12 +47,14 @@ def png2x(fig):
     png64 = encodestring(png).decode('ascii')
     return u"<img src='data:image/png;base64,%s' width=%i height=%i/>" % (png64, x2x, y2x)
 
+
 def new_flush_figures():
     try:
         for figure_manager in Gcf.get_all_fig_managers():
             display(figure_manager.canvas.figure)
     finally:
         matplotlib.pyplot.close('all')
+
 
 def fig2x():
     ip = get_ipython()
@@ -65,6 +68,7 @@ def fig2x():
     html_formatter.for_type(matplotlib.figure.Figure, png2x)
 
     ip.register_post_execute(new_flush_figures)
+
 
 def figure2x():
     matplotlib.rcParams['savefig.dpi'] = 2 * matplotlib.rcParams['savefig.dpi']
@@ -81,8 +85,10 @@ Analyze Colmet's traces. Output results can be textual or plots.''' % sys.argv[0
 class Doozer(object):
     pass
 
+
 class HDF5Table(object):
-    def __init__(self,h5_file_name):
+
+    def __init__(self, h5_file_name):
         self.h5_file_name = h5_file_name
         self.h5_file = tables.File(self.h5_file_name, "r")
 
@@ -111,8 +117,10 @@ class HDF5Table(object):
 def df_hostnames(df):
     return[h for h in df.hostname.unique()]
 
+
 def df4host(df, hostname):
     return df[df.hostname==hostname]
+
 
 def df_timestamp_normalize(df):
     tp_uniq = df.timestamp.unique()
@@ -127,12 +135,15 @@ def df_timestamp_normalize(df):
 
     df_normalize = df.groupby('timestamp').first()
     return df_normalize
-#
+
+
 def plot_loadavg():
     plt.figure();df0.plot( y = ['loadavg_15min', 'loadavg_1min', 'loadavg_5min']); plt.legend(loc='best')
 
+
 def plot_stat_cpu():
     pass
+
 
 def main():
 

@@ -23,7 +23,7 @@ Colmet Analysis and Plotting Tools
 
 import sys
 import tables
-from pandas import *
+# from pandas import *
 
 #
 # Main program
@@ -35,7 +35,8 @@ Analyze Colmet's traces. Output results can be textual or plots.''' % sys.argv[0
 
 
 class Analysis(object):
-    def __init__(self,h5_file_name):
+
+    def __init__(self, h5_file_name):
         self.h5_file_name = h5_file_name
         self.h5_file = tables.File(self.h5_file_name, "r")
 
@@ -43,14 +44,16 @@ class Analysis(object):
         m = self.h5_file.getNode(node_name)
         return m.read()
 
-    def get_host_metrics(self, hostname)
-        h
+    # INCOMPLETE MEHTOD ??.
+    # def get_host_metrics(self, hostname)
+    #     h
 
     def get_job_metrics(self, job_id):
         return self.get_metrics('/Job_' + job_id)
 
+    # ?
+    # def get_dat
 
-    def get_dat
 
 def main():
 

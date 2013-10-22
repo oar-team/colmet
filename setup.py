@@ -24,9 +24,9 @@ Colmet Python setup file
 '''
 
 import os
-#from distutils.core import setup
 from setuptools import setup, find_packages
 from colmet import VERSION
+
 
 def read(fname):
     '''
@@ -35,20 +35,20 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "colmet",
-    version = VERSION,
-    description = ("A utility to monitor the jobs ressources in a HPC"
-                   "environment, espacially OAR"),
-    keywords = "monitoring, taskstat, oar, hpc, sciences",
-    author = "Philippe Le Brouster, Olivier Richard",
-    author_email = "philippe.le-brouster@imag.fr, olivier.richard@imag.fr",
-    url = "http://oar.imag.fr/",
-    packages= find_packages(),
+    name="colmet",
+    version=VERSION,
+    description=("A utility to monitor the jobs ressources in a HPC"
+                 "environment, espacially OAR"),
+    keywords="monitoring, taskstat, oar, hpc, sciences",
+    author="Philippe Le Brouster, Olivier Richard",
+    author_email="philippe.le-brouster@imag.fr, olivier.richard@imag.fr",
+    url="http://oar.imag.fr/",
+    packages=find_packages(),
     long_description=read('README'),
-    platforms = ['Linux' ],
-    license = "GNU GPL",
+    platforms=['Linux'],
+    license="GNU GPL",
     tests_require=['nose>=1.0'],
-    test_suite = 'nose.collector',
+    test_suite='nose.collector',
     entry_points={
         'console_scripts': [
             'colmet = colmet.ui:main'

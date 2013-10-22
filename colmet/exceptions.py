@@ -2,17 +2,20 @@
 Colmet Exceptions
 '''
 import logging
-import sys, traceback
+import sys
+import traceback
 
 LOG = logging.getLogger()
+
 
 class Error(Exception):
     '''
     Generic error
     '''
     desc = "Generic Error"
-    def __init__(self, desc_args = {}):
-        Exception.__init__(self)
+
+    def __init__(self, desc_args={}):
+        super(Error, self).__init__()
         self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
         self.desc_args = desc_args
 
@@ -24,11 +27,13 @@ class Error(Exception):
         if LOG.getEffectiveLevel() <= logging.DEBUG:
             msg += "\n\n" + traceback.format_exc(self.exc_traceback)
         return msg
+
     def show(self):
         '''
         Display the formatted error
         '''
         LOG.error(self.format())
+
 
 class NoJobFoundError(Error):
     '''
@@ -40,6 +45,7 @@ class NoJobFoundError(Error):
         "about job to monitor on the command line."
     )
 
+
 class NoEnoughPrivilegeError(Error):
     '''
     No Enough Privileges Error
@@ -49,6 +55,7 @@ class NoEnoughPrivilegeError(Error):
         "You probably need to be root."
     )
 
+
 class UnableToImportBackendError(Error):
     '''
     Unable to import backend Error
@@ -57,6 +64,7 @@ class UnableToImportBackendError(Error):
         "Unable to import the backend %s. "
         "Please verify it really exist"
     )
+
 
 class UnableToImportModuleError(Error):
     '''
@@ -68,14 +76,15 @@ class UnableToImportModuleError(Error):
 
     def format(self):
         msg = Error.format(self)
-        if self.error != None:
+        if self.error is not None:
             msg += "\n" + str(self.error)
         return msg
 
-    def __init__(self, module_name,error=None):
+    def __init__(self, module_name, error=None):
         Error.__init__(self)
         self.desc_args = module_name
         self.error = error
+
 
 class CounterAlreadyExistError(Error):
     '''
@@ -85,6 +94,7 @@ class CounterAlreadyExistError(Error):
         "A counter has been registered twice. "
         "This shouldn't append. Please contact the developpers."
     )
+
 
 class JobNeedToBeDefinedError(Error):
     '''
@@ -96,6 +106,7 @@ class JobNeedToBeDefinedError(Error):
         "This id must be unique in our plateform. "
         "Please check the help ('-h')."
     )
+
 
 class OnlyOneJobIsSupportedError(Error):
     '''
@@ -118,6 +129,7 @@ class UnableToFindLibraryError(Error):
         "\nPlease check that your environnement provide it."
     )
 
+
 class BackendNotFoundInModule(Error):
     '''
     Backend Class not found in the given Module
@@ -126,9 +138,10 @@ class BackendNotFoundInModule(Error):
         "Unable to load the Backend class for '%s' "
         "in the module '%s'"
     )
-    def __init__(self,module,pname):
-        Error.__init__(self)
-        self.desc_args = (module,pname)
+
+    def __init__(self, module, pname):
+        super(BackendNotFoundInModule, self).__init__(self)
+        self.desc_args = (module, pname)
 
 
 class BackendMethodNotImplemented(Error):
@@ -139,9 +152,10 @@ class BackendMethodNotImplemented(Error):
         "The backend need to implement the method '%s'."
     )
 
-    def __init__(self,method_name):
-        Error.__init__(self)
+    def __init__(self, method_name):
+        super(BackendMethodNotImplemented, self).__init__(self)
         self.desc_args = (method_name)
+
 
 class MultipleBackendsNotYetSupported(Error):
     '''
@@ -152,11 +166,13 @@ class MultipleBackendsNotYetSupported(Error):
         "input/output backend in the same process."
     )
 
+
 class NotEnoughInputBackend(Error):
     desc = (
         "You need to provide at least one input backend "
         "one the command line"
     )
+
 
 class FileAlreadyOpenWithDifferentModeError(Error):
     desc = (
@@ -165,17 +181,20 @@ class FileAlreadyOpenWithDifferentModeError(Error):
         "not supported."
     )
 
+
 class TimeoutException(Exception):
     '''
     A simple class to handle timeout for the main colmet loop
     '''
     pass
 
+
 class NoneValueError(Error):
     '''
     Unable to retreive value for this metric
     '''
     pass
+
 
 class VoidCpusetError(Error):
     '''

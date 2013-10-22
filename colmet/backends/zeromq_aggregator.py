@@ -11,11 +11,12 @@ LOG = logging.getLogger()
 from colmet.exceptions import JobNeedToBeDefinedError
 from colmet.metrics.base import BaseCounters
 
-from colmet.backends.base import InputBaseBackend,OutputBaseBackend
+from colmet.backends.base import InputBaseBackend, OutputBaseBackend
 
 
 def get_output_backend_class():
     return ZMQOutputBackend
+
 
 def get_input_backend_class():
     return ZMQInputBackend
@@ -27,14 +28,14 @@ class ZMQInputBackend(InputBaseBackend):
         return "zeromq_aggregator"
 
     def __init__(self, options):
-        InputBaseBackend.__init__(self,options)
+        InputBaseBackend.__init__(self, options)
 
         self.context = zmq.Context()
 
         self.zeromq_bind_uri = options.zeromq_bind_uri
 
         self.socket = self.context.socket(zmq.SUB)
-        self.socket.setsockopt(zmq.SUBSCRIBE,"")
+        self.socket.setsockopt(zmq.SUBSCRIBE, "")
         LOG.debug("Use the bind URI '%s'" % self.zeromq_bind_uri)
         self.socket.bind(self.zeromq_bind_uri)
 
@@ -51,11 +52,14 @@ class ZMQInputBackend(InputBaseBackend):
                 raise e
 
         LOG.debug("%s counters received" % len(counters_list))
-        if self.job_id_list != None:
-            counters_list = [ metric for metric in counters_list if metric.job_id in self.job_id_list ]
-            LOG.debug("%s counters received after filtering" % len(counters_list))
+        if self.job_id_list is not None:
+            counters_list = [metric for metric in counters_list
+                             if metric.job_id in self.job_id_list]
+            LOG.debug("%s counters received after filtering"
+                      % len(counters_list))
 
         return counters_list
+
 
 class ZMQOutputBackend(OutputBaseBackend):
     '''
@@ -65,7 +69,6 @@ class ZMQOutputBackend(OutputBaseBackend):
     def _get_backend_name(cls):
         return "zeromq_aggregator"
 
-
     def __init__(self, options):
         OutputBaseBackend.__init__(self, options)
 
@@ -74,7 +77,7 @@ class ZMQOutputBackend(OutputBaseBackend):
 
         self.zeromq_uri = options.zeromq_uri
 
-        if options.job_id == None:
+        if options.job_id is None:
             raise JobNeedToBeDefinedError()
 
         self.socket = self.context.socket(zmq.PUB)
@@ -88,8 +91,4 @@ class ZMQOutputBackend(OutputBaseBackend):
 
         if len(counters_list) > 0:
             msg = BaseCounters.pack_from_list(counters_list)
-            self.socket.send(msg,0)
-
-
-
-
+            self.socket.send(msg, 0)

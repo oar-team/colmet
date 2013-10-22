@@ -6,7 +6,7 @@ import logging
 
 LOG = logging.getLogger()
 
-from colmet.exceptions import NoJobFoundError, VoidCpusetError
+from colmet.exceptions import NoJobFoundError
 
 
 class Info(object):
@@ -38,7 +38,7 @@ class TaskInfo(Info):
         self.mark = True
         self.backend_request = self.counters_class.build_request(input_backend, tid)
 
-    def update_stats(self,timestamp,job_id,hostname):
+    def update_stats(self, timestamp, job_id, hostname):
         '''
         Update the current metrics of the task
         '''
@@ -50,7 +50,8 @@ class TaskInfo(Info):
             stats.delta(self.stats_total, self.stats_delta)
             self.stats_total = stats
             self.mark = False
-        Info.update_stats(self,timestamp, job_id, hostname)
+        Info.update_stats(self, timestamp, job_id, hostname)
+
 
 class ProcessInfo(Info):
     '''
@@ -63,18 +64,17 @@ class ProcessInfo(Info):
         self.get_task(pid)
         self.mark = True
 
-    def update_stats(self,timestamp,job_id,hostname):
+    def update_stats(self, timestamp, job_id, hostname):
         '''
         Update the current metrics of the process
         '''
         for tid in self.list_tids():
             task = self.get_task(tid)
-            task.update_stats(timestamp,job_id,hostname)
+            task.update_stats(timestamp, job_id, hostname)
 
         stats_delta = self.counters_class()
-        stats_delta.type =  'process'
-        stats_delta.id =  self.tgid
-
+        stats_delta.type = 'process'
+        stats_delta.id = self.tgid
 
         for tid, task in self.tasks.items():
             if task.mark:
@@ -96,7 +96,7 @@ class ProcessInfo(Info):
             self.stats_total.accumulate(stats_delta, self.stats_total)
 
         self.mark = False
-        Info.update_stats(self, timestamp, job_id,hostname)
+        Info.update_stats(self, timestamp, job_id, hostname)
 
         return True
 
@@ -129,6 +129,7 @@ class ProcessInfo(Info):
             task = TaskInfo(tid, self.input_backend)
             self.tasks[tid] = task
         return task
+
 
 class CGroupInfo(Info):
     '''
@@ -169,8 +170,8 @@ class CGroupInfo(Info):
         '''
 
         stats_delta = self.counters_class()
-        stats_delta.type =  'cgroup'
-        stats_delta.id =  self.cgroup_path
+        stats_delta.type = 'cgroup'
+        stats_delta.id = self.cgroup_path
 
         if len(self.list_tids()) > 0:
             for tid in self.list_tids():
@@ -195,12 +196,13 @@ class CGroupInfo(Info):
 
             self.void_cpuset = False
 
-        else: #no task in this cgroup....
+        else:  # no task in this cgroup....
             LOG.info("no taks in this cgroup")
             #raise VoidCpusetError
 
         Info.update_stats(self, timestamp, job_id, hostname)
         return True
+
 
 class ProcStatsInfo(Info):
     '''
@@ -210,7 +212,7 @@ class ProcStatsInfo(Info):
         Info.__init__(self, input_backend)
         self.input_backend = self.input_backend
 
-    def update_stats(self,timestamp,job_id,hostname):
+    def update_stats(self, timestamp, job_id, hostname):
         '''
         Update the current metrics for the node (job_id=0)
         '''
@@ -225,6 +227,7 @@ class ProcStatsInfo(Info):
         Info.update_stats(self, timestamp, job_id, hostname)
 
         return True
+
 
 class Job(object):
     '''
@@ -242,13 +245,13 @@ class Job(object):
         self.void_cpuset = True
 
         self.job_children.extend(
-            [ TaskInfo(tid, input_backend) for tid in options.tids ]
+            [TaskInfo(tid, input_backend) for tid in options.tids]
         )
         self.job_children.extend(
-            [ ProcessInfo(pid, input_backend) for pid in options.pids ]
+            [ProcessInfo(pid, input_backend) for pid in options.pids]
         )
         self.job_children.extend(
-            [ CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups ]
+            [CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups]
         )
 
         #to monitor global node resources activities
@@ -292,9 +295,8 @@ class Job(object):
         self.duration = new_timestamp - self.timestamp
         self.timestamp = new_timestamp
 
-
         for item in self.job_children:
-            item.update_stats(self.timestamp,self.job_id,self._hostname)
+            item.update_stats(self.timestamp, self.job_id, self._hostname)
 
     def get_children(self):
         '''
@@ -304,4 +306,3 @@ class Job(object):
 
     def get_stats(self):
         return [child.get_stats() for child in self.job_children]
-

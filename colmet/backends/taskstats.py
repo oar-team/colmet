@@ -6,7 +6,7 @@ import copy
 import logging
 
 from colmet.metrics.taskstats_default import get_taskstats_class
-from colmet.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError, OnlyOneJobIsSupportedError
+from colmet.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError
 from colmet.backends.base import InputBaseBackend
 from colmet.job import Job
 
@@ -14,27 +14,31 @@ LOG = logging.getLogger()
 
 Counters = get_taskstats_class()
 
+
 def get_input_backend_class():
     return TaskStatsNodeBackend
 
+
 class TaskStatsNodeBackend(InputBaseBackend):
     def __init__(self, options):
-        InputBaseBackend.__init__(self,options)
+        super(TaskStatsNodeBackend, self).__init__(options)
         self.options = options
         self.jobs = {}
 
         self.taskstats_nl = TaskStatsNetlink(options)
 
-        if (len(self.job_id_list) < 1) and (self.options.cpuset_rootpath =='') :
+        if len(self.job_id_list) < 1 \
+                and self.options.cpuset_rootpath == '':
             raise JobNeedToBeDefinedError()
         if len(self.job_id_list) == 1:
             job_id = self.job_id_list[0]
-            self.jobs[job_id] = Job(self, job_id, options) #get all options
+            self.jobs[job_id] = Job(self, job_id, options)  # get all options
         else:
             for i, job_id in enumerate(self.job_id_list):
-                #j_options = OptionJob(["yop","yop"]) #TODO need to distinct options per job
+                # j_options = OptionJob(["yop","yop"]) #TODO need to distinct
+                # options per job
                 j_options = options
-                self.jobs[job_id] = Job(self,job_id,j_options)
+                self.jobs[job_id] = Job(self, job_id, j_options)
 
     @classmethod
     def _get_backend_name(cls):
@@ -57,34 +61,37 @@ class TaskStatsNodeBackend(InputBaseBackend):
         return Counters
 
     def create_options_job_cgroups(self, cgroups):
-        #options are duplicated to allow modification per jobs, here cgroups parametter
+        # options are duplicated to allow modification per jobs, here
+        # cgroups parametter
         options = copy.copy(self.options)
         options.cgroups = cgroups
         return options
 
     def update_job_list(self):
-        """Used to maintained job list upto date by adding new jobs and removing ones
-        to monitor accordingly to cpuset_rootpath and regex_job_id.
+        """Used to maintained job list upto date by adding new jobs and
+        removing ones to monitor accordingly to cpuset_rootpath and
+        regex_job_id.
         """
-
         cpuset_rootpath = self.options.cpuset_rootpath[0]
-        regex_job_id    = self.options.regex_job_id[0]
+        regex_job_id = self.options.regex_job_id[0]
 
         job_ids = set([])
         filenames = {}
         for filename in os.listdir(cpuset_rootpath):
             jid = re.findall(regex_job_id, filename)
-            if len(jid)>0:
+            if len(jid) > 0:
                 job_ids.add(jid[0])
                 filenames[jid[0]] = filename
 
-        monitored_job_ids =  set(self.job_id_list)
+        monitored_job_ids = set(self.job_id_list)
         #Add new jobs
         for job_id in (job_ids - monitored_job_ids):
-            self.jobs[job_id] = Job(self, int(job_id), self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]]))
+            job_path = cpuset_rootpath + "/" + filenames[job_id]
+            options = self.create_options_job_cgroups([job_path])
+            self.jobs[job_id] = Job(self, int(job_id), options)
         #Del ended jobs
 
-        for job_id in (monitored_job_ids-job_ids):
+        for job_id in (monitored_job_ids - job_ids):
             del self.jobs[job_id]
         #udpate job_id list to monitor
         self.job_id_list = list(job_ids)
@@ -93,7 +100,8 @@ class TaskStatsNodeBackend(InputBaseBackend):
 # Taskstats Netlink
 #
 
-from genetlink.netlink import Connection, NETLINK_GENERIC, U32Attr, NLM_F_REQUEST
+from genetlink.netlink import Connection, NETLINK_GENERIC, U32Attr, \
+    NLM_F_REQUEST
 from genetlink.genetlink import Controller, GeNlMessage
 
 TASKSTATS_CMD_GET = 1
@@ -147,6 +155,4 @@ class TaskStatsNetlink(object):
             return
         taskstats_version = struct.unpack('H', taskstats_data[:2])[0]
         assert taskstats_version >= 4
-        return Counters(taskstats_buffer = taskstats_data)
-
-
+        return Counters(taskstats_buffer=taskstats_data)

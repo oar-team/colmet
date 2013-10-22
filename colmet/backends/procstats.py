@@ -186,4 +186,3 @@ class ProcStats(object):
 #
 
         return Counters(procstats_buffer = procstats_data)
-
