@@ -30,8 +30,8 @@ import logging
 
 LOG = logging.getLogger()
 
-from colmet.version import VERSION
 from colmet.exceptions import  MultipleBackendsNotYetSupported, NotEnoughInputBackend, TimeoutException, NoneValueError
+from colmet import VERSION
 from colmet.backends import  get_input_backend_class, get_output_backend_class, get_input_backend_list, get_output_backend_list
 from colmet.daemon import Daemon
 

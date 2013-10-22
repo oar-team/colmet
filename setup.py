@@ -26,7 +26,7 @@ Colmet Python setup file
 import os
 #from distutils.core import setup
 from setuptools import setup, find_packages
-from colmet.version import VERSION
+from colmet import VERSION
 
 def read(fname):
     '''
