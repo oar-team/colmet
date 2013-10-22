@@ -123,7 +123,7 @@ do_stop() {
 
     # redhat world
     [ -d /var/lock/subsys/ ] && rm -f /var/lock/subsys/$NAME
-    
+
     succ_msg
     return 0
 }

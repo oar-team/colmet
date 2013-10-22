@@ -10,5 +10,5 @@ def test_if_importer_fail_if_module_not_found():
 
 def test_if_importer_success_to_import_module():
     m=get_module('colmet.metrics','taskstats_default')
-    assert(m.__name__ == "colmet.metrics.taskstats_default") 
+    assert(m.__name__ == "colmet.metrics.taskstats_default")
 

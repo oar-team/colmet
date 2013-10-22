@@ -29,7 +29,7 @@ class ZMQInputBackend(InputBaseBackend):
         InputBaseBackend.__init__(self,options)
 
         self.context = zmq.Context()
-        
+
         self.zeromq_bind_uri = options.zeromq_bind_uri
 
         self.socket = self.context.socket(zmq.SUB)
@@ -52,7 +52,7 @@ class ZMQOutputBackend(OutputBaseBackend):
     '''
     zmq node backend class
     '''
-    
+
     @classmethod
     def _get_backend_name(cls):
         return "zeromq"
@@ -81,7 +81,7 @@ class ZMQOutputBackend(OutputBaseBackend):
 #            counters_ll = [counters_list]
 #
 #        for counters_lst in counters_ll:
-         
+
         if len(counters_list) > 0:
             raw = BaseCounters.pack_from_list(counters_list)
             self.socket.send(raw)

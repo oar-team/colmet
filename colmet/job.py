@@ -21,7 +21,7 @@ class Info(object):
 
     def get_stats(self):
         return self.stats_total
-    
+
     def update_stats(self, timestamp, job_id, hostname):
         self.stats_total.timestamp = timestamp
         self.stats_total.job_id = job_id
@@ -62,7 +62,7 @@ class ProcessInfo(Info):
         self.tasks = {}
         self.get_task(pid)
         self.mark = True
-    
+
     def update_stats(self,timestamp,job_id,hostname):
         '''
         Update the current metrics of the process
@@ -80,7 +80,7 @@ class ProcessInfo(Info):
             if task.mark:
                 msg = (
                     "Task %s no more exists."
-                    "Removing from the Job %s" 
+                    "Removing from the Job %s"
                     % (tid, self.tgid)
                 )
                 LOG.debug(msg)
@@ -176,12 +176,12 @@ class CGroupInfo(Info):
             for tid in self.list_tids():
                 task = self.get_task(tid)
                 task.update_stats(timestamp, job_id, hostname)
-        
+
             for tid, task in self.tasks.items():
                 if  task.mark:
                     msg = (
                         "Process/Task %s no more exists."
-                        "Removing from the Job %s" 
+                        "Removing from the Job %s"
                         % (tid, self.cgroup_path)
                     )
                     LOG.debug(msg)
@@ -189,16 +189,16 @@ class CGroupInfo(Info):
                 else:
                     task.mark = True
                     stats_delta.accumulate(task.stats_delta, stats_delta)
-    
+
             self.stats_delta = stats_delta
             self.stats_total.accumulate(stats_delta, self.stats_total)
 
             self.void_cpuset = False
-    
+
         else: #no task in this cgroup....
             LOG.info("no taks in this cgroup")
             #raise VoidCpusetError
-  
+
         Info.update_stats(self, timestamp, job_id, hostname)
         return True
 
@@ -241,20 +241,20 @@ class Job(object):
         #void_cpuset is used to avoid sending null stats to output backends TODO rm
         self.void_cpuset = True
 
-        self.job_children.extend( 
-            [ TaskInfo(tid, input_backend) for tid in options.tids ] 
+        self.job_children.extend(
+            [ TaskInfo(tid, input_backend) for tid in options.tids ]
         )
-        self.job_children.extend( 
+        self.job_children.extend(
             [ ProcessInfo(pid, input_backend) for pid in options.pids ]
         )
-        self.job_children.extend( 
+        self.job_children.extend(
             [ CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups ]
         )
 
-        #to monitor global node resources activities 
+        #to monitor global node resources activities
         if job_id == 0:
             self.job_children.extend([ProcStatsInfo(input_backend)])
-             
+
         number_of_child = len(self.job_children)
         if number_of_child == 0:
             raise NoJobFoundError
@@ -283,7 +283,7 @@ class Job(object):
         '''
         proc_ls = os.listdir('/proc')
         return [int(tgid) for tgid in proc_ls if '0' <= tgid[0] <= '9']
-    
+
     def update_stats(self):
         '''
         Update the metrics for all the job's children
@@ -292,7 +292,7 @@ class Job(object):
         self.duration = new_timestamp - self.timestamp
         self.timestamp = new_timestamp
 
-        
+
         for item in self.job_children:
             item.update_stats(self.timestamp,self.job_id,self._hostname)
 

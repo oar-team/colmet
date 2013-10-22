@@ -15,7 +15,7 @@
 #
 # See the COPYING file for license information.
 #
-# 
+#
 # Copyright (c) 2013 Olivier Richard <olivier.richard@imag.fr>
 '''
 Colmet Analysis and Plotting Tools
@@ -37,14 +37,14 @@ Analyze Colmet's traces. Output results can be textual or plots.''' % sys.argv[0
 class Analysis(object):
     def __init__(self,h5_file_name):
         self.h5_file_name = h5_file_name
-        self.h5_file = tables.File(self.h5_file_name, "r") 
+        self.h5_file = tables.File(self.h5_file_name, "r")
 
     def get_metrics(self, node_name):
         m = self.h5_file.getNode(node_name)
         return m.read()
 
     def get_host_metrics(self, hostname)
-        h 
+        h
 
     def get_job_metrics(self, job_id):
         return self.get_metrics('/Job_' + job_id)

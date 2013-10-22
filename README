@@ -28,19 +28,19 @@ One example :
         sudo colmet -vvv \
             -i taskstats -p 1 -j 42 \
             -o zeromq --zeromq-uri tcp://127.0.0.1:5556
-    
+
     for the aggregator :
-    
+
         colmet -vvv -d 10  \
             -i zeromq_aggregator --zeromq-bind-uri tcp://127.0.0.1:5556 \
             -o zeromq --zeromq-uri tcp://127.0.0.1:5557
-    
+
     for the collector :
-    
+
         colmet -vvv \
              -i zeromq --zeromq-bind-uri tcp://127.0.0.1:5557 \
              -o none
-    
+
     You will see the number of counters retrieved in the debug log.
 
 

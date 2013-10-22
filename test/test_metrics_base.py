@@ -18,7 +18,7 @@ def test_basecounters_packing_unpacking():
     import ctypes
 
     raw = os.urandom(BaseCounters._fmt_length)
-    
+
     m = BaseCounters()
 
     m.unpack_from(raw,0)
@@ -26,7 +26,7 @@ def test_basecounters_packing_unpacking():
     raw2=ctypes.create_string_buffer(BaseCounters._fmt_length)
 
     m.pack_into(raw2,0)
-    
+
     assert raw2.raw == raw
 
 
@@ -66,7 +66,7 @@ def test_register_header():
 def test_register_counters():
     '''Testing registering counter'''
     assert 'speed' in  MyCounters._counter_definitions
-    
+
     class MyCounters2(MyCounters):
 
         _counters = [

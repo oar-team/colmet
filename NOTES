@@ -36,7 +36,7 @@ Une métrique est un ensemble de compteurs et d'entêtes. Une métrique possède
 moins 4 entêtes (timestamp, nom d'hôte, numéro de tâche, nom de la métrique)
 
 Les compteurs sont définies dans le tableau _counters et les entêtes dans le
-tableau _headers. 
+tableau _headers.
 
 Un compteur est défini par:
     - son nom
@@ -140,7 +140,7 @@ Pour dimensionner de manière large. On considère que :
 
   - une métrique contient 30 compteurs/entêtes. Tous stockés sur 8 octets.
   - La plateforme exécute en permanence 1000 tâches réparties sur 100 noeuds de
-    calcul. 
+    calcul.
   - Chacune des tâches s'exécutent sur 1/10 de la plateforme (soit 10 noeuds).
   - T est la période de mesure exprimée en secondes.
 
@@ -165,7 +165,7 @@ Si la période T est de 60 secondes, colmet génèrerait 0,3 Mbps de traffic sur
 le collecteur et 1,2 To de données par an.
 
 
-Mise en garde / problématiques 
+Mise en garde / problématiques
 ==============================
 
 Limites actuelles du principe de mesure avec taskstats

@@ -14,8 +14,8 @@ def test_get_counters_class():
 
 def setup_metric():
     global counter
-    global timestamp 
-    
+    global timestamp
+
     Counter = get_counters_class('taskstats_default')
     counter = Counter()
 

@@ -15,7 +15,7 @@
 #
 # See the COPYING file for license information.
 #
-# 
+#
 # Copyright (c) 2013 Olivier Richard <olivier.richard@imag.fr>
 '''
 Colmet Analysis and Plotting Tools
@@ -80,11 +80,11 @@ Analyze Colmet's traces. Output results can be textual or plots.''' % sys.argv[0
 
 class Doozer(object):
     pass
- 
+
 class HDF5Table(object):
     def __init__(self,h5_file_name):
         self.h5_file_name = h5_file_name
-        self.h5_file = tables.File(self.h5_file_name, "r") 
+        self.h5_file = tables.File(self.h5_file_name, "r")
 
     def metrics(self, node_name):
         m = self.h5_file.getNode(node_name,"metrics")
@@ -102,7 +102,7 @@ class HDF5Table(object):
     def list_job_ids(self):
         # "Job_334"[4:] -> "334"
         return [grp._v_name[4:] for grp in self.h5_file.listNodes("/")]
- 
+
     def dataframe(self, job_id):
         return DataFrame(self.job_metrics(job_id))
 
@@ -128,7 +128,7 @@ def df_timestamp_normalize(df):
     df_normalize = df.groupby('timestamp').first()
     return df_normalize
 #
-def plot_loadavg():   
+def plot_loadavg():
     plt.figure();df0.plot( y = ['loadavg_15min', 'loadavg_1min', 'loadavg_5min']); plt.legend(loc='best')
 
 def plot_stat_cpu():

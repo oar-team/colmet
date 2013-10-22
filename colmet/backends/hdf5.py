@@ -37,7 +37,7 @@ class HDF5OutputBackend(OutputBaseBackend):
     def __init__(self, options):
         OutputBaseBackend.__init__(self,options)
         self.stat_buffer = dict()
-        
+
         self.jobs = {}
 
     def _get_job_stat(self,job_id):
@@ -62,15 +62,15 @@ class HDF5OutputBackend(OutputBaseBackend):
 
 
 class HDF5InputBackend(InputBaseBackend):
-    
+
     @classmethod
     def _get_backend_name(cls):
         return "hdf5"
 
-    
+
     def __init__(self, options):
         InputBaseBackend.__init__(self,options)
-        
+
         if self.job_id_list == None or len(self.job_id_list) == 0:
             raise JobNeedToBeDefinedError
 
@@ -82,7 +82,7 @@ class HDF5InputBackend(InputBaseBackend):
         return self.jobs[job_id]
 
     def pull(self):
-        
+
         metrics_list = list()
         for job_id in self.job_id_list:
             jobstat = self._get_job_stat(job_id)
@@ -127,7 +127,7 @@ class FileAccess(object):
 
 class JobFile(object):
     fileaccess = FileAccess()
-    
+
     path_level = 4
     hdf5_default_filename = "counters.hdf5"
 
@@ -141,7 +141,7 @@ class JobFile(object):
         self.job_metric_counters_class = None
         self.job_metric_backend = None
 
-       
+
         if self.job_filemode == 'r':
             LOG.debug("Reading counters in hdf5 format for job %s" % self.job_id)
             if hasattr(options,'hdf5_input_basedir'):
@@ -158,7 +158,7 @@ class JobFile(object):
                 self.hdf5_onefileperjob = options.hdf5_input_onefileperjob
             else:
                 self.hdf5_onefileperjob = False
-            
+
         elif self.job_filemode == 'a':
             if hasattr(options,'hdf5_output_basedir'):
                 self.hdf5_basedir = options.hdf5_output_basedir
@@ -192,10 +192,10 @@ class JobFile(object):
         if group_path not in self.job_file:
             root = self.job_file.root
             self.job_file.createGroup(root,group_name)
-       
+
         table_name = "metrics"
         table_path = "%s/%s" %( group_path, table_name)
-        
+
         if table_path not in self.job_file:
             if metric_backend == None:
                 raise ValueError(
@@ -215,14 +215,14 @@ class JobFile(object):
             self.job_table = self.job_file.getNode(table_path)
             self.job_table.setAttr('metric_backend', metric_backend)
             self.job_table.setAttr('backend_version',HDF5_BACKEND_VERSION)
-            
+
         else:
             self.job_table = self.job_file.getNode(table_path)
             self.job_metric_backend = self.job_table.getAttr('metric_backend')
             self.job_backend_version = self.job_table.getAttr('backend_version')
             self.job_metric_hdf5_class = get_hdf5_class(self.job_metric_backend)
             self.job_metric_counters_class = get_counters_class(self.job_metric_backend)
-        
+
 
 
 
@@ -231,13 +231,13 @@ class JobFile(object):
         Return the file path corresponding to a job given its job id.
         '''
         if self.hdf5_onefileperjob:
-            
+
             i = 0
             job_id_s = str(self.job_id)
-            path = ""        
+            path = ""
             while(i < self.path_level):
                 path = os.path.join(
-                    path, 
+                    path,
                     job_id_s[i] if i < len(job_id_s) else "0"
                 )
                 i+=1
@@ -268,7 +268,7 @@ class JobFile(object):
         counters_list = list()
         for row in self.job_table.iterrows():
             counters_list.append(
-                self.job_metric_hdf5_class.to_counters(row)   
+                self.job_metric_hdf5_class.to_counters(row)
             )
 
         return counters_list

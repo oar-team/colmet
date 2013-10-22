@@ -8,7 +8,7 @@ class BaseBackend(object):
 
     @classmethod
     def _get_backend_name(cls):
-        raise TypeError("You need to specify the name of your backend in _get_backend_name") 
+        raise TypeError("You need to specify the name of your backend in _get_backend_name")
 
 class OutputBaseBackend(BaseBackend):
     def __init__(self, options):

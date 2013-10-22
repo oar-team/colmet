@@ -15,7 +15,7 @@
 #
 # See the COPYING file for license information.
 #
-# 
+#
 # Copyright (c) 2012 Philippe Le Brouster <philippe.le-brouster@imag.fr>
 '''
 Colmet User Interface
@@ -24,7 +24,7 @@ import locale
 import optparse
 import sys
 import signal
-import time 
+import time
 import errno
 import logging
 
@@ -62,16 +62,16 @@ class TaskMonBatch(object):
             signal.alarm(self.options.walltime)
 
         period = self.options.sampling_period
-        
+
         while self.options.iterations is None or \
             iterations < self.options.iterations:
 
             #sleep to next sampling
-            #absolute time is used and based on seconds since 1970-01-01 00:00:00 UTC  
+            #absolute time is used and based on seconds since 1970-01-01 00:00:00 UTC
             now = time.time()
             time_towait = ((now // period) + 1) * period - now
             time.sleep(time_towait)
-            
+
             now = time.time()
             LOG.debug("Gathering the metrics")
             counters_list = []
@@ -91,13 +91,13 @@ class TaskMonBatch(object):
 
             for backend in self.output_backends:
                 if len(counters_list) > 0:
-                    #print "nb counters_list", len(counters_list) 
-                    try: 
+                    #print "nb counters_list", len(counters_list)
+                    try:
                         backend.push(counters_list)
                         LOG.debug("%s metrics has been pushed with %s" % (len(counters_list),backend._get_backend_name()))
                     except (NoneValueError, TypeError):
                         LOG.debug("Values for metrics are not there.")
-                   
+
             if self.options.iterations is not None:
                 iterations += 1
                 if iterations >= self.options.iterations:
@@ -115,8 +115,8 @@ def run_colmet(options):
         input_backends = [ cls(options) for cls in input_backend_classes ]
 
     if options.procstats:
-        LOG.info("Using procstats as additionnal input backend") 
-        input_procstat_backends = get_input_backend_class("procstats")        
+        LOG.info("Using procstats as additionnal input backend")
+        input_procstat_backends = get_input_backend_class("procstats")
         input_backends.append(input_procstat_backends(options))
 
     if 'none' in options.output_backends or len (options.output_backends) == 0:
@@ -128,13 +128,13 @@ def run_colmet(options):
         output_backends = [ cls(options) for cls in output_backend_classes ]
 
     LOG.debug("Initialize the main loop")
-    
+
     # Currently support one input/output backend at time.
     if len(input_backends) > 2 or len(output_backends) > 1:
         raise MultipleBackendsNotYetSupported()
-    
+
     batch = TaskMonBatch(input_backends, output_backends, options)
-    
+
     LOG.debug("Run the main loop")
     batch.run()
     LOG.info("Ending Colmet")
@@ -177,7 +177,7 @@ def main():
     parser.add_option('--logfile', dest='logfile',type="str",
                       help='pid file when running as daemon [/var/log/colmet.log]',
                       default="/var/log/colmet.log")
-    
+
     parser.add_option('-j', '--job', type='int', dest='job_id',
                       default = [], action='append',
                       help='Job id concerned by the input backend. Depending on the input backend, you can specify several job', metavar='JOB')
@@ -190,7 +190,7 @@ def main():
                       default = None,
                       help='Job id concerned by the input backend. Depending on the input backend, you can specify an interval of job. This is the minimum', metavar='JOB')
 
-    parser.add_option('-w', '--walltime', type='int', dest='walltime', 
+    parser.add_option('-w', '--walltime', type='int', dest='walltime',
                       default = None,
                       help='Specify the maximum walltime for colmet. If specified, colmet will exit after the specified time (in seconds)')
 
@@ -201,10 +201,10 @@ def main():
 
     oblist = ", ".join(get_output_backend_list())
     iblist = ", ".join(get_input_backend_list())
-    parser.add_option('-o','--output',type='str', dest='output_backends', 
+    parser.add_option('-o','--output',type='str', dest='output_backends',
                       action = 'append', default = [],
                       help='Specify the output backend. The current supported backends are: %s. By default it is [none]' % (oblist) , metavar='OUTPUT')
-    parser.add_option('-i','--input', type='str', dest='input_backends', 
+    parser.add_option('-i','--input', type='str', dest='input_backends',
                       action = 'append', default = [],
                       help='Specify the input backend. The current supported backends are: %s. By default it is [none]' % (iblist), metavar='INPUT')
     parser.add_option('-v','--verbose',action='count', dest="verbosity",
@@ -213,13 +213,13 @@ def main():
 
     group = optparse.OptionGroup(parser, "[backend] taskstat")
 
-    group.add_option('-c', '--cgroup', type='str', dest='cgroups', 
+    group.add_option('-c', '--cgroup', type='str', dest='cgroups',
                       action='append', default = [],
                       help='cgroup/cpuset to monitor', metavar='CGROUP')
-    group.add_option('-p', '--pid', type='int', dest='pids', 
+    group.add_option('-p', '--pid', type='int', dest='pids',
                       action='append', default = [],
                       help='process id to monitor', metavar='PID')
-    group.add_option('-t', '--tid', type='int', dest='tids', 
+    group.add_option('-t', '--tid', type='int', dest='tids',
                       action='append', default = [],
                       help='task ids to monitor', metavar='TID')
     group.add_option('--cpuset_rootpath', type='str', dest='cpuset_rootpath',
@@ -232,9 +232,9 @@ def main():
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, "[backend] zeromq")
-    group.add_option( "--zeromq-uri", type = 'str', 
+    group.add_option( "--zeromq-uri", type = 'str',
                      dest ='zeromq_uri', default= 'tcp://127.0.0.1:5556')
-    group.add_option( "--zeromq-bind-uri", type = 'str', 
+    group.add_option( "--zeromq-bind-uri", type = 'str',
                      dest ='zeromq_bind_uri', default= 'tcp://0.0.0.0:5556')
 
     parser.add_option_group(group)
@@ -247,13 +247,13 @@ def main():
     group.add_option( "--hdf5-output-onefileperjob", dest ='hdf5_output_onefileperjob',
                      help='Tell colmet to create one file per job to store the metrics [False]',
                      action='store_true', default= False)
-    
+
     group.add_option( "--hdf5-output-basedir", type = 'str',
                      help='The base directory used to store hdf5 datai (used when creating a file per job)',
                      dest ='hdf5_output_basedir', default= '/tmp/colmet/hdf5')
-    
+
     parser.add_option_group(group)
-    
+
     group = optparse.OptionGroup(parser, "[backend] hdf5 (input)")
 
     group.add_option( "--hdf5-input-filepath", type = 'str',
@@ -263,7 +263,7 @@ def main():
     group.add_option( "--hdf5-input-onefileperjob", dest ='hdf5_input_onefileperjob',
                      help='Tell colmet to create one file per job to store the metrics [False]',
                      action='store_true', default= False)
-    
+
     group.add_option( "--hdf5-input-basedir", type = 'str',
                      help='The base directory used to store hdf5 datai (used when creating a file per job)',
                      dest ='hdf5_input_basedir', default= '/tmp/colmet/hdf5')
@@ -277,7 +277,7 @@ def main():
         parser.error('Unexpected arguments: ' + ' '.join(args))
 
     # Set the logging value (always display CRITICAL and ERROR)
-    logging.basicConfig( 
+    logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s',
         datefmt = '%d/%m/%Y %H:%M:%S',
         level=40-options.verbosity *10,

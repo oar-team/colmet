@@ -30,7 +30,7 @@ class ZMQInputBackend(InputBaseBackend):
         InputBaseBackend.__init__(self,options)
 
         self.context = zmq.Context()
-        
+
         self.zeromq_bind_uri = options.zeromq_bind_uri
 
         self.socket = self.context.socket(zmq.SUB)
@@ -49,7 +49,7 @@ class ZMQInputBackend(InputBaseBackend):
         except zmq.ZMQError, e:
             if e.errno != zmq.EAGAIN:
                 raise e
-        
+
         LOG.debug("%s counters received" % len(counters_list))
         if self.job_id_list != None:
             counters_list = [ metric for metric in counters_list if metric.job_id in self.job_id_list ]
@@ -85,7 +85,7 @@ class ZMQOutputBackend(OutputBaseBackend):
         '''
         push the metrics to the output backend
         '''
-        
+
         if len(counters_list) > 0:
             msg = BaseCounters.pack_from_list(counters_list)
             self.socket.send(msg,0)

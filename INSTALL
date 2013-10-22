@@ -18,9 +18,9 @@ INSTALLATION
 ============
 
 * System-wide installation :
-    
+
     python setup.py install
 
 * User installation :
-    
+
     python setup.py install --prefix=~/.local

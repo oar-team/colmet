@@ -23,7 +23,6 @@ Todo
 
 ChangeLog
 =========
-* add workaround when a newly cgroup is created without process in it (monitoring is suspended upto one process is launched) 
+* add workaround when a newly cgroup is created without process in it (monitoring is suspended upto one process is launched)
 * add node monitoring (procstat)
 * Use absolute time to trigger measures
-*  

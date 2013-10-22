@@ -11,7 +11,7 @@ def get_counters_class():
 
 def get_procstats_class():
     return Counters
-  
+
 class Counters(BaseCounters):
     counters_procstats = {
         # 'key' : ( offset,length, type, repr, acc )
@@ -80,7 +80,7 @@ class Counters(BaseCounters):
         'loadavg_runnable' :            ( UFloat(),'n/a', 'none', 'loadavg_runnable'),
         'loadavg_total_threads' :        ( UFloat(),'n/a', 'none', 'loadavg_total_threads')
     }
- 
+
     counters_procstats_to_get = [
         'uptime_total',
         'uptime_idle',
@@ -184,7 +184,7 @@ class Counters(BaseCounters):
 def get_hdf5_class():
     try:
         import tables
-        class HDF5Counters(object): 
+        class HDF5Counters(object):
             class HDF5TableDescription(tables.IsDescription):
 
                 metric_backend = tables.StringCol(255)
@@ -272,17 +272,17 @@ def get_hdf5_class():
             @classmethod
             def get_table_description(cls):
                 return cls.HDF5TableDescription
-           
+
             @classmethod
             def to_counters(cls,row):
                 counters = Counters()
                 for key in Counters._header_definitions.keys():
                     counters._set_header(key, row[key])
-                
+
                 for key in Counters._counter_definitions.keys():
                     counters._set_counter(key, row[key])
                 return counters
-            
+
             @classmethod
             def to_row(cls,row,counters):
                 for key in Counters._header_definitions.keys():

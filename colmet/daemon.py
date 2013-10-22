@@ -45,7 +45,7 @@ class Daemon:
         except OSError, e:
             sys.stderr.write("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
-        
+
 
         # redirect standard file descriptors
         sys.stdout.flush()
@@ -103,7 +103,7 @@ class Daemon:
             sys.stderr.write(message % self.pidfile)
             return # not an error in a restart
 
-        # Try killing the daemon process       
+        # Try killing the daemon process
         try:
             while 1:
                 os.kill(pid, SIGTERM)

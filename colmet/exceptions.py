@@ -1,5 +1,5 @@
 '''
-Colmet Exceptions 
+Colmet Exceptions
 '''
 import logging
 import sys, traceback

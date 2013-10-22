@@ -24,7 +24,7 @@ class TaskStatsNodeBackend(InputBaseBackend):
         self.jobs = {}
 
         self.taskstats_nl = TaskStatsNetlink(options)
- 
+
         if (len(self.job_id_list) < 1) and (self.options.cpuset_rootpath =='') :
             raise JobNeedToBeDefinedError()
         if len(self.job_id_list) == 1:
@@ -35,14 +35,14 @@ class TaskStatsNodeBackend(InputBaseBackend):
                 #j_options = OptionJob(["yop","yop"]) #TODO need to distinct options per job
                 j_options = options
                 self.jobs[job_id] = Job(self,job_id,j_options)
-    
+
     @classmethod
     def _get_backend_name(cls):
         return "taskstats"
 
     def build_request(self, pid):
         return self.taskstats_nl.build_request(pid)
-    
+
     def get_task_stats(self, request):
         counters = self.taskstats_nl.get_single_task_stats(request)
         return counters
@@ -55,18 +55,18 @@ class TaskStatsNodeBackend(InputBaseBackend):
 
     def get_counters_class(self):
         return Counters
-    
+
     def create_options_job_cgroups(self, cgroups):
         #options are duplicated to allow modification per jobs, here cgroups parametter
-        options = copy.copy(self.options) 
+        options = copy.copy(self.options)
         options.cgroups = cgroups
         return options
 
     def update_job_list(self):
-        """Used to maintained job list upto date by adding new jobs and removing ones 
+        """Used to maintained job list upto date by adding new jobs and removing ones
         to monitor accordingly to cpuset_rootpath and regex_job_id.
         """
-         
+
         cpuset_rootpath = self.options.cpuset_rootpath[0]
         regex_job_id    = self.options.regex_job_id[0]
 
@@ -81,7 +81,7 @@ class TaskStatsNodeBackend(InputBaseBackend):
         monitored_job_ids =  set(self.job_id_list)
         #Add new jobs
         for job_id in (job_ids - monitored_job_ids):
-            self.jobs[job_id] = Job(self, int(job_id), self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]])) 
+            self.jobs[job_id] = Job(self, int(job_id), self.create_options_job_cgroups([cpuset_rootpath+"/"+filenames[job_id]]))
         #Del ended jobs
 
         for job_id in (monitored_job_ids-job_ids):
@@ -91,7 +91,7 @@ class TaskStatsNodeBackend(InputBaseBackend):
 
 #
 # Taskstats Netlink
-# 
+#
 
 from genetlink.netlink import Connection, NETLINK_GENERIC, U32Attr, NLM_F_REQUEST
 from genetlink.genetlink import Controller, GeNlMessage

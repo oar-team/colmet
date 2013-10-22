@@ -23,17 +23,17 @@ class Counters(BaseCounters):
         #  * Each time the struct is changed, the value should be incremented.
         #  */
         # __u16   version;
-        'version' :                (   0,  UInt16(),'', 'none', 'Version'), 
+        'version' :                (   0,  UInt16(),'', 'none', 'Version'),
         # __u32   ac_exitcode;            /* Exit status */
-        'ac_exitcode' :            (   2,  UInt32(),'', 'none', 'Exit code'), 
+        'ac_exitcode' :            (   2,  UInt32(),'', 'none', 'Exit code'),
 
         # /* The accounting flags of a task as defined in <linux/acct.h>
         #  * Defined values are AFORK, ASU, ACOMPAT, ACORE, and AXSIG.
         #  */
         # __u8    ac_flag;                /* Record flags */
-        'ac_flag' :                (   6,  UInt8(),'', 'none', 'Flag'), 
+        'ac_flag' :                (   6,  UInt8(),'', 'none', 'Flag'),
         # __u8    ac_nice;                /* task_nice */
-        'ac_nice' :                (   7,  UInt8(),'', 'none', 'Nice'), 
+        'ac_nice' :                (   7,  UInt8(),'', 'none', 'Nice'),
 
         # /* Delay accounting fields start
         #  *
@@ -52,11 +52,11 @@ class Counters(BaseCounters):
         #  * count, delay_total NOT updated atomically
         #  */
         # __u64   cpu_count __attribute__((aligned(8)));
-        'cpu_count' :                 (  16, UInt64(), 'count', 'add', 
-                                       "Nb of cpu delay values recorded"), 
+        'cpu_count' :                 (  16, UInt64(), 'count', 'add',
+                                       "Nb of cpu delay values recorded"),
         # __u64   cpu_delay_total;
         'cpu_delay_total' :           (  24, UInt64(), 'nsec', 'add',
-                                      "Total of cumulative cpu delay"), 
+                                      "Total of cumulative cpu delay"),
 
         # /* Following four fields atomically updated using task->delays->lock */
 
@@ -65,18 +65,18 @@ class Counters(BaseCounters):
         #  */
         # __u64   blkio_count;
         'blkio_count' :               (  32, UInt64(), 'count', 'add',
-                                      "Nb of block I/O delay values recorded"), 
+                                      "Nb of block I/O delay values recorded"),
         # __u64   blkio_delay_total;
         'blkio_delay_total' :         (  40, UInt64(), 'nsec', 'add',
-                                      "Total of cumulative block I/O delay"), 
+                                      "Total of cumulative block I/O delay"),
 
         # /* Delay waiting for page fault I/O (swap in only) */
         # __u64   swapin_count;
         'swapin_count' :              (  48, UInt64(), 'count', 'add',
-                                      "Nb of swapin delay calues recorded"), 
+                                      "Nb of swapin delay calues recorded"),
         # __u64   swapin_delay_total;
         'swapin_delay_total' :        (  56, UInt64(), 'nsec', 'add',
-                                      "Total of cumulative swapin delay"), 
+                                      "Total of cumulative swapin delay"),
 
         # /* cpu "wall-clock" running time
         #  * On some architectures, value will adjust for cpu time stolen
@@ -86,7 +86,7 @@ class Counters(BaseCounters):
         #  */
         # __u64   cpu_run_real_total;
         'cpu_run_real_total' :        (  64, UInt64(), 'nsec', 'add',
-                                      "Total of cumulative cpu run real"), 
+                                      "Total of cumulative cpu run real"),
 
         # /* cpu "virtual" running time
         #  * Uses time intervals seen by the kernel i.e. no adjustment
@@ -96,43 +96,43 @@ class Counters(BaseCounters):
         #  */
         # __u64   cpu_run_virtual_total;
         'cpu_run_virtual_total' :     (  72, UInt64(), 'nsec', 'add',
-                                      "Total of cumulative cpu run virtual"), 
+                                      "Total of cumulative cpu run virtual"),
         # /* Delay accounting fields end */
         # /* version 1 ends here */
 
         # /* Basic Accounting Fields start */
         # char    ac_comm[TS_COMM_LEN];   /* Command name */
-        'ac_comm' :                   (  80, String(32), 'string', 'none',""), 
+        'ac_comm' :                   (  80, String(32), 'string', 'none',""),
         # __u8    ac_sched __attribute__(aligned(8: 'none'));
                                         # /* Scheduling discipline */
-        'ac_shed' :                   ( 112, UInt8(), '', 'none',""), 
+        'ac_shed' :                   ( 112, UInt8(), '', 'none',""),
         # __u8    ac_pad[3];
-        'ac_pad' :                    ( 113, String(3),'', 'none',""), 
+        'ac_pad' :                    ( 113, String(3),'', 'none',""),
         # __u32   ac_uid __attribute__(aligned(8: 'none'));
-        'ac_uid' :                    ( 120, UInt32(), '', 'none',""), 
+        'ac_uid' :                    ( 120, UInt32(), '', 'none',""),
                                         # /* User ID */
         # __u32   ac_gid;                 /* Group ID */
-        'ac_gid' :                    ( 124, UInt32(), '', 'none',""), 
+        'ac_gid' :                    ( 124, UInt32(), '', 'none',""),
         # __u32   ac_pid;                 /* Process ID */
-        'ac_pid' :                    ( 128, UInt32(), '', 'none',""), 
+        'ac_pid' :                    ( 128, UInt32(), '', 'none',""),
         # __u32   ac_ppid;                /* Parent process ID */
-        'ac_ppid' :                   ( 132, UInt32(), '', 'none',""), 
+        'ac_ppid' :                   ( 132, UInt32(), '', 'none',""),
         # __u32   ac_btime;               /* Begin time [sec since 1970] */
         'ac_btime' :                  ( 136, UInt32(), 'ts_date', 'min',
-                                       "Begin time"), 
+                                       "Begin time"),
         # __u64   ac_etime __attribute__   (aligned(8: 'add'));
                                         # /* Elapsed time [usec] */
         'ac_etime' :                  ( 144, UInt64(), 'usec', 'max',
-                                       "Elasped time"), 
+                                       "Elasped time"),
         # __u64   ac_utime;               /* User CPU time [usec] */
         'ac_utime' :                  ( 152, UInt64(), 'usec', 'add',
-                                       "User CPU time"), 
+                                       "User CPU time"),
         # __u64   ac_stime;               /* SYstem CPU time [usec] */
         'ac_stime' :                  ( 160, UInt64(), 'usec', 'add',
-                                       "System CPU time"), 
+                                       "System CPU time"),
         # __u64   ac_minflt;              /* Minor Page Fault Count */
         'ac_minflt' :                 ( 168, UInt64(), 'count', 'add',
-                                       "Minor Page Fault Count"), 
+                                       "Minor Page Fault Count"),
         # __u64   ac_majflt;              /* Major Page Fault Count */
         'ac_majflt' :                 ( 176, UInt64(), 'count', 'add',
                                        "Major Page Fault Count"),
@@ -146,7 +146,7 @@ class Counters(BaseCounters):
         #  * average usage per system time unit can be calculated.
         #  */
         # __u64   coremem;                /* accumulated RSS usage in MB-usec */
-        'coremem' :                   ( 184, UInt64(), 'mbytes-usec', 'add', 
+        'coremem' :                   ( 184, UInt64(), 'mbytes-usec', 'add',
                                        "Accumulated RSS usage"),
         # /* Accumulated virtual memory usage in duration of a task.
         #  * Same as acct_rss_mem1 above except that we keep track of VM usage.
@@ -159,7 +159,7 @@ class Counters(BaseCounters):
         #  * a task, in KBytes.
         #  */
         # __u64   hiwater_rss;            /* High-watermark of RSS usage, in KB */
-        'hiwater_rss' :               ( 200, UInt64(), 'kbytes', 'max', 
+        'hiwater_rss' :               ( 200, UInt64(), 'kbytes', 'max',
                                        "High-watermark of RSS usage"),
         # __u64   hiwater_vm;             /* High-water VM usage, in KB */
         'hiwater_vm' :                ( 208, UInt64(), 'kbytes', 'max',
@@ -265,7 +265,7 @@ class Counters(BaseCounters):
         'freepages_count',
         'freepages_delay_total',
     ]
-    
+
     _counters = []
     for c_name in counters_taskstats_to_get:
         (_, c_type, c_repr, c_acc,c_descr) = counters_taskstats[c_name]
@@ -302,9 +302,9 @@ class Counters(BaseCounters):
 def get_hdf5_class():
     try:
         import tables
-        class HDF5Counters(object): 
+        class HDF5Counters(object):
             class HDF5TableDescription(tables.IsDescription):
-                
+
                 metric_backend = tables.StringCol(255)
                 timestamp = tables.Int64Col(dflt = -1)
                 hostname = tables.StringCol(255)
@@ -350,11 +350,11 @@ def get_hdf5_class():
                 counters = Counters()
                 for key in Counters._header_definitions.keys():
                     counters._set_header(key, row[key])
-                
+
                 for key in Counters._counter_definitions.keys():
                     counters._set_counter(key, row[key])
                 return counters
-            
+
             @classmethod
             def to_row(cls,row,counters):
                 for key in Counters._header_definitions.keys():
@@ -379,7 +379,7 @@ def get_rrd_class():
                         dsName=rrd_key,
                         dsType='GAUGE',
                         heartbeat=600,
-                    
+
                 )
 
             @classmethod
@@ -411,13 +411,13 @@ def get_rrd_class():
                     rrd_key = c_key[0:19]
                     gdef = graph.DEF(
                         rrdfile=rrd_file.filename,
-                        vname=rrd_key, 
+                        vname=rrd_key,
                         dsName=cls.datasources[rrd_key].name,
                         step=step,
                         start=str(ts_start),
                         end=str(ts_end)
                     )
-                    
+
                     gline = graph.LINE(defObj=gdef,color='#000099', legend= "%s (%s)" %(Counters._counter_definitions[c_key][3], rrd_key))
                     defs[rrd_key] = [ gdef, gline ]
 

@@ -15,8 +15,8 @@ class ProcStatsNodeBackend(InputBaseBackend):
         InputBaseBackend.__init__(self,options)
         self.procstats = ProcStats(options)
         # job with id equal to 0 is the fictive job to gather nodes' monitoring measures
-        self.job_0 = Job(self, 0, options) 
-      
+        self.job_0 = Job(self, 0, options)
+
     @classmethod
     def _get_backend_name(cls):
         return "procstats"
@@ -30,7 +30,7 @@ class ProcStatsNodeBackend(InputBaseBackend):
 
     def pull(self):
         self.job_0.update_stats()
-        return self.job_0.get_stats() 
+        return self.job_0.get_stats()
 
 #
 # The source part below is largely inspired by procstats.py file from open TSDB projet
@@ -51,7 +51,7 @@ class ProcStatsNodeBackend(InputBaseBackend):
 NUMADIR = "/sys/devices/system/node"
 
 class ProcStats(object):
-    
+
     def __init__(self,option):
         self.options = option
 
@@ -163,7 +163,7 @@ class ProcStats(object):
             elif m.group(1) == "procs_blocked":
 #                print "proc.stat.procs_blocked %d %s" % (ts, m.group(2))
                 procstats_data['stat_procs_blocked'] = int(m.group(2))
-                
+
         self.f_loadavg.seek(0)
         for line in self.f_loadavg:
             m = re.match("(\S+)\s+(\S+)\s+(\S+)\s+(\d+)/(\d+)\s+", line)

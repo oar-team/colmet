@@ -75,7 +75,7 @@ class FileAccess(object):
 
 class JobFile(object):
     fileaccess = FileAccess()
-    
+
     path_level = 7
 
     MAX_VALUES_PER_UPDATE = 100
@@ -105,7 +105,7 @@ class JobFile(object):
         if hasattr(options,'ts_start'):
             self.ts_start = options.ts_start
         else:
-            self.ts_start = None 
+            self.ts_start = None
 
         if hasattr(options,'ts_stop'):
             self.ts_stop = options.ts_stop
@@ -141,20 +141,20 @@ class JobFile(object):
 
     def _get_rrd_file(self,path):
         return self.fileaccess.getRRD(
-            path, 
-            self.rrd_class.datasources.values(), 
-            self.rrd_class.get_rra(self.ts_start,self.ts_stop), 
-            self.ts_start, 
+            path,
+            self.rrd_class.datasources.values(),
+            self.rrd_class.get_rra(self.ts_start,self.ts_stop),
+            self.ts_start,
             self.rrd_step
         )
 
     def append_stats(self,stats):
-        
+
         self.metric_name = stats[0].header_values['metric_backend']
         self.metric_class = get_counters_class(self.metric_name)
         self.rrd_class = get_rrd_class(self.metric_name)
 
-        sorted_stats = sorted(stats, key=lambda item: item.header_values['timestamp']) 
+        sorted_stats = sorted(stats, key=lambda item: item.header_values['timestamp'])
 
         if self.ts_start == None:
             self.ts_start = sorted_stats[0].header_values['timestamp'] - 1
@@ -162,8 +162,8 @@ class JobFile(object):
             self.ts_stop = sorted_stats[-1].header_values['timestamp'] + 1
 
         rrd_stats = [ metric for metric in sorted_stats if self.ts_start < metric.header_values['timestamp'] < self.ts_stop ]
-                        
-        
+
+
         rrd_dict = dict()
         for stat in rrd_stats:
             rrd_path = self._get_job_rrd_path(stat.header_values['hostname'])
