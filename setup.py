@@ -43,11 +43,15 @@ setup(
     author = "Philippe Le Brouster, Olivier Richard",
     author_email = "philippe.le-brouster@imag.fr, olivier.richard@imag.fr",
     url = "http://oar.imag.fr/",
-    scripts=['bin/colmet'],
     packages= find_packages(),
     long_description=read('README'),
     platforms = ['Linux' ],
     license = "GNU GPL",
     tests_require=['nose>=1.0'],
-    test_suite = 'nose.collector'
+    test_suite = 'nose.collector',
+    entry_points={
+        'console_scripts': [
+            'colmet = colmet.ui:main'
+        ],
+    },
 )

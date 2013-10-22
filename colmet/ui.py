@@ -30,8 +30,8 @@ import logging
 
 LOG = logging.getLogger()
 
-from colmet.exceptions import  MultipleBackendsNotYetSupported, NotEnoughInputBackend, TimeoutException, NoneValueError
 from colmet import VERSION
+from colmet.exceptions import Error, MultipleBackendsNotYetSupported, NotEnoughInputBackend, TimeoutException, NoneValueError
 from colmet.backends import  get_input_backend_class, get_output_backend_class, get_input_backend_list, get_output_backend_list
 from colmet.daemon import Daemon
 
@@ -284,10 +284,28 @@ def main():
     )
 
 
+    # run
     main_loop = lambda: run_colmet(options)
-    if options.run_as_daemon:
-        daemon = Daemon(options.pidfile,main_loop,stderr=options.logfile)
-        daemon.start()
-    else:
-        main_loop()
+    try:
+        if not options.run_as_daemon:
+            main_loop()
+        else:
+            daemon = Daemon(options.pidfile, main_loop, stderr=options.logfile)
+            daemon.start()
+    except KeyboardInterrupt:
+        pass
+    except Error as err:
+        err.show()
+        sys.exit(1)
+    except Exception as err:
+        MSG = "Error not handled '%s'" % err.__class__.__name__
+        logging.critical(MSG)
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+            print repr(err)
+        raise
 
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()

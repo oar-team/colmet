@@ -9,12 +9,12 @@ pretend to be complete.
 
 Organisation
 ------------
- 
+
 .
-|-- bin                      // the main scripts
 |-- colmet                   // the colmet python library
 |   |-- backends             // the backends for colmet
-|   `-- metrics              // the metrics for colmet
+|   |-- metrics              // the metrics for colmet
+|   `-- ui.py                // the main scripts
 `-- profiling
 
 
