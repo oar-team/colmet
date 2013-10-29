@@ -1,0 +1,4 @@
+tables
+pyzmq
+h5py
+pyinotify==0.9.3

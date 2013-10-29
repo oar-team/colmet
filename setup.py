@@ -29,10 +29,10 @@ from colmet import VERSION
 
 
 def read(fname):
-    '''
-    Return the file content
-    '''
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    ''' Return the file content. '''
+    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+        return f.read()
+
 
 setup(
     name="colmet",
@@ -47,6 +47,7 @@ setup(
     long_description=read('README'),
     platforms=['Linux'],
     license="GNU GPL",
+    install_requires=read('requirements.txt').splitlines(),
     tests_require=['nose>=1.0'],
     test_suite='nose.collector',
     entry_points={
