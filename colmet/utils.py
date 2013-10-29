@@ -1,5 +1,8 @@
 
+import asyncore
+import pyinotify
 from threading import Thread
+from pyinotify import ProcessEvent, AsyncNotifier, WatchManager
 
 
 class as_thread(object):
@@ -21,3 +24,22 @@ class as_thread(object):
             _thread.daemon = True
             obj.__dict__[self.__name__] = _thread
         return _thread
+
+
+class AsyncFileNotifier(object):
+    def __init__(self, paths, callback):
+        class EventHandler(ProcessEvent):
+            def process_IN_CREATE(self, event):
+                callback()
+
+            def process_IN_DELETE(self, event):
+                callback()
+
+        manager = WatchManager()  # Watch Manager
+        mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE  # watched events
+        AsyncNotifier(manager, EventHandler())
+        for path in paths:
+            manager.add_watch(path, mask, rec=False)
+
+    def loop(self):
+        asyncore.loop()

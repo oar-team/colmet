@@ -20,6 +20,7 @@
 '''
 Colmet User Interface
 '''
+import os
 import locale
 import optparse
 import sys
@@ -33,6 +34,7 @@ from colmet import VERSION
 from colmet.exceptions import Error, MultipleBackendsNotYetSupported, NotEnoughInputBackend, TimeoutException, NoneValueError
 from colmet.backends import get_input_backend_class, get_output_backend_class, get_input_backend_list, get_output_backend_list
 from colmet.daemon import Daemon
+from colmet.utils import AsyncFileNotifier, as_thread
 
 
 class TaskMonBatch(object):
@@ -42,17 +44,24 @@ class TaskMonBatch(object):
         self.input_backends = input_backends
         self.output_backends = output_backends
 
-        signal.signal(signal.SIGUSR1, self.update_job_list)
+        self.cpuset_rootpath = [path for path in self.options.cpuset_rootpath
+                                if os.path.isdir(path)]
+        if self.cpuset_rootpath:
+            self.update_job_list()
+            self.check_jobs_thread.start()
+
+    @as_thread
+    def check_jobs_thread(self):
+        notifier = AsyncFileNotifier(paths=self.cpuset_rootpath,
+                                     callback=self.update_job_list)
+        notifier.loop()
 
     def timeout_handler(self, signum, frame):
         raise TimeoutException
 
-    def update_job_list(self, signum, frame):
-        LOG.debug("Catch signal %s, update job list to scan" % signum)
+    def update_job_list(self):
         for ib in self.input_backends:
-            #print "ib_backend_name:", ib._get_backend_name()
             if ib._get_backend_name() == 'taskstats':
-                #print "call update job list"
                 ib.update_job_list()
 
     def run(self):
