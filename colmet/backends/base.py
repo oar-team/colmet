@@ -24,10 +24,10 @@ class OutputBaseBackend(BaseBackend):
 class InputBaseBackend(BaseBackend):
     def __init__(self, options):
         BaseBackend.__init__(self, options)
-
-        self.job_id_list = list()
-        self.job_id_list += options.job_id
-        if options.job_min_id is not None and options.job_max_id is not None:
+        self.job_id_list = []
+        if len(options.job_id) > 0:
+            self.job_id_list += options.job_id
+        elif options.job_min_id is not None and options.job_max_id is not None:
             self.job_id_list += \
                 range(options.job_min_id, options.job_max_id + 1)
 

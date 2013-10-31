@@ -44,7 +44,7 @@ class ZMQInputBackend(InputBaseBackend):
         counters_list = BaseCounters.unpack_to_list(raw.bytes)
         del raw
         LOG.debug("%s counters received" % len(counters_list))
-        if self.job_id_list is not None:
+        if len(self.job_id_list) > 0:
             counters_list = [metric for metric in counters_list
                              if metric.job_id in self.job_id_list]
             LOG.debug("%s counters received after filtering"
