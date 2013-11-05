@@ -47,7 +47,6 @@ setup(
     long_description=read('README'),
     platforms=['Linux'],
     license="GNU GPL",
-    install_requires=read('requirements.txt').splitlines(),
     tests_require=['nose>=1.0'],
     test_suite='nose.collector',
     entry_points={
