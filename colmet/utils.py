@@ -1,4 +1,4 @@
-import os
+
 import asyncore
 import pyinotify
 from threading import Thread
@@ -39,8 +39,6 @@ class AsyncFileNotifier(object):
         mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE  # watched events
         AsyncNotifier(manager, EventHandler())
         for path in paths:
-            if not os.path.exists(path):
-                os.makedirs(path)
             manager.add_watch(path, mask, rec=False)
 
     def loop(self):
