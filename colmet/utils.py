@@ -1,8 +1,13 @@
-
+import os
 import asyncore
+import time
 import pyinotify
 from threading import Thread
 from pyinotify import ProcessEvent, AsyncNotifier, WatchManager
+import logging
+
+
+LOG = logging.getLogger()
 
 
 class as_thread(object):
@@ -26,6 +31,45 @@ class as_thread(object):
         return _thread
 
 
+class WaitDirNotifier(object):
+    """Wait until the `path` folder creation."""
+    def __init__(self, path):
+        self.path = os.path.abspath(path)
+
+    def loop(self):
+        if os.path.exists(self.path) and os.path.isdir(self.path):
+            return
+
+        def get_first_existent_parent(path):
+            parent, _ = os.path.split(path)
+            if os.path.exists(parent) and os.path.isdir(parent):
+                return parent
+            else:
+                return get_first_existent_parent(parent)
+
+        class EventHandler(ProcessEvent):
+            def process_IN_CREATE(self, event):
+                pass
+
+        watched_dir = get_first_existent_parent(self.path)
+        m = pyinotify.WatchManager()
+        m.add_watch(watched_dir, pyinotify.IN_CREATE, rec=True)
+        notifier = pyinotify.Notifier(m, EventHandler(), 0, 0, 10)
+
+        while True:
+            try:
+                notifier.process_events()
+                if notifier.check_events():
+                    notifier.read_events()
+                if os.path.exists(self.path) and os.path.isdir(self.path):
+                    notifier.stop()
+                    time.sleep(1)
+                    break
+            except:
+                notifier.stop()
+                break
+
+
 class AsyncFileNotifier(object):
     def __init__(self, paths, callback):
         class EventHandler(ProcessEvent):
@@ -37,9 +81,18 @@ class AsyncFileNotifier(object):
 
         manager = WatchManager()  # Watch Manager
         mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE  # watched events
-        AsyncNotifier(manager, EventHandler())
+        self.async_notifier = AsyncNotifier(manager, EventHandler())
+        # aggregate inotify events
+        self.async_notifier.coalesce_events()
         for path in paths:
-            manager.add_watch(path, mask, rec=False)
+            if os.path.exists(path):
+                manager.add_watch(path, mask, rec=False)
+            else:
+                LOG.warn("%s folder doesn't exist yet." % path)
+                WaitDirNotifier(path).loop()
+                manager.add_watch(path, mask, rec=False)
+                LOG.info("%s has just been created." % path)
 
     def loop(self):
+        LOG.info("Starting inotify daemon.")
         asyncore.loop()

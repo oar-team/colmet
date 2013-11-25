@@ -20,7 +20,6 @@
 '''
 Colmet User Interface
 '''
-import os
 import locale
 import optparse
 import sys
@@ -44,16 +43,14 @@ class TaskMonBatch(object):
         self.input_backends = input_backends
         self.output_backends = output_backends
 
-        self.cpuset_rootpath = [path for path in self.options.cpuset_rootpath
-                                if os.path.isdir(path)]
-        if self.cpuset_rootpath:
-            self.update_job_list()
-            self.check_jobs_thread.start()
+        self.check_jobs_thread.start()
 
     @as_thread
     def check_jobs_thread(self):
-        notifier = AsyncFileNotifier(paths=self.cpuset_rootpath,
+        notifier = AsyncFileNotifier(paths=self.options.cpuset_rootpath,
                                      callback=self.update_job_list)
+        # Initial job list update
+        self.update_job_list()
         notifier.loop()
 
     def timeout_handler(self, signum, frame):
