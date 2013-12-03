@@ -5,6 +5,7 @@ ZeroMQ input backend for colmet collector
 import zmq
 import logging
 import socket
+import struct
 
 LOG = logging.getLogger()
 
@@ -77,25 +78,10 @@ class ZMQOutputBackend(OutputBaseBackend):
         '''
         push the metrics to the output backend
         '''
-
-#        if counters_list.__class__.__name__ == 'list':
-#            counters_ll = counters_list
-#        else:
-#            counters_ll = [counters_list]
-#
-#        for counters_lst in counters_ll:
-
         if len(counters_list) > 0:
-            raw = BaseCounters.pack_from_list(counters_list)
+            try:
+                raw = BaseCounters.pack_from_list(counters_list)
+            except struct.error, e:
+                LOG.error("An error occurred during packet creation : %s" % e)
+
             self.socket.send(raw)
-#
-#
-#        if counters_list.__class__.__name__ == 'list':
-#            raw = BaseCounters.pack_from_list(counters_list)
-#            self.socket.send(raw)
-#        else:
-#
-#            if len(counters_list) > 0:
-#                raw = BaseCounters.pack_from_list(counters_list)
-#                self.socket.send(raw)
-#
