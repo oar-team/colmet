@@ -31,43 +31,12 @@ class as_thread(object):
         return _thread
 
 
-class WaitDirNotifier(object):
+def wait_dir(path):
     """Wait until the `path` folder creation."""
-    def __init__(self, path):
-        self.path = os.path.abspath(path)
-
-    def loop(self):
-        if os.path.exists(self.path) and os.path.isdir(self.path):
-            return
-
-        def get_first_existent_parent(path):
-            parent, _ = os.path.split(path)
-            if os.path.exists(parent) and os.path.isdir(parent):
-                return parent
-            else:
-                return get_first_existent_parent(parent)
-
-        class EventHandler(ProcessEvent):
-            def process_IN_CREATE(self, event):
-                pass
-
-        watched_dir = get_first_existent_parent(self.path)
-        m = pyinotify.WatchManager()
-        m.add_watch(watched_dir, pyinotify.IN_CREATE, rec=True)
-        notifier = pyinotify.Notifier(m, EventHandler(), 0, 0, 10)
-
-        while True:
-            try:
-                notifier.process_events()
-                if notifier.check_events():
-                    notifier.read_events()
-                if os.path.exists(self.path) and os.path.isdir(self.path):
-                    notifier.stop()
-                    time.sleep(1)
-                    break
-            except:
-                notifier.stop()
-                break
+    while True:
+        if os.path.exists(path) and os.path.isdir(path):
+            break
+        time.sleep(5)
 
 
 class AsyncFileNotifier(object):
@@ -89,7 +58,7 @@ class AsyncFileNotifier(object):
                 manager.add_watch(path, mask, rec=False)
             else:
                 LOG.warn("%s folder doesn't exist yet." % path)
-                WaitDirNotifier(path).loop()
+                wait_dir(path)
                 manager.add_watch(path, mask, rec=False)
                 LOG.info("%s has just been created." % path)
 
