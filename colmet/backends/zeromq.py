@@ -81,7 +81,6 @@ class ZMQOutputBackend(OutputBaseBackend):
         if len(counters_list) > 0:
             try:
                 raw = BaseCounters.pack_from_list(counters_list)
+                self.socket.send(raw)
             except struct.error, e:
                 LOG.error("An error occurred during packet creation : %s" % e)
-
-            self.socket.send(raw)
