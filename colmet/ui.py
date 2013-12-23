@@ -268,9 +268,9 @@ def main():
 
     group.add_option("--hdf5-output-complib", type='str',
                      help='Specifies the compression library to be used. '
-                          '"blosc" (the default), "lzo", "bzip2" and "zlib" '
+                          '"zlib" (the default), "lzo", "bzip2" and "blosc" '
                           'are supported.',
-                     dest='hdf5_output_complib', default='blosc')
+                     dest='hdf5_output_complib', default='zlib')
 
     parser.add_option_group(group)
 
@@ -296,9 +296,9 @@ def main():
 
     group.add_option("--hdf5-input-complib", type='str',
                      help='Specifies the compression library to be used. '
-                          '"blosc" (the default), "lzo", "bzip2" and "zlib" '
+                          '"zlib" (the default), "lzo", "bzip2" and "blosc" '
                           'are supported.',
-                     dest='hdf5_input_complib', default='blosc')
+                     dest='hdf5_input_complib', default='zlib')
 
     parser.add_option_group(group)
 
