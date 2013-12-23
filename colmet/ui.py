@@ -260,6 +260,18 @@ def main():
                      help='The base directory used to store hdf5 datai (used when creating a file per job)',
                      dest='hdf5_output_basedir', default='/tmp/colmet/hdf5')
 
+    group.add_option("--hdf5-output-complevel", type=int,
+                     help='Specifies a compression level for data. '
+                          'The allowed range is 0-9. A value of 0 '
+                          '(the default) disables compression.',
+                     dest='hdf5_output_complevel', default=0)
+
+    group.add_option("--hdf5-output-complib", type='str',
+                     help='Specifies the compression library to be used. '
+                          '"blosc" (the default), "lzo", "bzip2" and "zlib" '
+                          'are supported.',
+                     dest='hdf5_output_complib', default='blosc')
+
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, "[backend] hdf5 (input)")
@@ -275,6 +287,18 @@ def main():
     group.add_option("--hdf5-input-basedir", type='str',
                      help='The base directory used to store hdf5 datai (used when creating a file per job)',
                      dest='hdf5_input_basedir', default='/tmp/colmet/hdf5')
+
+    group.add_option("--hdf5-input-complevel", type=int,
+                     help='Specifies a compression level for data. '
+                          'The allowed range is 0-9. A value of 0 '
+                          '(the default) disables compression.',
+                     dest='hdf5_input_complevel', default=0)
+
+    group.add_option("--hdf5-input-complib", type='str',
+                     help='Specifies the compression library to be used. '
+                          '"blosc" (the default), "lzo", "bzip2" and "zlib" '
+                          'are supported.',
+                     dest='hdf5_input_complib', default='blosc')
 
     parser.add_option_group(group)
 

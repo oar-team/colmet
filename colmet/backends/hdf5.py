@@ -101,7 +101,7 @@ class FileAccess(object):
     def __init__(self):
         self.hdf5_files = dict()
 
-    def _open_hdf5_file(self, path, filemode):
+    def _open_hdf5_file(self, path, filemode, filters):
         """
         Open the hdf5 file corresponding to the job.
         """
@@ -109,17 +109,17 @@ class FileAccess(object):
         dirname = os.path.dirname(path)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
-        hdf5_file = tables.openFile(path, filemode)
+        hdf5_file = tables.openFile(path, filemode, filters=filters)
 
         return hdf5_file
 
-    def open_file(self, path, filemode):
+    def open_file(self, path, filemode, filters=None):
         if path in self.hdf5_files:
             hdf5_file = self.hdf5_files[path]
             if hdf5_file.mode != filemode:
                 raise FileAlreadyOpenWithDifferentModeError(path)
         else:
-            hdf5_file = self._open_hdf5_file(path, filemode)
+            hdf5_file = self._open_hdf5_file(path, filemode, filters=filters)
             self.hdf5_files[path] = hdf5_file
         return hdf5_file
 
@@ -162,6 +162,14 @@ class JobFile(object):
                 self.hdf5_onefileperjob = options.hdf5_input_onefileperjob
             else:
                 self.hdf5_onefileperjob = False
+            if hasattr(options, 'hdf5_input_complevel'):
+                self.hdf5_complevel = options.hdf5_input_complevel
+            else:
+                self.hdf5_complevel = 0
+            if hasattr(options, 'hdf5_input_complib'):
+                self.hdf5_complib = options.hdf5_input_complib
+            else:
+                self.hdf5_complib = None
 
         elif self.job_filemode == 'a':
             if hasattr(options, 'hdf5_output_basedir'):
@@ -180,6 +188,15 @@ class JobFile(object):
             else:
                 self.hdf5_onefileperjob = False
 
+            if hasattr(options, 'hdf5_output_complevel'):
+                self.hdf5_complevel = options.hdf5_output_complevel
+            else:
+                self.hdf5_complevel = 0
+            if hasattr(options, 'hdf5_output_complib'):
+                self.hdf5_complib = options.hdf5_output_complib
+            else:
+                self.hdf5_complib = None
+
             LOG.debug("Writing counters in hdf5 format for job %s"
                       % self.job_id)
 
@@ -188,7 +205,17 @@ class JobFile(object):
         Open the hdf5 file corresponding to the job.
         """
         path = self._get_job_path()
-        self.job_file = JobFile.fileaccess.open_file(path, self.job_filemode)
+        if self.hdf5_complevel == 0 or self.hdf5_complib is None:
+            self.job_file = JobFile.fileaccess.open_file(path,
+                                                         self.job_filemode)
+        else:
+            LOG.info("HDF5 compression enabled (lib=%s, level=%s) for %s" %
+                     (self.hdf5_complib, self.hdf5_complevel, path))
+            filters = tables.Filters(complevel=self.hdf5_complevel,
+                                     complib=self.hdf5_complib)
+            self.job_file = JobFile.fileaccess.open_file(path,
+                                                         self.job_filemode,
+                                                         filters=filters)
 
     def _init_job_file_if_needed(self, metric_backend=None):
         self._open_job_file()
