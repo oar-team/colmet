@@ -43,7 +43,7 @@ class ZMQInputBackend(InputBaseBackend):
 
         counters_list = []
         try:
-            while True:
+            for i in xrange(1000):
                 raw = self.socket.recv(zmq.NOBLOCK, copy=False)
                 counters_list.extend(BaseCounters.unpack_to_list(raw.bytes))
                 del raw
