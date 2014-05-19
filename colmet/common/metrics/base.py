@@ -3,10 +3,8 @@
 This module contains the base class for the metrics that provide the
 base functions to register/unregister counter and also pack/unpack data.
 '''
-
 from datetime import datetime
-from colmet.exceptions import CounterAlreadyExistError, NoneValueError
-from colmet.importer import get_module
+from colmet.common.exceptions import CounterAlreadyExistError, NoneValueError
 
 
 import struct
@@ -295,7 +293,7 @@ class BaseCounters(object):
     the 'job_id', and the 'timestamp'.  '''
 
     __metaclass__ = MetaCountersType
-
+    __metric_name__ = "base"
     _headers = [('metric_backend', String(255), 'string'),
                 ('hostname', String(255), 'string'),
                 ('job_id', UInt64(), 'count'),
@@ -310,6 +308,7 @@ class BaseCounters(object):
 
     @staticmethod
     def create_metric_from_raw(raw):
+        from . import get_counters_class
         backend = struct.unpack('255s', raw[0:255])[0].rstrip("\0")
         counters_class = get_counters_class(backend)
         counters = counters_class(raw=raw[0:counters_class._fmt_length])
@@ -359,10 +358,6 @@ class BaseCounters(object):
             "The metrics need to implemend "
             "how to get counters"
         )
-
-    @classmethod
-    def _get_metric_name(cls):
-        return 'base'
 
     ##################
     # Object methods #
@@ -448,6 +443,9 @@ class BaseCounters(object):
     # Public object methods
     #
 
+    def get_metric_name(self):
+        return self.__metric_name__
+
     def pack(self):
         '''
         Convert the data into the packed form
@@ -510,7 +508,7 @@ class BaseCounters(object):
         else:
             self._packed = False
             self._buf = None
-            self.metric_backend = self._get_metric_name()
+            self.metric_backend = self.get_metric_name()
 
     def accumulate(self, other_stats, destination, coeff=1):
         """Update destination from operator(self, other_stats)"""
@@ -530,23 +528,3 @@ class BaseCounters(object):
     def delta(self, other_stats, destination):
         """Update destination with self - other_stats"""
         return self.accumulate(other_stats, destination, coeff=-1)
-
-
-def get_counters_class(metric):
-    module = get_module("colmet.metrics", metric)
-    return module.get_counters_class()
-
-
-def get_hdf5_class(metric):
-    module = get_module("colmet.metrics", metric)
-    return module.get_hdf5_class()
-
-
-def get_zmq_class(metric):
-    module = get_module("colmet.metrics", metric)
-    return module.get_zmq_class()
-
-
-def get_rrd_class(metric):
-    module = get_module("colmet.metrics", metric)
-    return module.get_rrd_class()

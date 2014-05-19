@@ -5,42 +5,33 @@ ZeroMQ input backend for colmet collector
 import zmq
 import logging
 import socket
+import struct
 
 LOG = logging.getLogger()
 
-from colmet.exceptions import JobNeedToBeDefinedError
-from colmet.metrics.base import BaseCounters
+from colmet.common.metrics.base import BaseCounters
 
-from colmet.backends.base import InputBaseBackend, OutputBaseBackend
-
-
-def get_output_backend_class():
-    return ZMQOutputBackend
-
-
-def get_input_backend_class():
-    return ZMQInputBackend
+from colmet.common.backends.base import InputBaseBackend, OutputBaseBackend
 
 
 class ZMQInputBackend(InputBaseBackend):
-    @classmethod
-    def _get_backend_name(cls):
-        return "zeromq_aggregator"
+    __backend_name__ = "zeromq"
 
-    def __init__(self, options):
-        InputBaseBackend.__init__(self, options)
-
+    def open(self):
         self.context = zmq.Context()
-
-        self.zeromq_bind_uri = options.zeromq_bind_uri
-
         self.socket = self.context.socket(zmq.SUB)
         self.socket.setsockopt(zmq.SUBSCRIBE, "")
-        LOG.debug("Use the bind URI '%s'" % self.zeromq_bind_uri)
-        self.socket.bind(self.zeromq_bind_uri)
+        self.socket.setsockopt(zmq.LINGER, self.options.zeromq_linger)
+        self.socket.setsockopt(zmq.HWM, self.options.zeromq_hwm)
+        self.socket.setsockopt(zmq.SWAP, self.options.zeromq_swap)
+        LOG.debug("Use the bind URI '%s'" % self.options.zeromq_bind_uri)
+        self.socket.bind(self.options.zeromq_bind_uri)
+
+    def close(self):
+        self.socket.close()
+        self.context.term()
 
     def pull(self):
-
         counters_list = []
         try:
             for i in xrange(1000):
@@ -50,7 +41,6 @@ class ZMQInputBackend(InputBaseBackend):
         except zmq.ZMQError, e:
             if e.errno != zmq.EAGAIN:
                 raise e
-
         LOG.debug("%s counters received" % len(counters_list))
         if len(self.job_id_list) > 0:
             counters_list = [metric for metric in counters_list
@@ -65,30 +55,29 @@ class ZMQOutputBackend(OutputBaseBackend):
     '''
     zmq node backend class
     '''
-    @classmethod
-    def _get_backend_name(cls):
-        return "zeromq_aggregator"
+    __backend_name__ = "zeromq"
 
-    def __init__(self, options):
-        OutputBaseBackend.__init__(self, options)
-
+    def open(self):
         self.context = zmq.Context()
         self.hostname = socket.gethostname()
-
-        self.zeromq_uri = options.zeromq_uri
-
-        if options.job_id is None:
-            raise JobNeedToBeDefinedError()
-
         self.socket = self.context.socket(zmq.PUB)
-        self.socket.connect(self.zeromq_uri)
-        LOG.debug("Use the URI '%s'" % self.zeromq_uri)
+        self.socket.setsockopt(zmq.LINGER, self.options.zeromq_linger)
+        self.socket.setsockopt(zmq.HWM, self.options.zeromq_hwm)
+        self.socket.setsockopt(zmq.SWAP, self.options.zeromq_swap)
+        self.socket.connect(self.options.zeromq_uri)
+        LOG.debug("Use the URI '%s'" % self.options.zeromq_uri)
+
+    def close(self):
+        self.socket.close()
+        self.context.term()
 
     def push(self, counters_list):
         '''
         push the metrics to the output backend
         '''
-
         if len(counters_list) > 0:
-            msg = BaseCounters.pack_from_list(counters_list)
-            self.socket.send(msg, 0)
+            try:
+                raw = BaseCounters.pack_from_list(counters_list)
+                self.socket.send(raw)
+            except struct.error, e:
+                LOG.error("An error occurred during packet creation : %s" % e)

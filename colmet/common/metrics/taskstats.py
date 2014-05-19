@@ -1,23 +1,16 @@
 
 import struct
 import logging
-import os
+
 
 LOG = logging.getLogger()
 
-from colmet.metrics.base import UInt8, UInt16, UInt32, UInt64, String, BaseCounters
-from colmet.exceptions import UnableToFindLibraryError
+from .base import UInt8, UInt16, UInt32, UInt64, String, BaseCounters
 
 
-def get_counters_class():
-    return Counters
+class TaskstatsCounters(BaseCounters):
+    __metric_name__ = 'taskstats_default'
 
-
-def get_taskstats_class():
-    return Counters
-
-
-class Counters(BaseCounters):
     counters_taskstats = {
         # 'key' : ( offset,length, type, repr, acc, init_value )
         #
@@ -252,10 +245,6 @@ class Counters(BaseCounters):
     def build_request(cls, taskstats_backend, tid):
         return taskstats_backend.build_request(tid)
 
-    @classmethod
-    def _get_metric_name(cls):
-        return 'taskstats_default'
-
     def __init__(self, taskstats_buffer=None, raw=None):
         BaseCounters.__init__(self, raw=raw)
         if raw is not None:
@@ -263,148 +252,7 @@ class Counters(BaseCounters):
         elif taskstats_buffer is None:
             self._empty_fill()
         else:
-            for name in Counters._counter_definitions:
-                (c_offset, c_type, _, _, _) = Counters.counters_taskstats[name]
+            for name in TaskstatsCounters._counter_definitions:
+                (c_offset, c_type, _, _, _) = TaskstatsCounters.counters_taskstats[name]
                 data = taskstats_buffer[c_offset:c_offset + c_type.length]
                 self._counter_values[name] = struct.unpack(c_type.struct_code, data)[0]
-
-
-def get_hdf5_class():
-    try:
-        import tables
-
-        class HDF5Counters(object):
-            class HDF5TableDescription(tables.IsDescription):
-
-                metric_backend = tables.StringCol(255)
-                timestamp = tables.Int64Col(dflt=-1)
-                hostname = tables.StringCol(255)
-                job_id = tables.Int64Col(dflt=-1)
-
-                cpu_count = tables.Int64Col(dflt=-1)
-                cpu_delay_total = tables.Int64Col(dflt=-1)
-                blkio_count = tables.Int64Col(dflt=-1)
-                blkio_delay_total = tables.Int64Col(dflt=-1)
-                swapin_count = tables.Int64Col(dflt=-1)
-                swapin_delay_total = tables.Int64Col(dflt=-1)
-                cpu_run_real_total = tables.Int64Col(dflt=-1)
-                cpu_run_virtual_total = tables.Int64Col(dflt=-1)
-                ac_btime = tables.Int64Col(dflt=-1)
-                ac_etime = tables.Int64Col(dflt=-1)
-                ac_utime = tables.Int64Col(dflt=-1)
-                ac_stime = tables.Int64Col(dflt=-1)
-                ac_minflt = tables.Int64Col(dflt=-1)
-                ac_majflt = tables.Int64Col(dflt=-1)
-                coremem = tables.Int64Col(dflt=-1)
-                virtmem = tables.Int64Col(dflt=-1)
-                read_char = tables.Int64Col(dflt=-1)
-                write_char = tables.Int64Col(dflt=-1)
-                read_syscalls = tables.Int64Col(dflt=-1)
-                write_syscalls = tables.Int64Col(dflt=-1)
-                read_bytes = tables.Int64Col(dflt=-1)
-                write_bytes = tables.Int64Col(dflt=-1)
-                cancelled_write_bytes = tables.Int64Col(dflt=-1)
-                nvcsw = tables.Int64Col(dflt=-1)
-                nivcsw = tables.Int64Col(dflt=-1)
-                ac_utimescaled = tables.Int64Col(dflt=-1)
-                ac_stimescaled = tables.Int64Col(dflt=-1)
-                cpu_scaled_run_real_total = tables.Int64Col(dflt=-1)
-                freepages_count = tables.Int64Col(dflt=-1)
-                freepages_delay_total = tables.Int64Col(dflt=-1)
-
-            @classmethod
-            def get_table_description(cls):
-                return cls.HDF5TableDescription
-
-            @classmethod
-            def to_counters(cls, row):
-                counters = Counters()
-                for key in Counters._header_definitions.keys():
-                    counters._set_header(key, row[key])
-
-                for key in Counters._counter_definitions.keys():
-                    counters._set_counter(key, row[key])
-                return counters
-
-            @classmethod
-            def to_row(cls, row, counters):
-                for key in Counters._header_definitions.keys():
-                    row[key] = counters._get_header(key)
-                for key in Counters._counter_definitions.keys():
-                    row[key] = counters._get_counter(key)
-
-        return HDF5Counters
-
-    except ImportError:
-        raise UnableToFindLibraryError('tables')
-
-
-def get_rrd_class():
-    try:
-        import pyrrd.rrd as rrd
-        import pyrrd.graph as graph
-
-        class RRDCounters(object):
-            datasources = dict()
-            for c_key in Counters._counter_definitions.keys():
-                rrd_key = c_key[0:19]
-                datasources[rrd_key] = rrd.DataSource(dsName=rrd_key,
-                                                      dsType='GAUGE',
-                                                      heartbeat=600,)
-
-            @classmethod
-            def get_rra(cls, ts_start, ts_end, step=1):
-                nb_rows = (ts_end - ts_start) / step
-                return [
-                    rrd.RRA(cf='AVERAGE', xff=0.5, steps=step, rows=nb_rows),
-                    # rrd.RRA(cf='LAST', xff=0.5, steps=step,rows=nb_rows),
-                    # rrd.RRA(cf='MIN', xff=0.5, steps=step,rows=nb_rows),
-                    # rrd.RRA(cf='MAX', xff=0.5, steps=step,rows=nb_rows),
-                    # rrd.RRA(cf='AVERAGE', xff=0.5, steps=5,rows=nb_rows),
-                    # rrd.RRA(cf='AVERAGE', xff=0.5, steps=5,rows=nb_rows/5),
-                    # rrd.RRA(cf='AVERAGE', xff=0.5, steps=15,rows=nb_rows/15),
-                ]
-
-            @classmethod
-            def to_rrd(cls, myRRD, counters):
-                c_list = [counters._get_counter(c_key) for c_key in counters._counter_definitions.keys()]
-
-                myRRD.bufferValue(str(counters.timestamp), *c_list)
-
-            @classmethod
-            def to_graph(cls, rrd_file, ts_start, ts_end, step=1):
-
-                graphfile_base = os.path.splitext(rrd_file.filename)[0]
-                defs = dict()
-                for c_key in Counters._counter_definitions.keys():
-                    rrd_key = c_key[0:19]
-                    gdef = graph.DEF(
-                        rrdfile=rrd_file.filename,
-                        vname=rrd_key,
-                        dsName=cls.datasources[rrd_key].name,
-                        step=step,
-                        start=str(ts_start),
-                        end=str(ts_end)
-                    )
-
-                    gline = graph.LINE(defObj=gdef, color='#000099', legend="%s (%s)" % (Counters._counter_definitions[c_key][3], rrd_key))
-                    defs[rrd_key] = [gdef, gline]
-
-                for c_key in Counters._counter_definitions.keys():
-                    rrd_key = c_key[0:19]
-                    graphfile_name = "%s_%s.png" % (graphfile_base, rrd_key)
-                    g = graph.Graph(
-                        graphfile_name,
-                        start=ts_start, end=ts_end,
-                        vertical_label=Counters._counter_definitions[c_key][1],
-                        imgformat='png',
-                        width=600,
-                        height=300
-                    )
-                    g.data.extend(defs[rrd_key])
-                    g.write()
-
-        return RRDCounters
-
-    except ImportError:
-        raise UnableToFindLibraryError('pyrrd')

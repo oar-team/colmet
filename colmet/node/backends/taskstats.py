@@ -5,44 +5,35 @@ import struct
 import copy
 import logging
 
-from colmet.metrics.taskstats_default import get_taskstats_class
-from colmet.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError
-from colmet.backends.base import InputBaseBackend
-from colmet.job import Job
+from colmet.common.metrics.taskstats import TaskstatsCounters
+from colmet.common.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError
+from colmet.common.backends.base import InputBaseBackend
+from colmet.common.job import Job
 
 LOG = logging.getLogger()
 
-Counters = get_taskstats_class()
 
+class TaskstatsBackend(InputBaseBackend):
 
-def get_input_backend_class():
-    return TaskStatsNodeBackend
+    __backend_name__ = "taskstats"
 
-
-class TaskStatsNodeBackend(InputBaseBackend):
-    def __init__(self, options):
-        super(TaskStatsNodeBackend, self).__init__(options)
-        self.options = options
+    def open(self):
         self.jobs = {}
 
-        self.taskstats_nl = TaskStatsNetlink(options)
+        self.taskstats_nl = TaskStatsNetlink(self.options)
 
         if len(self.job_id_list) < 1 \
-                and self.options.cpuset_rootpath == '':
+                and self.options.cpuset_rootpath == []:
             raise JobNeedToBeDefinedError()
         if len(self.job_id_list) == 1:
             job_id = self.job_id_list[0]
-            self.jobs[job_id] = Job(self, job_id, options)  # get all options
+            self.jobs[job_id] = Job(self, job_id, self.options)
         else:
             for i, job_id in enumerate(self.job_id_list):
-                # j_options = OptionJob(["yop","yop"]) #TODO need to distinct
-                # options per job
-                j_options = options
-                self.jobs[job_id] = Job(self, job_id, j_options)
+                self.jobs[job_id] = Job(self, job_id, self.options)
 
-    @classmethod
-    def _get_backend_name(cls):
-        return "taskstats"
+    def close(self):
+        pass
 
     def build_request(self, pid):
         return self.taskstats_nl.build_request(pid)
@@ -58,7 +49,7 @@ class TaskStatsNodeBackend(InputBaseBackend):
         return [job.get_stats() for job in self.jobs.values()]
 
     def get_counters_class(self):
-        return Counters
+        return TaskstatsCounters
 
     def create_options_job_cgroups(self, cgroups):
         # options are duplicated to allow modification per jobs, here
@@ -100,9 +91,9 @@ class TaskStatsNodeBackend(InputBaseBackend):
 # Taskstats Netlink
 #
 
-from genetlink.netlink import Connection, NETLINK_GENERIC, U32Attr, \
+from .genetlink.netlink import Connection, NETLINK_GENERIC, U32Attr, \
     NLM_F_REQUEST
-from genetlink.genetlink import Controller, GeNlMessage
+from .genetlink.genetlink import Controller, GeNlMessage
 
 TASKSTATS_CMD_GET = 1
 
@@ -155,4 +146,4 @@ class TaskStatsNetlink(object):
             return
         taskstats_version = struct.unpack('H', taskstats_data[:2])[0]
         assert taskstats_version >= 4
-        return Counters(taskstats_buffer=taskstats_data)
+        return TaskstatsCounters(taskstats_buffer=taskstats_data)

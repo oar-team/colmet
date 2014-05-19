@@ -19,3 +19,4 @@ pip-log.txt
 .coverage
 .tox
 cover/
+*.swap

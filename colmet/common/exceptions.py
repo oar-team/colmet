@@ -56,22 +56,12 @@ class NoEnoughPrivilegeError(Error):
     )
 
 
-class UnableToImportBackendError(Error):
+class UnableToFindCounterClassError(Error):
     '''
-    Unable to import backend Error
-    '''
-    desc = (
-        "Unable to import the backend %s. "
-        "Please verify it really exist"
-    )
-
-
-class UnableToImportModuleError(Error):
-    '''
-    Unable to import module Error
+    Unable to find a counter class Error
     '''
     desc = (
-        "An error occurs when importing the module %s:"
+        "An error occurs when importing the class %s:"
     )
 
     def format(self):
@@ -80,9 +70,9 @@ class UnableToImportModuleError(Error):
             msg += "\n" + str(self.error)
         return msg
 
-    def __init__(self, module_name, error=None):
+    def __init__(self, class_name, error=None):
         Error.__init__(self)
-        self.desc_args = module_name
+        self.desc_args = class_name
         self.error = error
 
 
@@ -101,22 +91,8 @@ class JobNeedToBeDefinedError(Error):
     The monitored job id must be defined Error
     '''
     desc = (
-        "You need to provide the id of the job "
-        "you're currently monitoring. "
-        "This id must be unique in our plateform. "
-        "Please check the help ('-h')."
-    )
-
-
-class OnlyOneJobIsSupportedError(Error):
-    '''
-    Only one job is supported by this backend
-    '''
-    desc = (
-        "This input backend doesn't support "
-        "multiple job specification. Please provide "
-        "only one job id"
-        "Please check the help ('-h')."
+        "Unable to find jobs in this node. "
+        "Please check Taskstat options ('-h')."
     )
 
 
@@ -130,39 +106,12 @@ class UnableToFindLibraryError(Error):
     )
 
 
-class BackendNotFoundInModule(Error):
+class MultipleBackendsNotSupported(Error):
     '''
-    Backend Class not found in the given Module
-    '''
-    desc = (
-        "Unable to load the Backend class for '%s' "
-        "in the module '%s'"
-    )
-
-    def __init__(self, module, pname):
-        super(BackendNotFoundInModule, self).__init__(self)
-        self.desc_args = (module, pname)
-
-
-class BackendMethodNotImplemented(Error):
-    '''
-    The backend method is not implemented
+    Colmet doesn't support multiple input/output backend in the same process
     '''
     desc = (
-        "The backend need to implement the method '%s'."
-    )
-
-    def __init__(self, method_name):
-        super(BackendMethodNotImplemented, self).__init__(self)
-        self.desc_args = (method_name)
-
-
-class MultipleBackendsNotYetSupported(Error):
-    '''
-    Colmet doesn't support Yet multiple input/output backend in the same process
-    '''
-    desc = (
-        "Colmet doesn't support Yet multiple "
+        "Colmet doesn't support multiple "
         "input/output backend in the same process."
     )
 

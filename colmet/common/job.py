@@ -6,7 +6,7 @@ import logging
 
 LOG = logging.getLogger()
 
-from colmet.exceptions import NoJobFoundError
+from .exceptions import NoJobFoundError
 
 
 class Info(object):

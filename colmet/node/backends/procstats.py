@@ -1,32 +1,29 @@
-
+import os
 import re
 
-from colmet.metrics.procstats_default import get_procstats_class
-from colmet.backends.base import InputBaseBackend
-from colmet.job import Job
+from colmet.common.backends.base import InputBaseBackend
+from colmet.common.job import Job
+from colmet.common.metrics.procstats import ProcstatsCounters
 
-Counters = get_procstats_class()
 
-def get_input_backend_class():
-    return ProcStatsNodeBackend
 
-class ProcStatsNodeBackend(InputBaseBackend):
-    def __init__(self, options):
-        InputBaseBackend.__init__(self,options)
-        self.procstats = ProcStats(options)
+class ProcstatsBackend(InputBaseBackend):
+    __backend_name__ = "procstats"
+
+    def open(self):
+        self.procstats = ProcStats(self.options)
         # job with id equal to 0 is the fictive job to gather nodes' monitoring measures
-        self.job_0 = Job(self, 0, options)
+        self.job_0 = Job(self, 0, self.options)
 
-    @classmethod
-    def _get_backend_name(cls):
-        return "procstats"
+    def close(self):
+        pass
 
     def get_procstats(self):
         counters = self.procstats.get_stats()
         return counters
 
     def get_counters_class(self):
-        return Counters
+        return ProcstatsCounters
 
     def pull(self):
         self.job_0.update_stats()
@@ -185,4 +182,4 @@ class ProcStats(object):
 #
 #
 
-        return Counters(procstats_buffer = procstats_data)
+        return ProcstatsCounters(procstats_buffer = procstats_data)

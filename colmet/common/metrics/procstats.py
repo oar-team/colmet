@@ -2,19 +2,12 @@ import logging
 
 LOG = logging.getLogger()
 
-from colmet.metrics.base import UInt64, UFloat, BaseCounters
-from colmet.exceptions import UnableToFindLibraryError
+from .base import UInt64, UFloat, BaseCounters
 
 
-def get_counters_class():
-    return Counters
+class ProcstatsCounters(BaseCounters):
+    __metric_name__ = 'procstats_default'
 
-
-def get_procstats_class():
-    return Counters
-
-
-class Counters(BaseCounters):
     counters_procstats = {
         # 'key': ( offset,length, type, repr, acc )
         'uptime_total': (UInt64(), 'sec', 'none', 'uptime.total'),
@@ -169,10 +162,6 @@ class Counters(BaseCounters):
     def fetch(cls, procstats_backend):
         return procstats_backend.get_procstats()
 
-    @classmethod
-    def _get_metric_name(cls):
-        return 'procstats_default'
-
     def __init__(self, procstats_buffer=None, raw=None):
         BaseCounters.__init__(self, raw=raw)
         if raw is not None:
@@ -180,121 +169,5 @@ class Counters(BaseCounters):
         elif procstats_buffer is None:
             self._empty_fill()
         else:
-            for name in Counters._counter_definitions:
+            for name in ProcstatsCounters._counter_definitions:
                 self._counter_values[name] = procstats_buffer[name]
-
-
-def get_hdf5_class():
-    try:
-        import tables
-
-        class HDF5Counters(object):
-            class HDF5TableDescription(tables.IsDescription):
-
-                metric_backend = tables.StringCol(255)
-                timestamp = tables.Int64Col(dflt=-1)
-                hostname = tables.StringCol(255)
-                job_id = tables.Int64Col(dflt=-1)
-
-                uptime_total = tables.Int64Col(dflt=-1)
-                uptime_idle = tables.Int64Col(dflt=-1)
-
-                meminfo_memtotal = tables.Int64Col(dflt=-1)
-                meminfo_memfree = tables.Int64Col(dflt=-1)
-                meminfo_buffers = tables.Int64Col(dflt=-1)
-                meminfo_cached = tables.Int64Col(dflt=-1)
-                meminfo_swapcached = tables.Int64Col(dflt=-1)
-                meminfo_active = tables.Int64Col(dflt=-1)
-                meminfo_inactive = tables.Int64Col(dflt=-1)
-                meminfo_unevictable = tables.Int64Col(dflt=-1)
-                meminfo_mlocked = tables.Int64Col(dflt=-1)
-                meminfo_swaptotal = tables.Int64Col(dflt=-1)
-                meminfo_swapfree = tables.Int64Col(dflt=-1)
-                meminfo_dirty = tables.Int64Col(dflt=-1)
-                meminfo_writeback = tables.Int64Col(dflt=-1)
-                meminfo_anonpages = tables.Int64Col(dflt=-1)
-                meminfo_mapped = tables.Int64Col(dflt=-1)
-                meminfo_shmem = tables.Int64Col(dflt=-1)
-                meminfo_slab = tables.Int64Col(dflt=-1)
-                meminfo_sreclaimable = tables.Int64Col(dflt=-1)
-                meminfo_sunreclaim = tables.Int64Col(dflt=-1)
-                meminfo_kernelstack = tables.Int64Col(dflt=-1)
-                meminfo_pagetables = tables.Int64Col(dflt=-1)
-                meminfo_nfs_unstable = tables.Int64Col(dflt=-1)
-                meminfo_bounce = tables.Int64Col(dflt=-1)
-                meminfo_writebacktmp = tables.Int64Col(dflt=-1)
-                meminfo_commitlimit = tables.Int64Col(dflt=-1)
-                meminfo_committed_as = tables.Int64Col(dflt=-1)
-                meminfo_vmalloctotal = tables.Int64Col(dflt=-1)
-                meminfo_vmallocused = tables.Int64Col(dflt=-1)
-                meminfo_vmallocchunk = tables.Int64Col(dflt=-1)
-                meminfo_hardwarecorrupted = tables.Int64Col(dflt=-1)
-                meminfo_anonhugepages = tables.Int64Col(dflt=-1)
-                meminfo_hugepages_total = tables.Int64Col(dflt=-1)
-                meminfo_hugepages_free = tables.Int64Col(dflt=-1)
-                meminfo_hugepages_rsvd = tables.Int64Col(dflt=-1)
-                meminfo_hugepages_surp = tables.Int64Col(dflt=-1)
-                meminfo_hugepagesize = tables.Int64Col(dflt=-1)
-                meminfo_directmap4k = tables.Int64Col(dflt=-1)
-                meminfo_directmap2m = tables.Int64Col(dflt=-1)
-
-                vmstat_pgpgin = tables.Int64Col(dflt=-1)
-                vmstat_pgpgout = tables.Int64Col(dflt=-1)
-                vmstat_pswpin = tables.Int64Col(dflt=-1)
-                vmstat_pswpout = tables.Int64Col(dflt=-1)
-                vmstat_pgfault = tables.Int64Col(dflt=-1)
-                vmstat_pgmajfault = tables.Int64Col(dflt=-1)
-
-                stat_cpu_user = tables.Int64Col(dflt=-1)
-                stat_cpu_nice = tables.Int64Col(dflt=-1)
-                stat_cpu_system = tables.Int64Col(dflt=-1)
-                stat_cpu_idle = tables.Int64Col(dflt=-1)
-                stat_cpu_iowait = tables.Int64Col(dflt=-1)
-                stat_cpu_irq = tables.Int64Col(dflt=-1)
-                stat_cpu_softirq = tables.Int64Col(dflt=-1)
-                stat_cpu_guest = tables.Int64Col(dflt=-1)
-                stat_cpu_guest_nice = tables.Int64Col(dflt=-1)
-
-                stat_intr = tables.Int64Col(dflt=-1)
-                stat_ctxt = tables.Int64Col(dflt=-1)
-                stat_processes = tables.Int64Col(dflt=-1)
-                stat_procs_blocked = tables.Int64Col(dflt=-1)
-
-                loadavg_1min = tables.Float32Col(dflt=-1)
-                loadavg_5min = tables.Float32Col(dflt=-1)
-                loadavg_15min = tables.Float32Col(dflt=-1)
-                loadavg_runnable = tables.Float32Col(dflt=-1)
-                loadavg_total_threads = tables.Float32Col(dflt=-1)
-
-                # sys_numa_zoneallocs = tables.Int64Col(dflt=-1)
-                # sys_numa_zoneallocs = tables.Int64Col(dflt=-1)
-                # sys_numa_foreign_allocs = tables.Int64Col(dflt=-1)
-                # sys_numa_allocation = tables.Int64Col(dflt=-1)
-                # sys_numa_allocation = tables.Int64Col(dflt=-1)
-                # sys_numa_interleave = tables.Int64Col(dflt=-1)
-
-            @classmethod
-            def get_table_description(cls):
-                return cls.HDF5TableDescription
-
-            @classmethod
-            def to_counters(cls, row):
-                counters = Counters()
-                for key in Counters._header_definitions.keys():
-                    counters._set_header(key, row[key])
-
-                for key in Counters._counter_definitions.keys():
-                    counters._set_counter(key, row[key])
-                return counters
-
-            @classmethod
-            def to_row(cls, row, counters):
-                for key in Counters._header_definitions.keys():
-                    row[key] = counters._get_header(key)
-                for key in Counters._counter_definitions.keys():
-                    row[key] = counters._get_counter(key)
-
-        return HDF5Counters
-
-    except ImportError:
-        raise UnableToFindLibraryError('tables')
