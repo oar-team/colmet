@@ -51,7 +51,8 @@ setup(
     test_suite='nose.collector',
     entry_points={
         'console_scripts': [
-            'colmet = colmet.ui:main'
+            'colmet-node = colmet.node.__main__:main',
+            'colmet-hdf-collector = colmet.hdf5_collector.__main__:main',
         ],
     },
 )
