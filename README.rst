@@ -23,11 +23,11 @@ Usage:
 
 for the nodes :
 
-    sudo colmet-node --verbose -zeromq-uri tcp://127.0.0.1:5556
+    sudo colmet-node -vvv -zeromq-uri tcp://127.0.0.1:5556
 
 for the collector :
 
-    colmet-hdf5-collector --verbose --zeromq-bind-uri tcp://127.0.0.1:5557
+    colmet-collector -vvv --zeromq-bind-uri tcp://127.0.0.1:5556 --hdf5-filepath /data/colmet.hdf5 --hdf5-complevel 9
 
 You will see the number of counters retrieved in the debug log.
 
