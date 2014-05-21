@@ -5,7 +5,6 @@ import logging
 import argparse
 import signal
 import sys
-import time
 
 from colmet import VERSION
 from colmet.common.backends.zeromq import ZMQInputBackend
@@ -40,46 +39,36 @@ class Task(object):
         for backend in self.output_backends:
             backend.open()
         self.zeromq_input_backend.open()
+        self.zeromq_input_backend.on_recv(self.collect)
         signal.signal(signal.SIGINT, self.terminate)
         signal.signal(signal.SIGTERM, self.terminate)
-        self.loop()
+        self.zeromq_input_backend.loop.start()
+
+    def push(self):
+        for backend in self.output_backends:
+            try:
+                backend.push(self.counters_list)
+                LOG.info("%s new metrics has been pushed with %s"
+                         % (len(self.counters_list),
+                            backend.get_backend_name()))
+            except (NoneValueError, TypeError):
+                LOG.debug("Values for metrics are not there.")
+        del self.counters_list[:]
+
+    def collect(self, counter):
+        self.counters_list.append(counter)
+        if len(self.counters_list) >= self.options.buffer_size:
+            self.push()
 
     def terminate(self, *args, **kwargs):
         LOG.info("Terminating %s" % self.name)
+        self.zeromq_input_backend.loop.stop()
+        self.zeromq_input_backend.close()
+        self.push()
         for backend in self.output_backends:
             backend.close()
-        self.zeromq_input_backend.close()
         sys.exit(0)
 
-    def sleep(self):
-        #absolute time is used and based on seconds since 1970-01-01 00:00:00 UTC
-        now = time.time()
-        time_towait = (((now // self.options.sampling_period) + 1) *
-                       self.options.sampling_period - now)
-        time.sleep(time_towait)
-
-    def loop(self):
-        while True:
-            now = time.time()
-            LOG.debug("Gathering the metrics")
-            pulled_counters = self.zeromq_input_backend.pull()
-
-            LOG.debug("%s metrics has been pulled from zeromq" %
-                      len(pulled_counters))
-
-            LOG.debug("time to take measure: %s sec" % (time.time() - now))
-
-            for backend in self.output_backends:
-                if len(pulled_counters) > 0:
-                    try:
-                        backend.push(pulled_counters)
-                        LOG.debug("%s metrics has been pushed with %s"
-                                  % (len(pulled_counters),
-                                     backend.get_backend_name()))
-                    except (NoneValueError, TypeError):
-                        LOG.debug("Values for metrics are not there.")
-            # sleep to next sampling
-            self.sleep()
 
 #
 # Main program
@@ -99,10 +88,6 @@ def main():
 
     parser.add_argument('-v', '--verbose', action='count', dest="verbosity",
                         default=1)
-
-    parser.add_argument('-s', '--sample-period', type=float,
-                        dest='sampling_period', default=5,
-                        help='Sampling period of measuring in seconds')
 
     parser.add_argument('--daemon', dest='run_as_daemon',
                         help='Runs as daemon',
@@ -129,7 +114,7 @@ def main():
 
     group.add_argument("--zeromq-bind-uri", dest='zeromq_bind_uri',
                        help="ZeroMQ bind URI",
-                       default='tcp://127.0.0.1:5556')
+                       default='tcp://0.0.0.0:5556')
     group.add_argument("--zeromq-hwm", type=int,
                        default=1000, dest='zeromq_hwm',
                        help="The high water mark is a hard limit on the"
