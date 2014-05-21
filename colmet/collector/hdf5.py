@@ -191,6 +191,8 @@ class HDF5OutputBackend(OutputBaseBackend):
     '''
     stdout backend class
     '''
+    __backend_name__ = "hdf5"
+
     def open(self):
         self.stat_buffer = dict()
         self.jobs = {}
@@ -271,18 +273,18 @@ class JobFile(object):
         self.job_metric_counters_class = None
         self.job_metric_backend = None
 
-        if hasattr(options, 'hdf5_output_filepath') \
-                and options.hdf5_output_filepath is not None:
-            self.hdf5_filepath = options.hdf5_output_filepath
+        if hasattr(options, 'hdf5_filepath') \
+                and options.hdf5_filepath is not None:
+            self.hdf5_filepath = options.hdf5_filepath
         else:
             self.hdf5_filepath = "/tmp/colmet/hdf5/counters.hdf5"
 
-        if hasattr(options, 'hdf5_output_complevel'):
-            self.hdf5_complevel = options.hdf5_output_complevel
+        if hasattr(options, 'hdf5_complevel'):
+            self.hdf5_complevel = options.hdf5_complevel
         else:
             self.hdf5_complevel = 0
-        if hasattr(options, 'hdf5_output_complib'):
-            self.hdf5_complib = options.hdf5_output_complib
+        if hasattr(options, 'hdf5_complib'):
+            self.hdf5_complib = options.hdf5_complib
         else:
             self.hdf5_complib = None
 
