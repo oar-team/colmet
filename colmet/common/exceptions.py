@@ -119,7 +119,7 @@ class MultipleBackendsNotSupported(Error):
 class NotEnoughInputBackend(Error):
     desc = (
         "You need to provide at least one input backend "
-        "one the command line"
+        "on the command line"
     )
 
 
