@@ -40,7 +40,7 @@ setup(
     name="colmet",
     version=VERSION.strip('-dev'),
     description=("A utility to monitor the jobs ressources in a HPC"
-                 "environment, espacially OAR"),
+                 " environment, espacially OAR"),
     keywords="monitoring, taskstat, oar, hpc, sciences",
     maintainer='Salem Harrache',
     maintainer_email='salem.harrache@inria.fr',
