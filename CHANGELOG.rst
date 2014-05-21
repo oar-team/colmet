@@ -10,6 +10,8 @@ version 0.3.0
   - colmet-common : Common colmet part.
 * Added some parameters of ZeroMQ backend to prevent a memory overflow
 * Simplified the command line interface
+* Added `--buffer-size` option for collector to define the maximum number of
+  counters that colmet should queue in memory before pushing it to output backend
 
 version 0.2.0:
 --------------

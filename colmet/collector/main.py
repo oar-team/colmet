@@ -32,6 +32,8 @@ class Task(object):
         if self.options.enable_stdout_backend:
             self.output_backends.append(StdoutBackend(self.options))
         self.zeromq_input_backend = ZMQInputBackend(self.options)
+        self.counters_list = []
+        self.buffer_size = self.options.buffer_size
 
     def start(self):
         LOG.info("Starting %s" % self.name)
@@ -113,6 +115,11 @@ def main():
     parser.add_argument('--logfile', dest='logfile',
                         default="/var/log/colmet.log",
                         help='Logger file used when running as daemon')
+
+    parser.add_argument('--buffer-size', dest='buffer_size', default=100,
+                        help='Defines the maximum number of counters that '
+                             'colmet should queue in memory before pushing '
+                             'it to output backend', type=int)
 
     parser.add_argument("--enable-stdout-backend", action='store_true',
                         help='Prints the metrics on STDOUT',
