@@ -98,16 +98,16 @@ class Daemon(object):
 
     Usage: subclass the Daemon class and override the run() method
     """
-    def __init__(self, pidfile, stdin=os.devnull,
+    def __init__(self, pidfile, main, stdin=os.devnull,
                  stdout=os.devnull, stderr=os.devnull,
-                 home_dir='.', umask=022, verbose=1):
+                 home_dir='.', umask=022):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
         self.pidfile = pidfile
         self.home_dir = home_dir
-        self.verbose = verbose
         self.umask = umask
+        self.main = main
         self.daemon_alive = True
 
     def daemonize(self):
@@ -161,9 +161,6 @@ class Daemon(object):
             signal.signal(signal.SIGTERM, sigtermhandler)
             signal.signal(signal.SIGINT, sigtermhandler)
 
-        if self.verbose >= 1:
-            print "Started"
-
         # Write pidfile
         atexit.register(
             self.delpid)  # Make sure pid file is removed if we quit
@@ -177,10 +174,6 @@ class Daemon(object):
         """
         Start the daemon
         """
-
-        if self.verbose >= 1:
-            print "Starting..."
-
         # Check for a pidfile to see if the daemon already runs
         try:
             pf = file(self.pidfile, 'r')
@@ -200,91 +193,10 @@ class Daemon(object):
         self.daemonize()
         self.run(*args, **kwargs)
 
-    def stop(self):
-        """
-        Stop the daemon
-        """
-
-        if self.verbose >= 1:
-            print "Stopping..."
-
-        # Get the pid from the pidfile
-        pid = self.get_pid()
-
-        if not pid:
-            message = "pidfile %s does not exist. Not running?\n"
-            sys.stderr.write(message % self.pidfile)
-
-            # Just to be sure. A ValueError might occur if the PID file is
-            # empty but does actually exist
-            if os.path.exists(self.pidfile):
-                os.remove(self.pidfile)
-
-            return  # Not an error in a restart
-
-        # Try killing the daemon process
-        try:
-            i = 0
-            while 1:
-                os.kill(pid, signal.SIGTERM)
-                time.sleep(0.1)
-                i = i + 1
-                if i % 10 == 0:
-                    os.kill(pid, signal.SIGHUP)
-        except OSError, err:
-            err = str(err)
-            if err.find("No such process") > 0:
-                if os.path.exists(self.pidfile):
-                    os.remove(self.pidfile)
-            else:
-                print str(err)
-                sys.exit(1)
-
-        if self.verbose >= 1:
-            print "Stopped"
-
-    def restart(self):
-        """
-        Restart the daemon
-        """
-        self.stop()
-        self.start()
-
-    def get_pid(self):
-        try:
-            pf = file(self.pidfile, 'r')
-            pid = int(pf.read().strip())
-            pf.close()
-        except IOError:
-            pid = None
-        except SystemExit:
-            pid = None
-        return pid
-
-    def is_running(self):
-        pid = self.get_pid()
-        print(pid)
-        return pid and os.path.exists('/proc/%d' % pid)
-
     def run(self):
         """
         You should override this method when you subclass Daemon.
         It will be called after the process has been
         daemonized by start() or restart().
         """
-
-
-def optparse_add_default_value(parser):
-    def get_options():
-        for option in parser.option_list:
-            yield option
-        for group in parser.option_groups:
-            for option in group.option_list:
-                yield option
-
-    for option in get_options():
-        if option.default != ("NO", "DEFAULT"):
-            if option.help:
-                option.help = "%s %s" % (option.help, "[default: %default]")
-            else:
-                option.help = "[default: %default]"
+        self.main()
