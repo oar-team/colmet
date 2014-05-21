@@ -1,3 +1,4 @@
 include INSTALL
 include README.rst
 include CHANGELOG.rst
+include requirements.txt
