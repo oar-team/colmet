@@ -1,4 +1,8 @@
-tables
-pyzmq
+numpy
+cython
+numexpr
 h5py
-pyinotify==0.9.3
+tables
+pyinotify
+argparse
+pyzmq

@@ -23,14 +23,16 @@
 Colmet Python setup file
 '''
 
-import os
+import os.path as op
 from setuptools import setup, find_packages
 from colmet import VERSION
+
+here = op.abspath(op.dirname(__file__))
 
 
 def read(fname):
     ''' Return the file content. '''
-    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+    with open(op.join(here, fname)) as f:
         return f.read()
 
 
@@ -45,6 +47,7 @@ setup(
     url="http://oar.imag.fr/",
     packages=find_packages(),
     long_description=read('README'),
+    install_requires=read('requirements.txt').splitlines(),
     platforms=['Linux'],
     license="GNU GPL",
     tests_require=['nose>=1.0'],
