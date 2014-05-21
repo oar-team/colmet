@@ -38,15 +38,17 @@ def read(fname):
 
 setup(
     name="colmet",
-    version=VERSION,
+    version=VERSION.strip('-dev'),
     description=("A utility to monitor the jobs ressources in a HPC"
                  "environment, espacially OAR"),
     keywords="monitoring, taskstat, oar, hpc, sciences",
+    maintainer='Salem Harrache',
+    maintainer_email='salem.harrache@inria.fr',
     author="Philippe Le Brouster, Olivier Richard",
     author_email="philippe.le-brouster@imag.fr, olivier.richard@imag.fr",
     url="http://oar.imag.fr/",
     packages=find_packages(),
-    long_description=read('README'),
+    long_description=read('README.rst') + '\n\n' + read('CHANGELOG.rst'),
     install_requires=read('requirements.txt').splitlines(),
     platforms=['Linux'],
     license="GNU GPL",
@@ -58,4 +60,18 @@ setup(
             'colmet-collector = colmet.collector.main:main',
         ],
     },
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Monitoring',
+        'Topic :: System :: Clustering',
+        'Programming Language :: Python :: 2.5',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7'
+    ]
 )
