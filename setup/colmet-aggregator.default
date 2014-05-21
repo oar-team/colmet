@@ -1,3 +1,0 @@
-DAEMON_START="1"
-DAEMON_OPTS="-vv -d 10 -i zeromq_aggregator --zeromq-bind-uri tcp://0.0.0.0:5556 -o zeromq --zeromq-uri ipc:///tmp/colmet_collector"
-

@@ -1,4 +1,0 @@
-
-DAEMON_START="1"
-DAEMON_OPTS="-vv -i zeromq --zeromq-bind-uri ipc:///tmp/colmet_collector -o hdf5 --hdf5-output-filepath /var/lib/colmet/hdf5/counters.hdf5"
-
