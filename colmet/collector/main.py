@@ -25,9 +25,6 @@ class Task(object):
         if self.options.hdf5_filepath is not None:
             from colmet.collector.hdf5 import HDF5OutputBackend
             self.output_backends.append(HDF5OutputBackend(self.options))
-        if self.options.rrd_basedir is not None:
-            from colmet.collector.rrd import RRDOutputBackend
-            self.output_backends.append(RRDOutputBackend(self.options))
         if self.options.enable_stdout_backend:
             self.output_backends.append(StdoutBackend(self.options))
         self.zeromq_input_backend = ZMQInputBackend(self.options)
@@ -152,31 +149,11 @@ def main():
                             '"zlib" (the default), "lzo", "bzip2" and "blosc" '
                             'are supported.')
 
-    group = parser.add_argument_group('RRD')
-
-    group.add_argument("--rrd-basedir", default=None,
-                       help='The file path used to store the Round Robin'
-                            ' Database files', dest='rrd_basedir')
-    group.add_argument("--rrd-graph-width", default=600,
-                       help='The width of the canvas (the part of the graph'
-                            ' with the actual data and such)',
-                       dest='rrd_graph_width')
-    group.add_argument("--rrd-graph-height", default=600,
-                       help='The height of the canvas (the part of the graph '
-                            ' with the actual data and such)',
-                       dest='rrd_graph_height')
-    group.add_argument("--rrd-path-level", default=3, type=int,
-                       help='Used jobd ID to create nested tree folder to '
-                            'do not exceed filesystem limit',
-                       dest='rrd_path_level')
-
     args = parser.parse_args()
 
-    if (args.rrd_basedir is None
-            and args.hdf5_filepath is None
-            and args.enable_stdout_backend is False):
+    if (args.hdf5_filepath is None and args.enable_stdout_backend is False):
         parser.error("You need to provide at least one output backend "
-                     "[hdf5|rrd|stdout]")
+                     "[hdf5|stdout]")
 
     # Set the logging value (always display CRITICAL and ERROR)
     logging.basicConfig(
