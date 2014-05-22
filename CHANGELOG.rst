@@ -5,6 +5,7 @@ version 0.3.0:
 --------------
 
 - Divided colmet package into three parts
+
   - colmet-node : Retrieve data from taskstats and procstats and send to
     collectors with ZeroMQ
   - colmet-collector : A collector that stores data received by ZeroMQ in a
