@@ -24,8 +24,11 @@ class Task(object):
     def __init__(self, name, options):
         self.name = name
         self.options = options
+        self.input_backends = []
         self.taskstats_backend = TaskstatsBackend(self.options)
-        self.procstats_backend = ProcstatsBackend(self.options)
+        self.input_backends.append(self.taskstats_backend)
+        if not self.options.disable_procstats:
+            self.input_backends.append(ProcstatsBackend(self.options))
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
     @as_thread
@@ -42,8 +45,8 @@ class Task(object):
 
     def start(self):
         LOG.info("Starting %s" % self.name)
-        self.taskstats_backend.open()
-        self.procstats_backend.open()
+        for backend in self.input_backends:
+            backend.open()
         self.zeromq_output_backend.open()
         signal.signal(signal.SIGINT, self.terminate)
         signal.signal(signal.SIGTERM, self.terminate)
@@ -67,7 +70,7 @@ class Task(object):
             now = time.time()
             LOG.debug("Gathering the metrics")
             counters_list = []
-            for backend in [self.taskstats_backend, self.procstats_backend]:
+            for backend in self.input_backends:
                 pulled_counters = backend.pull()
 
                 if backend.get_backend_name() == 'taskstats':
@@ -127,6 +130,13 @@ def main():
     parser.add_argument('--logfile', dest='logfile',
                         default="/var/log/colmet.log",
                         help='logger file used when running as daemon')
+
+    parser.add_argument('--disable-procstats', action="store_true",
+                        default=False, dest="disable_procstats",
+                        help='Disables node monitoring based on some /proc '
+                             'subdirectories contents. Measures are '
+                             'associated to the fictive job with 0 as '
+                             'identifier (job_id)')
 
     group = parser.add_argument_group('Taskstat')
 
