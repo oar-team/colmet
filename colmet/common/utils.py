@@ -55,7 +55,11 @@ class AsyncFileNotifier(object):
         mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE  # watched events
         self.async_notifier = AsyncNotifier(manager, EventHandler())
         # aggregate inotify events
-        self.async_notifier.coalesce_events()
+        try:
+            self.async_notifier.coalesce_events()
+        except AttributeError as inst:
+            LOG.warn('Can not coalesce events, pyinotify does not seem to '
+                     'support it (maybe too old): %s' % inst)
         for path in paths:
             if os.path.exists(path):
                 manager.add_watch(path, mask, rec=False)
