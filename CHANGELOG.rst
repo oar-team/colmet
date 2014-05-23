@@ -1,6 +1,14 @@
 Colmet CHANGELOG
 ================
 
+version 0.3.1:
+--------------
+
+- New metrics ``hiwater_rss`` and ``hiwater_vm`` for taskstats
+- Worked with pyinotify 0.8
+- Added ``--disable-procstats`` option to disable procstats backend.
+
+
 version 0.3.0:
 --------------
 
