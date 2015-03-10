@@ -1,27 +1,31 @@
 # Flask web interface to graph colmet data using Matplotlib/Mpld3
+# Configure:
+#     Setup the path to colmet HDF5 file right after this comments
 # Launching:
 #     python colmet_web.py
 # Using:
-#     Point a browser to http://localhost:5000/graph/job/<job_id>
+#     Point a browser to http://localhost:5000
 #
 
+# Setup the path of the hdf5 file here:
+colmetfile="/scratch/colmet/froggy.hdf5"
+cluster_name="Froggy"
+chandler_cache_file="/scratch/chandler.jobs.cache"
+
+####################################################################
 from flask import Flask
 app = Flask(__name__)
-from flask import request
-from flask import render_template
+from flask import request,render_template,url_for,abort,redirect
 import sys
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import mpld3
+import json
 
 matplotlib.use('Agg')
 
-# Setup the path of the hdf5 file here:
-colmetfile="/scratch/bzizou/colmet/froggy.hdf5"
-
-f = h5py.File(colmetfile, "r")
 
 # Functions
 def compute_cumul(data):
@@ -49,11 +53,39 @@ def compute_cumul(data):
         v_prev=value
     return out_data
 
+
+def get_jobs():
+    """
+        Get the current jobs list from the chandler cache
+        (chandler should be launched at some intervals, to update this cache)
+    """
+    json_data=open(chandler_cache_file)
+    return json.load(json_data)['items']
+
+# Routes
+
+@app.route('/')
+def index():
+    jobs=get_jobs()
+    jobs=[ j for j in jobs if j["state"]=="Running" ]
+    return render_template('index.html',cluster_name=cluster_name,jobs=jobs)
+
+@app.route('/form/job')
+def form_job():
+    id=request.args.get('id', '')
+    return render_template('form_job.html',cluster_name=cluster_name,def_id=id)
+
+@app.route('/graph/job')
+def graph_id_as_arg():
+    jobid=int(request.args.get('id', '0'))
+    t_min=int(request.args.get('t_min', '0'))
+    t_max=int(request.args.get('t_max', '7200'))
+    return redirect(url_for('graph_job',id=jobid,t_min=t_min,t_max=t_max))
+
 # Cpu/mem/io graphs
 @app.route('/graph/job/<int:id>')
-def graph(id):
+def graph_job(id):
     # Read parameters
-    t_res=int(request.args.get('t_res', '1'))
     t_min=int(request.args.get('t_min', '0'))
     t_max=int(request.args.get('t_max', '7200'))
     # Prepare graphs
@@ -63,7 +95,9 @@ def graph(id):
         fig[g] = plt.figure(figsize=(9,5))
         graph[g] = fig[g].add_subplot(111)
     # Load the metrics
+    f = h5py.File(colmetfile, "r")
     metrics=f['job_'+str(id)+'/metrics']['timestamp','hostname','ac_etime','cpu_run_real_total','coremem','read_bytes','write_bytes']
+    f.close
     # Set the origin timestamp
     origin=metrics[0][0]
     # Get a list of uniq hosts
@@ -73,7 +107,7 @@ def graph(id):
       # X axis is a number of seconds starting at 0
       x=[ a[0] for a in metrics if a[1] == host and t_min < a[0]-origin < t_max ]
       x0=x[0]
-      x=[ (a - x0)/t_res for a in x ]
+      x=[ (a - x0) for a in x ]
       # Cpu
       y_cpu=[ 1.0*a[3]/a[2]/1000 for a in metrics if a[1] == host and t_min < a[0]-origin < t_max ]
       graph['cpu'].plot(x,y_cpu,label=host,lw=5,alpha=0.4)
@@ -100,7 +134,6 @@ def graph(id):
         html[g]=mpld3.fig_to_html(fig[g])
     # Rendering 
     return render_template('show_job_graphs.html', graph=html)
-    #return mpld3.fig_to_html(fig['cpu'])+mpld3.fig_to_html(fig['mem'])+mpld3.fig_to_html(fig['read'])+mpld3.fig_to_html(fig['write'])
 
 if __name__ == '__main__':
     app.run(debug=True)
