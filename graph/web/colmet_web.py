@@ -75,17 +75,11 @@ def form_job():
     id=request.args.get('id', '')
     return render_template('form_job.html',cluster_name=cluster_name,def_id=id)
 
-@app.route('/graph/job')
-def graph_id_as_arg():
-    jobid=int(request.args.get('id', '0'))
-    t_min=int(request.args.get('t_min', '0'))
-    t_max=int(request.args.get('t_max', '7200'))
-    return redirect(url_for('graph_job',id=jobid,t_min=t_min,t_max=t_max))
-
 # Cpu/mem/io graphs
-@app.route('/graph/job/<int:id>')
-def graph_job(id):
+@app.route('/graph/job')
+def graph_job():
     # Read parameters
+    id=int(request.args.get('id', '0'))
     t_min=int(request.args.get('t_min', '0'))
     t_max=int(request.args.get('t_max', '7200'))
     # Prepare graphs
@@ -133,7 +127,8 @@ def graph_job(id):
         graph[g].set_xlabel('time (s)')
         html[g]=mpld3.fig_to_html(fig[g])
     # Rendering 
+    plt.close("all")
     return render_template('show_job_graphs.html', graph=html)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False,host='0.0.0.0')

@@ -1,13 +1,13 @@
 <h1>Welcome to experimental OAR/Colmet jobs monitoring on {{cluster_name}}</h1>
 
 
-<a href=/form/job>Click here to graph a {{cluster_name}} job if you know the id</a>
+<a href=form/job>Click here to graph a {{cluster_name}} job if you know the id</a>
 
 <P>
 Or choose from the current running jobs:
 <P>
 <UL>
 {% for job in jobs|sort %}
-  <li><a href=/form/job?id={{job['id']}}>{{job['id']}}</a> ({{job['owner']}}, {{job['resources']|length}} resources)
+  <li><a href=form/job?id={{job['id']}}>{{job['id']}}</a> ({{job['owner']}}, {{job['resources']|length}} resources)
 {% endfor %}
 </UL>
