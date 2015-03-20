@@ -1,16 +1,37 @@
 Colmet CHANGELOG
 ================
 
-version 0.3.1:
---------------
+version 0.4.0
+-------------
+
+- Added new taskstat  metrics :
+ - ``ac_comm``
+ - ``ac_exitcode``
+ - ``ac_flag``
+ - ``ac_gid``
+ - ``ac_nice``
+ - ``ac_pad``
+ - ``ac_pid``
+ - ``ac_ppid``
+ - ``ac_shed``
+ - ``ac_uid``
+ - ``version``
+- Saved metrics in new hdf file if colmet is reloaded to avoid HDF file corruption
+- Handled HUP signal to reload ``colmet-collector``
+- Added new taskstat metrics
+- Fixed ``hiwater_rss`` and ``hiwater_vm`` collected metrics.
+
+
+version 0.3.1
+-------------
 
 - New metrics ``hiwater_rss`` and ``hiwater_vm`` for taskstats
 - Worked with pyinotify 0.8
 - Added ``--disable-procstats`` option to disable procstats backend.
 
 
-version 0.3.0:
---------------
+version 0.3.0
+-------------
 
 - Divided colmet package into three parts
 
@@ -27,8 +48,8 @@ version 0.3.0:
   backend
 - Handled SIGTERM and SIGINT to terminate colmet properly
 
-version 0.2.0:
---------------
+version 0.2.0
+-------------
 
 - Added options to enable hdf5 compression
 - Support for multiple job by cgroup path scanning
@@ -43,7 +64,7 @@ version 0.2.0:
   (monitoring is suspended upto one process is launched)
 
 
-version 0.0.1:
---------------
+version 0.0.1
+-------------
 
 - Conception
