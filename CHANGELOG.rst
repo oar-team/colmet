@@ -4,22 +4,9 @@ Colmet CHANGELOG
 version 0.4.0
 -------------
 
-- Added new taskstat  metrics :
- - ``ac_comm``
- - ``ac_exitcode``
- - ``ac_flag``
- - ``ac_gid``
- - ``ac_nice``
- - ``ac_pad``
- - ``ac_pid``
- - ``ac_ppid``
- - ``ac_shed``
- - ``ac_uid``
- - ``version``
-- Saved metrics in new hdf file if colmet is reloaded to avoid HDF file corruption
+- Saved metrics in new HDF5 file if colmet is reloaded in order to avoid HDF5 data corruption
 - Handled HUP signal to reload ``colmet-collector``
-- Added new taskstat metrics
-- Fixed ``hiwater_rss`` and ``hiwater_vm`` collected metrics.
+- Removed ``hiwater_rss`` and ``hiwater_vm`` collected metrics.
 
 
 version 0.3.1
