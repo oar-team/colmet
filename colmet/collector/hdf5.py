@@ -223,13 +223,6 @@ class HDF5ProcstatsCounters(object):
                     cls.missing_keys.append(key)
                     LOG.warning(e)
 
-    @classmethod
-    def to_row(cls, row, counters):
-        for key in cls.Counters._header_definitions.keys():
-            row[key] = counters._get_header(key)
-        for key in cls.Counters._counter_definitions.keys():
-            row[key] = counters._get_counter(key)
-
 
 class HDF5OutputBackend(OutputBaseBackend):
     '''
@@ -298,6 +291,7 @@ class FileAccess(object):
     def close_file_by_path(self, path):
         if path in self.hdf5_files:
             self.hdf5_files[path].close()
+            del self.hdf5_files[path]
 
 
 class JobFile(object):

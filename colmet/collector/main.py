@@ -5,6 +5,7 @@ import logging
 import argparse
 import signal
 import sys
+import threading
 
 from colmet import VERSION
 from colmet.common.backends.zeromq import ZMQInputBackend
@@ -22,50 +23,73 @@ class Task(object):
         self.name = name
         self.options = options
         self.output_backends = []
-        if self.options.hdf5_filepath is not None:
-            from colmet.collector.hdf5 import HDF5OutputBackend
-            self.output_backends.append(HDF5OutputBackend(self.options))
-        if self.options.enable_stdout_backend:
-            self.output_backends.append(StdoutBackend(self.options))
+        self.output_backends_lock = threading.Lock()
+        self.init_output_backends()
         self.zeromq_input_backend = ZMQInputBackend(self.options)
         self.counters_list = []
         self.buffer_size = self.options.buffer_size
 
+    def init_output_backends(self):
+        with self.output_backends_lock:
+            for backend in self.output_backends:
+                backend.close()
+                del backend
+            self.output_backends[:] = []
+            if self.options.hdf5_filepath is not None:
+                from colmet.collector.hdf5 import HDF5OutputBackend
+                self.output_backends.append(HDF5OutputBackend(self.options))
+            if self.options.enable_stdout_backend:
+                self.output_backends.append(StdoutBackend(self.options))
+            for backend in self.output_backends:
+                backend.open()
+
     def start(self):
         LOG.info("Starting %s" % self.name)
-        for backend in self.output_backends:
-            backend.open()
         self.zeromq_input_backend.open()
         self.zeromq_input_backend.on_recv(self.collect)
         signal.signal(signal.SIGINT, self.terminate)
         signal.signal(signal.SIGTERM, self.terminate)
-        self.zeromq_input_backend.loop.start()
+        signal.signal(signal.SIGHUP, self.reload)
+        try:
+            self.zeromq_input_backend.loop.start()
+        except:
+            self.close_backends()
+            raise
 
     def push(self):
-        for backend in self.output_backends:
-            try:
-                backend.push(self.counters_list)
-                LOG.info("%s new metrics has been pushed with %s"
-                         % (len(self.counters_list),
-                            backend.get_backend_name()))
-            except (NoneValueError, TypeError):
-                LOG.debug("Values for metrics are not there.")
-        del self.counters_list[:]
+        with self.output_backends_lock:
+            for backend in self.output_backends:
+                try:
+                    backend.push(self.counters_list)
+                    LOG.info("%s new metrics has been pushed with %s"
+                             % (len(self.counters_list),
+                                backend.get_backend_name()))
+                except (NoneValueError, TypeError):
+                    LOG.debug("Values for metrics are not there.")
+            del self.counters_list[:]
 
     def collect(self, counter):
         self.counters_list.append(counter)
         if len(self.counters_list) >= self.options.buffer_size:
             self.push()
 
-    def terminate(self, *args, **kwargs):
-        LOG.info("Terminating %s" % self.name)
+    def close_backends(self):
         self.zeromq_input_backend.loop.stop()
         self.zeromq_input_backend.close()
         self.push()
-        for backend in self.output_backends:
-            backend.close()
+        with self.output_backends_lock:
+            for backend in self.output_backends:
+                backend.close()
+
+    def terminate(self, *args, **kwargs):
+        LOG.info("Terminating %s" % self.name)
+        self.close_backends()
         sys.exit(0)
 
+    def reload(self, *args, **kwargs):
+        LOG.info("Reloading %s" % self.name)
+        self.push()
+        self.init_output_backends()
 
 #
 # Main program
