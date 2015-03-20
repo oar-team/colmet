@@ -3,6 +3,7 @@ stdout backend : print information to stdout
 '''
 import logging
 import os
+import time
 
 from colmet.common.exceptions import FileAlreadyOpenWithDifferentModeError
 from colmet.common.metrics import get_counters_class
@@ -315,7 +316,11 @@ class JobFile(object):
                 and options.hdf5_filepath is not None:
             self.hdf5_filepath = options.hdf5_filepath
         else:
-            self.hdf5_filepath = "/tmp/colmet/hdf5/counters.hdf5"
+            self.hdf5_filepath = "/tmp/colmet/hdf5/counters"
+
+        if not self.hdf5_filepath.endswith(".hdf5"):
+            self.hdf5_filepath = "%s.%s.hdf5" % (self.hdf5_filepath,
+                                                 int(time.time()))
 
         if hasattr(options, 'hdf5_complevel'):
             self.hdf5_complevel = options.hdf5_complevel
