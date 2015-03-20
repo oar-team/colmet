@@ -41,6 +41,10 @@ class HDF5TaskstatsCounters(object):
         ac_majflt = tables.Int64Col(dflt=-1)
         coremem = tables.Int64Col(dflt=-1)
         virtmem = tables.Int64Col(dflt=-1)
+
+        hiwater_rss = tables.Int64Col(dflt=-1)
+        hiwater_vm = tables.Int64Col(dflt=-1)
+
         read_char = tables.Int64Col(dflt=-1)
         write_char = tables.Int64Col(dflt=-1)
         read_syscalls = tables.Int64Col(dflt=-1)
@@ -56,6 +60,20 @@ class HDF5TaskstatsCounters(object):
         freepages_count = tables.Int64Col(dflt=-1)
         freepages_delay_total = tables.Int64Col(dflt=-1)
 
+
+        ac_flag = tables.Int64Col(dflt=-1)
+        version = tables.Int64Col(dflt=-1)
+        ac_pad = tables.StringCol(3)
+        ac_uid = tables.Int32Col(dflt=-1)
+        ac_comm = tables.StringCol(32)
+        ac_ppid = tables.Int32Col(dflt=-1)
+        ac_exitcode = tables.Int32Col(dflt=-1)
+        ac_pid = tables.Int32Col(dflt=-1)
+        ac_shed = tables.UInt8Col(dflt=-1)
+        ac_gid = tables.Int32Col(dflt=-1)
+        ac_nice = tables.UInt8Col(dflt=-1)
+
+    missing_keys = []
     @classmethod
     def get_table_description(cls):
         return cls.HDF5TableDescription
@@ -73,10 +91,19 @@ class HDF5TaskstatsCounters(object):
     @classmethod
     def to_row(cls, row, counters):
         for key in cls.Counters._header_definitions.keys():
-            row[key] = counters._get_header(key)
+            try:
+                row[key] = counters._get_header(key)
+            except Exception as e:
+                if not key in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
         for key in cls.Counters._counter_definitions.keys():
-            row[key] = counters._get_counter(key)
-
+            try:
+                row[key] = counters._get_counter(key)
+            except Exception as e:
+                if not key in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
 
 class HDF5ProcstatsCounters(object):
     Counters = get_counters_class("procstats_default")
@@ -178,6 +205,23 @@ class HDF5ProcstatsCounters(object):
         for key in cls.Counters._counter_definitions.keys():
             counters._set_counter(key, row[key])
         return counters
+
+    @classmethod
+    def to_row(cls, row, counters):
+        for key in cls.Counters._header_definitions.keys():
+            try:
+                row[key] = counters._get_header(key)
+            except Exception as e:
+                if not key in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+        for key in cls.Counters._counter_definitions.keys():
+            try:
+                row[key] = counters._get_counter(key)
+            except Exception as e:
+                if not key in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
 
     @classmethod
     def to_row(cls, row, counters):
