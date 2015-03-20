@@ -6,6 +6,8 @@ import argparse
 import signal
 import sys
 import threading
+import copy
+import time
 
 from colmet import VERSION
 from colmet.common.backends.zeromq import ZMQInputBackend
@@ -35,11 +37,15 @@ class Task(object):
                 backend.close()
                 del backend
             self.output_backends[:] = []
-            if self.options.hdf5_filepath is not None:
+            options = copy.deepcopy(self.options)
+            if options.hdf5_filepath is not None:
+                if not options.hdf5_filepath.endswith(".hdf5"):
+                    options.hdf5_filepath = "%s.%s.hdf5" % \
+                        (options.hdf5_filepath, int(time.time()))
                 from colmet.collector.hdf5 import HDF5OutputBackend
-                self.output_backends.append(HDF5OutputBackend(self.options))
+                self.output_backends.append(HDF5OutputBackend(options))
             if self.options.enable_stdout_backend:
-                self.output_backends.append(StdoutBackend(self.options))
+                self.output_backends.append(StdoutBackend(options))
             for backend in self.output_backends:
                 backend.open()
 

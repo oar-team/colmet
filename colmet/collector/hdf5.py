@@ -300,10 +300,6 @@ class JobFile(object):
         else:
             self.hdf5_filepath = "/tmp/colmet/hdf5/counters"
 
-        if not self.hdf5_filepath.endswith(".hdf5"):
-            self.hdf5_filepath = "%s.%s.hdf5" % (self.hdf5_filepath,
-                                                 int(time.time()))
-
         if hasattr(options, 'hdf5_complevel'):
             self.hdf5_complevel = options.hdf5_complevel
         else:
