@@ -42,10 +42,6 @@ class HDF5TaskstatsCounters(object):
         ac_majflt = tables.Int64Col(dflt=-1)
         coremem = tables.Int64Col(dflt=-1)
         virtmem = tables.Int64Col(dflt=-1)
-
-        hiwater_rss = tables.Int64Col(dflt=-1)
-        hiwater_vm = tables.Int64Col(dflt=-1)
-
         read_char = tables.Int64Col(dflt=-1)
         write_char = tables.Int64Col(dflt=-1)
         read_syscalls = tables.Int64Col(dflt=-1)
@@ -60,20 +56,6 @@ class HDF5TaskstatsCounters(object):
         cpu_scaled_run_real_total = tables.Int64Col(dflt=-1)
         freepages_count = tables.Int64Col(dflt=-1)
         freepages_delay_total = tables.Int64Col(dflt=-1)
-
-
-        ac_flag = tables.Int64Col(dflt=-1)
-        version = tables.Int64Col(dflt=-1)
-        ac_pad = tables.StringCol(3)
-        ac_uid = tables.Int32Col(dflt=-1)
-        ac_comm = tables.StringCol(32)
-        ac_ppid = tables.Int32Col(dflt=-1)
-        ac_exitcode = tables.Int32Col(dflt=-1)
-        ac_pid = tables.Int32Col(dflt=-1)
-        ac_shed = tables.UInt8Col(dflt=-1)
-        ac_gid = tables.Int32Col(dflt=-1)
-        ac_nice = tables.UInt8Col(dflt=-1)
-
     missing_keys = []
     @classmethod
     def get_table_description(cls):
@@ -193,6 +175,7 @@ class HDF5ProcstatsCounters(object):
         # sys_numa_allocation = tables.Int64Col(dflt=-1)
         # sys_numa_interleave = tables.Int64Col(dflt=-1)
 
+    missing_keys = []
     @classmethod
     def get_table_description(cls):
         return cls.HDF5TableDescription
@@ -292,7 +275,6 @@ class FileAccess(object):
     def close_file_by_path(self, path):
         if path in self.hdf5_files:
             self.hdf5_files[path].close()
-            del self.hdf5_files[path]
 
 
 class JobFile(object):
@@ -409,6 +391,3 @@ class JobFile(object):
             row.append()
 
         self.job_table.flush()
-        self.job_table.close()
-        self.job_table = None
-
