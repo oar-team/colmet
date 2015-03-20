@@ -409,3 +409,6 @@ class JobFile(object):
             row.append()
 
         self.job_table.flush()
+        self.job_table.close()
+        self.job_table = None
+
