@@ -1,8 +1,3 @@
-numpy
-cython
-numexpr
-h5py
 tables
 pyinotify
-argparse
 pyzmq
