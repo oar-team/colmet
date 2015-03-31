@@ -9,10 +9,9 @@ REQUIREMENTS
 * a Linux kernel that supports
    - Taskstats
 
-* Python Version 2.6 or newer
+* Python Version 2.7 or newer
    - python-zmq 2.2.0 or newer
    - python-tables 2.3.1 or newer
-   - python-h5py 2.0.1 or newer
    - python-pyinotify 0.9.3-2 or newer
 
 INSTALLATION
@@ -20,8 +19,8 @@ INSTALLATION
 
 * System-wide installation :
 
-    python setup.py install
+    pip install /path/to/colmet/src
 
 * User installation :
 
-    python setup.py install --prefix=~/.local
+    pip install --user /path/to/colmet/src
