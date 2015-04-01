@@ -36,13 +36,15 @@ class TaskInfo(Info):
         Info.__init__(self, input_backend)
         self.tid = tid
         self.mark = True
-        self.backend_request = self.counters_class.build_request(input_backend, tid)
+        self.backend_request = self.counters_class.build_request(input_backend,
+                                                                 tid)
 
     def update_stats(self, timestamp, job_id, hostname):
         '''
         Update the current metrics of the task
         '''
-        stats = self.counters_class.fetch(self.input_backend, self.backend_request)
+        stats = self.counters_class.fetch(self.input_backend,
+                                          self.backend_request)
         if stats:
             if not self.stats_delta:
                 self.stats_total = stats
@@ -179,7 +181,7 @@ class CGroupInfo(Info):
                 task.update_stats(timestamp, job_id, hostname)
 
             for tid, task in self.tasks.items():
-                if  task.mark:
+                if task.mark:
                     msg = (
                         "Process/Task %s no more exists."
                         "Removing from the Job %s"
@@ -198,7 +200,7 @@ class CGroupInfo(Info):
 
         else:  # no task in this cgroup....
             LOG.info("no taks in this cgroup")
-            #raise VoidCpusetError
+            # raise VoidCpusetError
 
         Info.update_stats(self, timestamp, job_id, hostname)
         return True
@@ -241,7 +243,8 @@ class Job(object):
         self.duration = None
         self.job_id = job_id
         self._hostname = socket.gethostname()
-        #void_cpuset is used to avoid sending null stats to output backends TODO rm
+        # void_cpuset is used to avoid sending null stats to output backends
+        # TODO rm
         self.void_cpuset = True
 
         self.job_children.extend(
@@ -254,7 +257,7 @@ class Job(object):
             [CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups]
         )
 
-        #to monitor global node resources activities
+        # to monitor global node resources activities
         if job_id == 0:
             self.job_children.extend([ProcStatsInfo(input_backend)])
 

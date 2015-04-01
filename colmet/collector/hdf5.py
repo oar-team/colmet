@@ -3,7 +3,6 @@ stdout backend : print information to stdout
 '''
 import logging
 import os
-import time
 
 from colmet.common.exceptions import FileAlreadyOpenWithDifferentModeError
 from colmet.common.metrics import get_counters_class
@@ -56,7 +55,9 @@ class HDF5TaskstatsCounters(object):
         cpu_scaled_run_real_total = tables.Int64Col(dflt=-1)
         freepages_count = tables.Int64Col(dflt=-1)
         freepages_delay_total = tables.Int64Col(dflt=-1)
+
     missing_keys = []
+
     @classmethod
     def get_table_description(cls):
         return cls.HDF5TableDescription
@@ -77,16 +78,17 @@ class HDF5TaskstatsCounters(object):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
-                if not key in cls.missing_keys:
+                if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
         for key in cls.Counters._counter_definitions.keys():
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
-                if not key in cls.missing_keys:
+                if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
+
 
 class HDF5ProcstatsCounters(object):
     Counters = get_counters_class("procstats_default")
@@ -176,6 +178,7 @@ class HDF5ProcstatsCounters(object):
         # sys_numa_interleave = tables.Int64Col(dflt=-1)
 
     missing_keys = []
+
     @classmethod
     def get_table_description(cls):
         return cls.HDF5TableDescription
@@ -196,14 +199,14 @@ class HDF5ProcstatsCounters(object):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
-                if not key in cls.missing_keys:
+                if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
         for key in cls.Counters._counter_definitions.keys():
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
-                if not key in cls.missing_keys:
+                if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
 
@@ -321,7 +324,8 @@ class JobFile(object):
                                                          self.job_filemode)
         else:
             LOG.info("HDF5 compression enabled (lib=%s, level=%s) for %s" %
-                     (self.hdf5_complib, self.hdf5_complevel, self.hdf5_filepath))
+                     (self.hdf5_complib, self.hdf5_complevel,
+                      self.hdf5_filepath))
             filters = tables.Filters(complevel=self.hdf5_complevel,
                                      complib=self.hdf5_complib)
             self.job_file = JobFile.fileaccess.open_file(self.hdf5_filepath,

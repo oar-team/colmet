@@ -182,10 +182,10 @@ def main():
         err.show()
         sys.exit(1)
     except Exception as err:
-        MSG = "Error not handled '%s'" % err.__class__.__name__
-        logging.critical(MSG)
+        msg = "Error not handled '%s'" % err.__class__.__name__
+        logging.critical(msg)
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
-            print repr(err)
+            print(repr(err))
         raise
 
 

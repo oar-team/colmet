@@ -58,4 +58,4 @@ class StdoutBackend(OutputBaseBackend):
         put the metrics to the output backend
         '''
         for counters in counters_list:
-            print counters
+            print(counters)

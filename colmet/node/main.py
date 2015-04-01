@@ -85,7 +85,7 @@ class Task(object):
             LOG.debug("time to take measure: %s sec" % (time.time() - now))
 
             if len(counters_list) > 0:
-                #print "nb counters_list", len(counters_list)
+                # print "nb counters_list", len(counters_list)
                 try:
                     self.zeromq_output_backend.push(counters_list)
                     LOG.debug("%s metrics has been pushed with zeromq"
@@ -109,7 +109,8 @@ def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION,
                                      formatter_class=formatter)
 
-    parser.add_argument('--version', action='version', version='colmet version %s' % VERSION)
+    parser.add_argument('--version', action='version',
+                        version='colmet version %s' % VERSION)
 
     parser.add_argument('-v', '--verbose', action='count', dest="verbosity",
                         default=1)
@@ -187,10 +188,10 @@ def main():
         err.show()
         sys.exit(1)
     except Exception as err:
-        MSG = "Error not handled '%s'" % err.__class__.__name__
-        logging.critical(MSG)
+        msg = "Error not handled '%s'" % err.__class__.__name__
+        logging.critical(msg)
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
-            print repr(err)
+            print(repr(err))
         raise
 
 
