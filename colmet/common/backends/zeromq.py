@@ -1,18 +1,25 @@
 '''
 ZeroMQ input backend for colmet collector
 '''
-
 import zmq
 from zmq.eventloop import ioloop, zmqstream
 import logging
 import socket
 import struct
 
+
 LOG = logging.getLogger()
 
 from colmet.common.metrics.base import BaseCounters
 
 from colmet.common.backends.base import InputBaseBackend, OutputBaseBackend
+
+try:
+    _snd_hwm = zmq.HWM
+    _rcv_hwm = zmq.HWM
+except AttributeError:
+    _snd_hwm = zmq.SNDHWM
+    _rcv_hwm = zmq.RCVHWM
 
 
 class ZMQInputBackend(InputBaseBackend):
@@ -23,8 +30,7 @@ class ZMQInputBackend(InputBaseBackend):
         self.loop = ioloop.IOLoop.instance()
         self.socket = self.context.socket(zmq.PULL)
         self.socket.setsockopt(zmq.LINGER, self.options.zeromq_linger)
-        self.socket.setsockopt(zmq.HWM, self.options.zeromq_hwm)
-        self.socket.setsockopt(zmq.SWAP, self.options.zeromq_swap)
+        self.socket.setsockopt(_rcv_hwm, self.options.zeromq_hwm)
         LOG.debug("Use the bind URI '%s'" % self.options.zeromq_bind_uri)
         self.socket.bind(self.options.zeromq_bind_uri)
         self.stream = zmqstream.ZMQStream(self.socket, self.loop)
@@ -60,8 +66,7 @@ class ZMQOutputBackend(OutputBaseBackend):
         self.hostname = socket.gethostname()
         self.socket = self.context.socket(zmq.PUSH)
         self.socket.setsockopt(zmq.LINGER, self.options.zeromq_linger)
-        self.socket.setsockopt(zmq.HWM, self.options.zeromq_hwm)
-        self.socket.setsockopt(zmq.SWAP, self.options.zeromq_swap)
+        self.socket.setsockopt(_snd_hwm, self.options.zeromq_hwm)
         self.socket.connect(self.options.zeromq_uri)
         LOG.debug("Use the URI '%s'" % self.options.zeromq_uri)
 
@@ -77,5 +82,5 @@ class ZMQOutputBackend(OutputBaseBackend):
             try:
                 raw = BaseCounters.pack_from_list(counters_list)
                 self.socket.send(raw)
-            except struct.error, e:
+            except struct.error as e:
                 LOG.error("An error occurred during packet creation : %s" % e)
