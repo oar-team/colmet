@@ -149,12 +149,6 @@ def main():
                             " ZeroMQ shall queue in memory. The value "
                             " of zero means \"no limit\".")
 
-    group.add_argument("--zeromq-swap", type=int, dest='zeromq_swap',
-                       default=(200 * 2 ** 10),
-                       help="Defines the maximum size of the swap space in"
-                            " bytes. ZeroMQ will use a this local swapfile to"
-                            " store messages that exceed the high water mark.")
-
     group.add_argument("--zeromq-linger", type=int,
                        default=0, dest='zeromq_linger',
                        help="Set the linger period for the specified socket."

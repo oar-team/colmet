@@ -164,18 +164,13 @@ def main():
     group.add_argument("--zeromq-uri", dest='zeromq_uri',
                        help="ZeroMQ collector URI",
                        default='tcp://127.0.0.1:5556')
+
     group.add_argument("--zeromq-hwm", type=int,
                        default=1000, dest='zeromq_hwm',
                        help="The high water mark is a hard limit on the"
                             " maximum number of outstanding messages "
                             " ZeroMQ shall queue in memory. The value "
                             " of zero means \"no limit\".")
-
-    group.add_argument("--zeromq-swap", type=int, dest='zeromq_swap',
-                       default=(200 * 2 ** 10),
-                       help="Defines the maximum size of the swap space in"
-                            " bytes. ZeroMQ will use a this local swapfile to"
-                            " store messages that exceed the high water mark.")
 
     group.add_argument("--zeromq-linger", type=int,
                        default=0, dest='zeromq_linger',
