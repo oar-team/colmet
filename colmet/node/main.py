@@ -12,7 +12,6 @@ from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
-from colmet.common.utils import Daemon
 from colmet.common.exceptions import Error, NoneValueError
 
 
@@ -119,18 +118,6 @@ def main():
                         dest='sampling_period', default=5,
                         help='Sampling period of measuring in seconds')
 
-    parser.add_argument('--daemon', dest='run_as_daemon',
-                        help='Runs as daemon',
-                        action='store_true', default=False)
-
-    parser.add_argument('--pidfile', dest='pidfile',
-                        default="/var/run/colmet.pid",
-                        help='Pid file used when running as daemon')
-
-    parser.add_argument('--logfile', dest='logfile',
-                        default="/var/log/colmet.log",
-                        help='logger file used when running as daemon')
-
     parser.add_argument('--disable-procstats', action="store_true",
                         default=False, dest="disable_procstats",
                         help='Disables node monitoring based on some /proc '
@@ -192,13 +179,8 @@ def main():
     )
 
     # run
-    main_loop = lambda: Task(sys.argv[0], args).start()
     try:
-        if not args.run_as_daemon:
-            main_loop()
-        else:
-            daemon = Daemon(args.pidfile, main_loop, stderr=args.logfile)
-            daemon.start()
+        Task(sys.argv[0], args).start()
     except KeyboardInterrupt:
         pass
     except Error as err:

@@ -12,7 +12,6 @@ import time
 from colmet import VERSION
 from colmet.common.backends.zeromq import ZMQInputBackend
 from colmet.common.backends.base import StdoutBackend
-from colmet.common.utils import Daemon
 from colmet.common.exceptions import Error, NoneValueError
 
 
@@ -116,18 +115,6 @@ def main():
     parser.add_argument('-v', '--verbose', action='count', dest="verbosity",
                         default=1)
 
-    parser.add_argument('--daemon', dest='run_as_daemon',
-                        help='Runs as daemon',
-                        action='store_true', default=False)
-
-    parser.add_argument('--pidfile', dest='pidfile',
-                        default="/var/run/colmet.pid",
-                        help='Pid file used when running as daemon')
-
-    parser.add_argument('--logfile', dest='logfile',
-                        default="/var/log/colmet.log",
-                        help='Logger file used when running as daemon')
-
     parser.add_argument('--buffer-size', dest='buffer_size', default=100,
                         help='Defines the maximum number of counters that '
                              'colmet should queue in memory before pushing '
@@ -187,13 +174,8 @@ def main():
     )
 
     # run
-    main_loop = lambda: Task(sys.argv[0], args).start()
     try:
-        if not args.run_as_daemon:
-            main_loop()
-        else:
-            daemon = Daemon(args.pidfile, main_loop, stderr=args.logfile)
-            daemon.start()
+        Task(sys.argv[0], args).start()
     except KeyboardInterrupt:
         pass
     except Error as err:
