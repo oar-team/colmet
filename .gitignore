@@ -20,3 +20,4 @@ pip-log.txt
 .tox
 cover/
 *.swap
+.oardocker
