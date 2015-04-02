@@ -6,5 +6,5 @@
     distributed environnement
 
 '''
-VERSION = '0.5.0'
-__version__ = VERSION
+__version__ = '0.5.0'
+VERSION = __version__

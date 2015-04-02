@@ -1,44 +1,34 @@
 #!/usr/bin/env python
 # *-* coding: utf-8 *-*
-
-# Copyright 2012 Philippe Le Brouster <philippe.le-brouster@imag.fr> / LIG
-#
-# This file is part of Colmet
-#
-# Colmet is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Épeire is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero Public License for more details.
-#
-# You should have received a copy of the GNU Affero Public License
-# along with Épeire.  If not, see <http://www.gnu.org/licenses/>.
-
-
-'''
-Colmet Python setup file
-'''
-
+import re
 import os.path as op
 from setuptools import setup, find_packages
-from colmet import VERSION
+
 
 here = op.abspath(op.dirname(__file__))
 
 
+requirements = [
+    'tables',
+    'pyinotify',
+    'pyzmq',
+]
+
+
 def read(fname):
     ''' Return the file content. '''
-    with open(op.join(here, fname)) as f:
-        return f.read()
+    with open(op.join(here, fname)) as fd:
+        return fd.read()
+
+
+def get_version():
+    return re.compile(r".*__version__ = '(.*?)'", re.S)\
+             .match(read(op.join(here, 'colmet', '__init__.py'))).group(1)
 
 
 setup(
     name="colmet",
-    version=VERSION.strip('-dev'),
+    version=get_version(),
     description=("A utility to monitor the jobs ressources in a HPC"
                  " environment, espacially OAR"),
     keywords="monitoring, taskstat, oar, hpc, sciences",
@@ -52,8 +42,6 @@ setup(
     install_requires=read('requirements.txt').splitlines(),
     platforms=['Linux'],
     license="GNU GPL",
-    tests_require=['nose>=1.0'],
-    test_suite='nose.collector',
     entry_points={
         'console_scripts': [
             'colmet-node = colmet.node.main:main',
@@ -70,8 +58,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Monitoring',
         'Topic :: System :: Clustering',
-        'Programming Language :: Python :: 2.5',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7'
     ]
 )

@@ -1,36 +1,20 @@
+# -*- coding: utf-8 -*-
 """
 Testing the base metric class
 """
-from nose.tools import (with_setup, raises)
+import pytest
 
-from colmet.metrics.base import (UInt8, UInt16, UInt32, UInt64, String,
-                                 BaseCounters, CounterAlreadyExistError)
+from colmet.common.metrics.base import (UInt8, UInt16, UInt32, UInt64, String,
+                                        BaseCounters, CounterAlreadyExistError)
 
 
 def test_basic_types():
-    assert(UInt8().length == 2)
-    assert(UInt16().length == 2)
-    assert(UInt32().length == 4)
-    assert(UInt64().length == 8)
+    assert UInt8().length == 2
+    assert UInt16().length == 2
+    assert UInt32().length == 4
+    assert UInt64().length == 8
     for i in [1, 5, 0, 100]:
-        assert(String(i).length == i)
-
-
-def test_basecounters_packing_unpacking():
-    import os
-    import ctypes
-
-    raw = os.urandom(BaseCounters._fmt_length)
-
-    m = BaseCounters()
-
-    m.unpack_from(raw, 0)
-
-    raw2 = ctypes.create_string_buffer(BaseCounters._fmt_length)
-
-    m.pack_into(raw2, 0)
-
-    assert raw2.raw == raw
+        assert String(i).length == i
 
 
 class MyCounters(BaseCounters):
@@ -42,20 +26,14 @@ class MyCounters(BaseCounters):
         ('speed', UInt64(), 'count', 'add', 'Speed')
     ]
 
-m = None
 
-
-def setup_mycounters():
-    global m
+@pytest.fixture(scope="function")
+def mycounters(request, monkeypatch):
     m = MyCounters()
     m.job_id = 42
     m.timestamp = 0
     m.hostname = 'localhost'
-
-
-def teardown_mycounters():
-    global m
-    del m
+    return m
 
 
 def test_register_header():
@@ -94,43 +72,41 @@ def test_register_counters():
     assert c_index is not None
 
 
-@with_setup(setup_mycounters, teardown_mycounters)
-def test_counter_assignment():
+def test_counter_assignment(mycounters):
     '''Testing basic counters get/set'''
-    m.speed = 120
-    assert(m.speed == 120)
-    assert(m._get_counter('speed') == 120)
+    mycounters.speed = 120
+    assert(mycounters.speed == 120)
+    assert(mycounters._get_counter('speed') == 120)
 
 
-@with_setup(setup_mycounters, teardown_mycounters)
-def test_counter_packed_assignment():
+def test_counter_packed_assignment(mycounters):
     '''Testing packed/unpacked counters get/set'''
-    m.project = 'speedcontrol'
-    m.speed = 0
-    m.pack()
-    assert(m.speed == 0)
-    m.speed = 120
-    assert(m.speed == 120)
-    m.unpack()
-    assert(m.speed == 120)
+    mycounters.project = 'speedcontrol'
+    mycounters.speed = 0
+    mycounters.pack()
+    assert(mycounters.speed == 0)
+    mycounters.speed = 120
+    assert(mycounters.speed == 120)
+    mycounters.unpack()
+    assert(mycounters.speed == 120)
 
 
-@raises(CounterAlreadyExistError)
 def test_failure_if_regitering_an_existing_counter():
     '''Registering an existing counter should fail'''
-    class MyCounters2(MyCounters):
-        _counters = [
-            ('speed', UInt64(), 'count', 'add', 'Speed')
-        ]
+    with pytest.raises(CounterAlreadyExistError):
+        class MyCounters2(MyCounters):
+            _counters = [
+                ('speed', UInt64(), 'count', 'add', 'Speed')
+            ]
 
 
-@raises(CounterAlreadyExistError)
 def test_failure_if_regitering_an_existing_headerr():
     '''Registering an existing counter should fail'''
-    class MyCounters2(MyCounters):
-        _headers = [
-            ('job_id', UInt64(), 'string')
-        ]
+    with pytest.raises(CounterAlreadyExistError):
+        class MyCounters2(MyCounters):
+            _headers = [
+                ('job_id', UInt64(), 'string')
+            ]
 
 
 def test_normalize():
@@ -143,10 +119,10 @@ def test_normalize():
     assert val == "100K"
 
 
-@raises(TypeError)
 def test_failure_if_deriving_counters_from_multiple_class():
     class MyCounters2(MyCounters):
         pass
 
-    class MyCounters3(MyCounters, MyCounters2):
-        pass
+    with pytest.raises(TypeError):
+        class MyCounters3(MyCounters, MyCounters2):
+            pass
