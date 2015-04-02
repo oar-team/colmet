@@ -1,6 +1,18 @@
 Colmet CHANGELOG
 ================
 
+version 0.5.0
+-------------
+
+Released on Apr 2nd 2015
+
+- Don't run colmet as a daemon anymore
+- Maintained compatibility with zmq 3.x/4.x
+ - Dropped ``--zeromq-swap`` (swap was dropped from zmq 3.x)
+ - Handled zmq name change from HWM to SNDHWM and RCVHWM
+- Fixed requirements
+- Dropped python 2.6 support
+
 version 0.4.0
 -------------
 
