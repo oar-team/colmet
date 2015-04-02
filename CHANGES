@@ -1,6 +1,14 @@
 Colmet CHANGELOG
 ================
 
+version 0.5.1
+-------------
+
+Released on Apr 2nd 2015
+
+- Fixed error about missing ``requirements.txt`` file in the sdist package
+
+
 version 0.5.0
 -------------
 
