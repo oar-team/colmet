@@ -1,29 +1,61 @@
-SHELL=/bin/bash
-# these files should pass flake8
-# exclude ./env/, which may contain virtualenv packages..;
-WHITELIST_FILES:=$(shell find . -name '*.py' ! -path "*compat.py" ! -path "./env/*" \
-           ! -path "./.tox/*")
-IGNORE_LINT_ERRORS="W191,E128,E101,E121,E122,E123,E126,E127,E501"
+SHELL := /bin/bash
 
-# Dev
-lint:
-	@flake8 --ignore=${ignore_error} ${WHITELIST_FILES}
+# these files should pass flakes8
+FLAKE8_WHITELIST=$(shell find . -name "*.py" \
+                    ! -path "./docs/*" ! -path "./.tox/*" \
+                    ! -path "./env/*" ! -path "./venv/*" \
+                    ! -path "**/genetlink/*" \
+                    ! -path "**/compat.py")
 
-upgrade:
-	@pip freeze --local | grep -v '^\-e' | cut -d = -f 1 | xargs pip install -U
-freeze:
-	@pip freeze --local
+open := $(shell { which xdg-open || which open; } 2>/dev/null)
 
-# Prod
-deb:
-	@python setup.py --command-packages=stdeb.command bdist_deb
+.PHONY: docs dist
 
-# Common
-doc:
-	@cd docs; make html
+help:
+	@echo "Please use 'make <target>' where <target> is one of"
+	@echo "  init       to install the project in development mode (using virtualenv is highly recommended)"
+	@echo "  clean      to remove build and Python file (.pyc) artifacts"
+	@echo "  test       to run tests quickly with the default Python"
+	@echo "  testall    to run tests on every Python version with tox"
+	@echo "  ci         to run all tests and get junitxml report for CI (Travis, Jenkins...)"
+	@echo "  coverage   to check code coverage quickly with the default Python"
+	@echo "  lint       to check style with flake8"
+	@echo "  sdist      to package"
+	@echo "  release    to package and upload a release"
+
+init:
+	pip install -e .
+	pip install -U setuptools pip tox ipdb jedi pytest pytest-cov flake8
 
 clean:
-	@git clean -Xfd
+	rm -fr build/
+	rm -fr dist/
+	rm -fr *.egg-info
+	find . -name '*.pyc' -type f -exec rm -f {} +
+	find . -name '*.pyo' -type f -exec rm -f {} +
+	find . -name '*~' -type f -exec rm -f {} +
+	find . -name '__pycache__' -type d -exec rm -rf {} +
 
+test:
+	py.test --verbose
 
-.PHONY: clean env doc
+testall:
+	tox
+
+ci:
+	py.test --junitxml=junit.xml
+
+coverage:
+	py.test --verbose --cov-report term --cov-report html --cov=${PACKAGE} || true
+	$(open) htmlcov/index.html
+
+lint:
+	flake8 $(FLAKE8_WHITELIST)
+
+sdist: clean
+	python setup.py sdist
+	ls -l dist
+
+release: clean
+	python setup.py register
+	python setup.py sdist upload

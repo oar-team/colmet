@@ -6,7 +6,8 @@ import copy
 import logging
 
 from colmet.common.metrics.taskstats import TaskstatsCounters
-from colmet.common.exceptions import NoEnoughPrivilegeError, JobNeedToBeDefinedError
+from colmet.common.exceptions import (NoEnoughPrivilegeError,
+                                      JobNeedToBeDefinedError)
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
 
@@ -75,16 +76,16 @@ class TaskstatsBackend(InputBaseBackend):
                 filenames[jid[0]] = filename
 
         monitored_job_ids = set(self.job_id_list)
-        #Add new jobs
+        # Add new jobs
         for job_id in (job_ids - monitored_job_ids):
             job_path = cpuset_rootpath + "/" + filenames[job_id]
             options = self.create_options_job_cgroups([job_path])
             self.jobs[job_id] = Job(self, int(job_id), options)
-        #Del ended jobs
+        # Del ended jobs
 
         for job_id in (monitored_job_ids - job_ids):
             del self.jobs[job_id]
-        #udpate job_id list to monitor
+        # udpate job_id list to monitor
         self.job_id_list = list(job_ids)
 
 #
@@ -125,7 +126,7 @@ class TaskStatsNetlink(object):
         request.send(self.connection)
         try:
             reply = GeNlMessage.recv(self.connection)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ESRCH:
                 # OSError: Netlink error: No such process (3)
                 return
@@ -136,7 +137,7 @@ class TaskStatsNetlink(object):
             if attr_type == TASKSTATS_TYPE_AGGR_PID:
                 reply = attr_value.nested()
                 break
-            #elif attr_type == TASKSTATS_TYPE_PID:
+            # elif attr_type == TASKSTATS_TYPE_PID:
             #    pass
         else:
             return

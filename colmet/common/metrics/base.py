@@ -3,6 +3,7 @@
 This module contains the base class for the metrics that provide the
 base functions to register/unregister counter and also pack/unpack data.
 '''
+from functools import reduce
 from datetime import datetime
 from colmet.common.exceptions import CounterAlreadyExistError, NoneValueError
 
@@ -105,7 +106,7 @@ class MetaCountersType(type):
 
         try:
             val = float(value)
-        except  TypeError:
+        except TypeError:
             # value is not available (in case of newly created cgroup with no tasks)
             raise NoneValueError
 
@@ -157,58 +158,58 @@ class MetaCountersType(type):
 
         return type.__new__(cls, name, bases, attrs)
 
-    def __init__(cls, name, bases, attrs):
+    def __init__(self, name, bases, attrs):
         # Registering headers
         if '_headers' in attrs:
             for (h_name, h_type, h_repr) in attrs['_headers']:
-                cls.registerHeader(h_name, h_type, h_repr)
-                cls._set_header_property(h_name)
+                self.register_header(h_name, h_type, h_repr)
+                self._set_header_property(h_name)
 
         # Registering counters
         if '_counters' in attrs:
             for c_name, c_type, c_repr, c_acc_fn, c_descr in attrs['_counters']:
-                cls.registerCounter(c_name, c_type, c_repr, c_acc_fn, c_descr)
-                cls._set_counter_property(c_name)
+                self.register_counter(c_name, c_type, c_repr, c_acc_fn, c_descr)
+                self._set_counter_property(c_name)
 
-        return type.__init__(cls, name, bases, attrs)
+        return type.__init__(self, name, bases, attrs)
 
-    def _set_header_property(cls, name):
+    def _set_header_property(self, name):
         '''
         Internal function to set the property setter/getter for a given header
         value
         '''
         fget = lambda t: t._get_header(name)
         fset = lambda t, value: t._set_header(name, value)
-        setattr(cls, name, property(fget, fset))
+        setattr(self, name, property(fget, fset))
 
-    def _set_counter_property(cls, name):
+    def _set_counter_property(self, name):
         '''
         Internal function to set the property setter/getter for a given counter
         value
         '''
         fget = lambda t: t._get_counter(name)
         fset = lambda t, value: t._set_counter(name, value)
-        setattr(cls, name, property(fget, fset))
+        setattr(self, name, property(fget, fset))
 
-    def registerCounter(cls, c_name, c_type, c_representation,
-                        c_accumulate_function, c_descr, c_index=None):
+    def register_counter(self, c_name, c_type, c_representation,
+                         c_accumulate_function, c_descr, c_index=None):
         '''
         Register a counter for the given class.
 
         This method must be used as a class method when defining a derived
         class of BaseCounters
         '''
-        if c_name in cls._counter_definitions or c_name in cls._header_definitions:
+        if c_name in self._counter_definitions or c_name in self._header_definitions:
             raise CounterAlreadyExistError()
 
         if c_index is None:
-            if len(cls._counter_definitions) > 0:
+            if len(self._counter_definitions) > 0:
                 c_index = 1 + max([index for (_, (_, _, _, _, index, _)) in
-                                  cls._counter_definitions.iteritems()])
+                                  self._counter_definitions.iteritems()])
             else:
                 c_index = 0
 
-        cls._counter_definitions[c_name] = (
+        self._counter_definitions[c_name] = (
             c_type,
             c_representation,
             c_accumulate_function,
@@ -217,55 +218,55 @@ class MetaCountersType(type):
             None
         )
 
-        cls._updateStructFmt()
+        self._update_struct_fmt()
 
-    def registerHeader(cls, h_name, h_type, h_representation, h_index=None):
+    def register_header(self, h_name, h_type, h_representation, h_index=None):
         '''
         Register a header for the given class
 
         This method must be used as a class method when defining a derived
         class of BaseCounters
         '''
-        if h_name in cls._header_definitions or h_name in cls._counter_definitions:
+        if h_name in self._header_definitions or h_name in self._counter_definitions:
             raise CounterAlreadyExistError()
 
         if h_index is None:
-            if len(cls._header_definitions) > 0:
+            if len(self._header_definitions) > 0:
                 h_index = 1 + max([index for (_, (_, _, index, _))
-                                  in cls._header_definitions.iteritems()])
+                                  in self._header_definitions.iteritems()])
             else:
                 h_index = 0
 
-        cls._header_definitions[h_name] = (
+        self._header_definitions[h_name] = (
             h_type,
             h_representation,
             h_index,
             None
         )
-        cls._updateStructFmt()
+        self._update_struct_fmt()
 
-    def _updateStructFmt(cls):
+    def _update_struct_fmt(self):
         '''
         Internal method to update the struct format of the class.
 
         the struct format is computed from the _headers and _counters definitions.
         '''
         offset = 0
-        sorted_hdef = sorted(cls._header_definitions.items(), key=lambda(k, v): v[2])
+        sorted_hdef = sorted(self._header_definitions.items(), key=lambda k, v: v[2])
         for (h_name, (h_type, h_representation, h_index, _)) in sorted_hdef:
-            cls._header_definitions[h_name] = (h_type, h_representation, h_index, offset)
+            self._header_definitions[h_name] = (h_type, h_representation, h_index, offset)
             offset += h_type.length
-        sorted_cdef = sorted(cls._counter_definitions.items(), key=lambda(k, v): v[4])
+        sorted_cdef = sorted(self._counter_definitions.items(), key=lambda k, v: v[4])
         for (c_name, (c_type, c_representation, c_acc_fn, c_descr, c_index, _)) in sorted_cdef:
-            cls._counter_definitions[c_name] = (c_type, c_representation, c_acc_fn, c_descr, c_index, offset)
+            self._counter_definitions[c_name] = (c_type, c_representation, c_acc_fn, c_descr, c_index, offset)
             offset += c_type.length
 
-        sorted_hdef = sorted(cls._header_definitions.items(), key=lambda(k, v): v[2])
+        sorted_hdef = sorted(self._header_definitions.items(), key=lambda k, v: v[2])
         header_fmt_list = [
             (h_name, h_type.struct_code)
             for (h_name, (h_type, _, _, _)) in sorted_hdef
         ]
-        sorted_cdef = sorted(cls._counter_definitions.items(), key=lambda(k, v): v[4])
+        sorted_cdef = sorted(self._counter_definitions.items(), key=lambda k, v: v[4])
         counter_fmt_list = [
             (c_name, c_type.struct_code)
             for (c_name, (c_type, _, _, _, _, _)) in sorted_cdef
@@ -274,11 +275,11 @@ class MetaCountersType(type):
         h_key_list, h_fmt_code_list = zip(*header_fmt_list) if len(header_fmt_list) > 0 else ([], [])
         c_key_list, c_fmt_code_list = zip(*counter_fmt_list) if len(counter_fmt_list) > 0 else ([], [])
 
-        cls._fmt = "<" + "".join(list(h_fmt_code_list)) + "".join(list(c_fmt_code_list))
-        cls._fmt_length = struct.calcsize(cls._fmt)
+        self._fmt = "<" + "".join(list(h_fmt_code_list)) + "".join(list(c_fmt_code_list))
+        self._fmt_length = struct.calcsize(self._fmt)
 
-        cls._fmt_header_ordered_keys = list(h_key_list)
-        cls._fmt_counter_ordered_keys = list(c_key_list)
+        self._fmt_header_ordered_keys = list(h_key_list)
+        self._fmt_counter_ordered_keys = list(c_key_list)
 
 
 class BaseCounters(object):
@@ -429,7 +430,7 @@ class BaseCounters(object):
         msg_format_values = "\n\t" + prefix + "%" + str(key_maxlen) + "s : %s"
         for k in self._counter_definitions.keys():
             (_, c_repr, _, c_index, _, _) = self._counter_definitions[k]
-            if not c_index in msg_counters:
+            if c_index not in msg_counters:
                 msg_counters[c_index] = ""
 
             msg_counters[c_index] += msg_format_values % (
