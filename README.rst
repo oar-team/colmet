@@ -14,16 +14,44 @@ grids. It provides currently several backends :
 Installation:
 -------------
 
-For detailed instructions on how to install Colmet on your plateform, please
-refer to the INSTALL document in the same directory as this document. Please
-carefully read the REQUIREMENTS section of the INSTALL instructions.
+Requirements
+~~~~~~~~~~~~
+
+* a Linux kernel that supports
+   - Taskstats
+
+* Python Version 2.7 or newer
+   - python-zmq 2.2.0 or newer
+   - python-tables 2.3.1 or newer
+   - python-pyinotify 0.9.3-2 or newer
+
+Installation
+~~~~~~~~~~~~
+
+You can install, upgrade, uninstall colmet with these commands::
+
+  $ pip install [--user] colmet
+  $ pip install [--user] --upgrade colmet
+  $ pip uninstall colmet
+
+Or from git (last development version)::
+
+  $ pip install [--user] git+https://github.com/oar-team/colmet.git
+
+Or if you already pulled the sources::
+
+  $ pip install [--user] path/to/sources
+
+Or if you don't have pip::
+
+  $ easy_install colmet
 
 Usage:
 ------
 
 for the nodes :
 
-    sudo colmet-node -vvv -zeromq-uri tcp://127.0.0.1:5556
+    sudo colmet-node -vvv --zeromq-uri tcp://127.0.0.1:5556
 
 for the collector :
 
@@ -39,5 +67,3 @@ Licensing:
 
 This product is distributed under the GNU General Public License Version2.
 Please read through the file LICENSE for more information about our license.
-
-

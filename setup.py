@@ -48,7 +48,7 @@ setup(
     author_email="philippe.le-brouster@imag.fr, olivier.richard@imag.fr",
     url="http://oar.imag.fr/",
     packages=find_packages(),
-    long_description=read('README.rst') + '\n\n' + read('CHANGELOG.rst'),
+    long_description=read('README.rst') + '\n\n' + read('CHANGES'),
     install_requires=read('requirements.txt').splitlines(),
     platforms=['Linux'],
     license="GNU GPL",
