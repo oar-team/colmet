@@ -252,21 +252,21 @@ class MetaCountersType(type):
         the struct format is computed from the _headers and _counters definitions.
         '''
         offset = 0
-        sorted_hdef = sorted(self._header_definitions.items(), key=lambda k, v: v[2])
+        sorted_hdef = sorted(self._header_definitions.items(), key=lambda v: v[1][2])
         for (h_name, (h_type, h_representation, h_index, _)) in sorted_hdef:
             self._header_definitions[h_name] = (h_type, h_representation, h_index, offset)
             offset += h_type.length
-        sorted_cdef = sorted(self._counter_definitions.items(), key=lambda k, v: v[4])
+        sorted_cdef = sorted(self._counter_definitions.items(), key=lambda v: v[1][4])
         for (c_name, (c_type, c_representation, c_acc_fn, c_descr, c_index, _)) in sorted_cdef:
             self._counter_definitions[c_name] = (c_type, c_representation, c_acc_fn, c_descr, c_index, offset)
             offset += c_type.length
 
-        sorted_hdef = sorted(self._header_definitions.items(), key=lambda k, v: v[2])
+        sorted_hdef = sorted(self._header_definitions.items(), key=lambda v: v[1][2])
         header_fmt_list = [
             (h_name, h_type.struct_code)
             for (h_name, (h_type, _, _, _)) in sorted_hdef
         ]
-        sorted_cdef = sorted(self._counter_definitions.items(), key=lambda k, v: v[4])
+        sorted_cdef = sorted(self._counter_definitions.items(), key=lambda v: v[1][4])
         counter_fmt_list = [
             (c_name, c_type.struct_code)
             for (c_name, (c_type, _, _, _, _, _)) in sorted_cdef
