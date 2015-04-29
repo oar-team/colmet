@@ -5,7 +5,6 @@ import logging
 import argparse
 import signal
 import sys
-import threading
 import copy
 import time
 
@@ -24,67 +23,57 @@ class Task(object):
         self.name = name
         self.options = options
         self.output_backends = []
-        self.output_backends_lock = threading.Lock()
         self.init_output_backends()
-        self.zeromq_input_backend = ZMQInputBackend(self.options)
+        self.input_backend = ZMQInputBackend(self.options)
         self.counters_list = []
         self.buffer_size = self.options.buffer_size
 
     def init_output_backends(self):
-        with self.output_backends_lock:
-            for backend in self.output_backends:
-                backend.close()
-                del backend
-            self.output_backends[:] = []
-            options = copy.deepcopy(self.options)
-            if options.hdf5_filepath is not None:
-                if not options.hdf5_filepath.endswith(".hdf5"):
-                    options.hdf5_filepath = "%s.%s.hdf5" % \
-                        (options.hdf5_filepath, int(time.time()))
-                from colmet.collector.hdf5 import HDF5OutputBackend
-                self.output_backends.append(HDF5OutputBackend(options))
-            if self.options.enable_stdout_backend:
-                self.output_backends.append(StdoutBackend(options))
-            for backend in self.output_backends:
-                backend.open()
+        for backend in self.output_backends:
+            backend.close()
+            del backend
+        self.output_backends[:] = []
+        options = copy.deepcopy(self.options)
+        if options.hdf5_filepath is not None:
+            if not options.hdf5_filepath.endswith(".hdf5"):
+                options.hdf5_filepath = "%s.%s.hdf5" % \
+                    (options.hdf5_filepath, int(time.time()))
+            from colmet.collector.hdf5 import HDF5OutputBackend
+            self.output_backends.append(HDF5OutputBackend(options))
+        if self.options.enable_stdout_backend:
+            self.output_backends.append(StdoutBackend(options))
+        for backend in self.output_backends:
+            backend.open()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
-        self.zeromq_input_backend.open()
-        self.zeromq_input_backend.on_recv(self.collect)
+        self.input_backend.open()
         signal.signal(signal.SIGINT, self.terminate)
         signal.signal(signal.SIGTERM, self.terminate)
         signal.signal(signal.SIGHUP, self.reload)
         try:
-            self.zeromq_input_backend.loop.start()
+            self.loop()
         except:
             self.close_backends()
             raise
 
     def push(self):
-        with self.output_backends_lock:
-            for backend in self.output_backends:
+        for backend in self.output_backends:
+            if len(self.counters_list) > 0:
                 try:
                     backend.push(self.counters_list)
-                    LOG.info("%s new metrics has been pushed with %s"
-                             % (len(self.counters_list),
-                                backend.get_backend_name()))
+                    LOG.debug("%s metrics has been pushed with %s"
+                              % (len(self.counters_list),
+                                 backend.get_backend_name()))
                 except (NoneValueError, TypeError):
                     LOG.debug("Values for metrics are not there.")
-            del self.counters_list[:]
-
-    def collect(self, counter):
-        self.counters_list.append(counter)
-        if len(self.counters_list) >= self.options.buffer_size:
-            self.push()
+        del self.counters_list[:]
 
     def close_backends(self):
-        self.zeromq_input_backend.loop.stop()
-        self.zeromq_input_backend.close()
+        self.input_backend.close()
         self.push()
-        with self.output_backends_lock:
-            for backend in self.output_backends:
-                backend.close()
+        for backend in self.output_backends:
+            backend.close()
 
     def terminate(self, *args, **kwargs):
         LOG.info("Terminating %s" % self.name)
@@ -95,6 +84,30 @@ class Task(object):
         LOG.info("Reloading %s" % self.name)
         self.push()
         self.init_output_backends()
+
+    def sleep(self):
+        # absolute time is used and based on seconds since 1970-01-01 00:00:00
+        # UTC
+        now = time.time()
+        time_towait = (((now // self.options.sampling_period) + 1) *
+                       self.options.sampling_period - now)
+        time.sleep(time_towait)
+
+    def loop(self):
+        while True:
+            now = time.time()
+            LOG.debug("Gathering the metrics")
+            self.counters_list = \
+                self.input_backend.pull(self.options.buffer_size)
+
+            LOG.debug("%s metrics has been pulled from zeromq" %
+                      len(self.counters_list))
+
+            LOG.debug("time to take measure: %s sec" % (time.time() - now))
+
+            self.push()
+            # sleep to next sampling
+            self.sleep()
 
 #
 # Main program
@@ -114,6 +127,10 @@ def main():
 
     parser.add_argument('-v', '--verbose', action='count', dest="verbosity",
                         default=1)
+
+    parser.add_argument('-s', '--sample-period', type=float,
+                        dest='sampling_period', default=5,
+                        help='Sampling period of measuring in seconds')
 
     parser.add_argument('--buffer-size', dest='buffer_size', default=100,
                         help='Defines the maximum number of counters that '

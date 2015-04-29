@@ -26,7 +26,6 @@ class ZMQInputBackend(InputBaseBackend):
 
     def open(self):
         self.context = zmq.Context()
-        self.loop = ioloop.IOLoop.instance()
         self.socket = self.context.socket(zmq.PULL)
         self.socket.setsockopt(zmq.LINGER, self.options.zeromq_linger)
         self.socket.setsockopt(_rcv_hwm, self.options.zeromq_hwm)
