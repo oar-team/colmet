@@ -2,7 +2,6 @@
 ZeroMQ input backend for colmet collector
 '''
 import zmq
-from zmq.eventloop import ioloop, zmqstream
 import logging
 import socket
 import struct
@@ -33,26 +32,29 @@ class ZMQInputBackend(InputBaseBackend):
         self.socket.setsockopt(_rcv_hwm, self.options.zeromq_hwm)
         LOG.debug("Use the bind URI '%s'" % self.options.zeromq_bind_uri)
         self.socket.bind(self.options.zeromq_bind_uri)
-        self.stream = zmqstream.ZMQStream(self.socket, self.loop)
 
     def close(self):
         self.socket.close()
         self.context.term()
 
-    def unpack(self, msgs, callback):
+    def pull(self, buffer_size=1000):
         counters_list = []
-        for raw in msgs:
-            try:
-                counters_list.extend(BaseCounters.unpack_to_list(raw))
-            except Exception as e:
-                LOG.exception(e)
+        try:
+            for i in xrange(buffer_size):
+                raw = self.socket.recv(zmq.NOBLOCK, copy=False)
+                counters_list.extend(BaseCounters.unpack_to_list(raw.bytes))
+                del raw
+        except zmq.ZMQError, e:
+            if e.errno != zmq.EAGAIN:
+                raise e
         LOG.debug("%s counters received" % len(counters_list))
-        for counters in counters_list:
-            callback(counters)
+        if len(self.job_id_list) > 0:
+            counters_list = [metric for metric in counters_list
+                             if metric.job_id in self.job_id_list]
+            LOG.debug("%s counters received after filtering"
+                      % len(counters_list))
 
-    def on_recv(self, callback):
-        intern_callback = lambda x: self.unpack(x, callback)
-        self.stream.on_recv(intern_callback)
+        return counters_list
 
 
 class ZMQOutputBackend(OutputBaseBackend):
