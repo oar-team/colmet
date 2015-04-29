@@ -1,11 +1,14 @@
 Colmet CHANGELOG
 ================
 
-Version 0.5.3.dev0
-------------------
+Version 0.5.3
+-------------
 
-**unreleased**
+Released on April 29th 2015
 
+- Removed unnecessary lock from the collector to avoid colmet to wait forever
+- Removed (async) zmq eventloop and added ``--sample-period`` to the collector.
+- Fixed some bugs about hdf file
 
 Version 0.5.2
 -------------
