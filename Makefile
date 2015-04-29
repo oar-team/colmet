@@ -1,5 +1,7 @@
 SHELL := /bin/bash
 
+# Internal variables.
+PACKAGE=colmet
 # these files should pass flakes8
 FLAKE8_WHITELIST=$(shell find . -name "*.py" \
                     ! -path "./docs/*" ! -path "./.tox/*" \
@@ -21,11 +23,13 @@ help:
 	@echo "  coverage   to check code coverage quickly with the default Python"
 	@echo "  lint       to check style with flake8"
 	@echo "  sdist      to package"
-	@echo "  release    to package and upload a release"
+	@echo "  release     to package and upload a release"
+	@echo "  bumpversion to bump the release version number"
+	@echo "  newversion  to set the new development version"
 
 init:
+	pip install -U setuptools pip tox ipdb jedi pytest pytest-cov flake8 bumpversion
 	pip install -e .
-	pip install -U setuptools pip tox ipdb jedi pytest pytest-cov flake8
 
 clean:
 	rm -fr build/
@@ -59,3 +63,12 @@ sdist: clean
 release: clean
 	python setup.py register
 	python setup.py sdist upload
+
+bumpversion:
+	python scripts/bump-release-version.py
+
+newversion:
+	@python scripts/bump-dev-version.py $(filter-out $@,$(MAKECMDGOALS))
+
+%:
+	@:

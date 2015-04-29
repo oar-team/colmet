@@ -1,7 +1,13 @@
 Colmet CHANGELOG
 ================
 
-version 0.5.2
+Version 0.5.3.dev0
+------------------
+
+**unreleased**
+
+
+Version 0.5.2
 -------------
 
 Released on Apr 2nd 2015
@@ -9,7 +15,7 @@ Released on Apr 2nd 2015
 - Fixed python syntax error
 
 
-version 0.5.1
+Version 0.5.1
 -------------
 
 Released on Apr 2nd 2015
@@ -17,7 +23,7 @@ Released on Apr 2nd 2015
 - Fixed error about missing ``requirements.txt`` file in the sdist package
 
 
-version 0.5.0
+Version 0.5.0
 -------------
 
 Released on Apr 2nd 2015
@@ -29,7 +35,7 @@ Released on Apr 2nd 2015
 - Fixed requirements
 - Dropped python 2.6 support
 
-version 0.4.0
+Version 0.4.0
 -------------
 
 - Saved metrics in new HDF5 file if colmet is reloaded in order to avoid HDF5 data corruption
@@ -37,7 +43,7 @@ version 0.4.0
 - Removed ``hiwater_rss`` and ``hiwater_vm`` collected metrics.
 
 
-version 0.3.1
+Version 0.3.1
 -------------
 
 - New metrics ``hiwater_rss`` and ``hiwater_vm`` for taskstats
@@ -45,7 +51,7 @@ version 0.3.1
 - Added ``--disable-procstats`` option to disable procstats backend.
 
 
-version 0.3.0
+Version 0.3.0
 -------------
 
 - Divided colmet package into three parts
@@ -63,7 +69,7 @@ version 0.3.0
   backend
 - Handled SIGTERM and SIGINT to terminate colmet properly
 
-version 0.2.0
+Version 0.2.0
 -------------
 
 - Added options to enable hdf5 compression
@@ -79,7 +85,7 @@ version 0.2.0
   (monitoring is suspended upto one process is launched)
 
 
-version 0.0.1
+Version 0.0.1
 -------------
 
 - Conception
