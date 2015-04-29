@@ -4,7 +4,6 @@ stdout backend : print information to stdout
 import logging
 import os
 
-from colmet.common.exceptions import FileAlreadyOpenWithDifferentModeError
 from colmet.common.metrics import get_counters_class
 from colmet.common.backends.base import OutputBaseBackend
 import tables
@@ -268,11 +267,10 @@ class FileAccess(object):
     def open_file(self, path, filemode, filters=None):
         if path in self.hdf5_files:
             hdf5_file = self.hdf5_files[path]
-            if hdf5_file.mode != filemode:
-                raise FileAlreadyOpenWithDifferentModeError(path)
-        else:
-            hdf5_file = self._open_hdf5_file(path, filemode, filters=filters)
-            self.hdf5_files[path] = hdf5_file
+            if hdf5_file.isopen:
+                return hdf5_file
+        hdf5_file = self._open_hdf5_file(path, filemode, filters=filters)
+        self.hdf5_files[path] = hdf5_file
         return hdf5_file
 
     def close_file_by_path(self, path):
