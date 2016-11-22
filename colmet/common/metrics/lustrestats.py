@@ -14,7 +14,6 @@ class LustrestatsCounters(BaseCounters):
         'lustre_bytes_read': (UInt64(), 'bytes', 'none', 'lustre_bytes_read'),
         'lustre_nb_write': (UInt64(), 'counts', 'none', 'lustre_nb_write'),
         'lustre_bytes_write': (UInt64(), 'bytes', 'none', 'lustre_bytes_write'),
-
         }
         
     counters_lustrestats_to_get = [

@@ -9,6 +9,7 @@ import time
 
 from colmet import VERSION
 from colmet.node.backends.infinibandstats import InfinibandstatsBackend
+from colmet.node.backends.lustrestats import LustrestatsBackend
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
@@ -29,8 +30,10 @@ class Task(object):
         self.input_backends.append(self.taskstats_backend)
         if not self.options.disable_procstats:
             self.input_backends.append(ProcstatsBackend(self.options))
-        if not self.options.enable_infinibandstats:
-            self.input_backends.append(InfinibandstatsBackend(self.options)) 
+        if self.options.enable_infinibandstats:
+            self.input_backends.append(InfinibandstatsBackend(self.options))
+        if self.options.enable_lustrestats:
+            self.input_backends.append(LustrestatsBackend(self.options))
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
     @as_thread
@@ -134,6 +137,13 @@ def main():
                         help='Enables monitoring of node\'s infiniband port'
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
+
+    parser.add_argument('--enable-lustre', action="store_true",
+                        default=False, dest="enable_lustrestats",
+                        help='Enables monitoring of node\'s mounting lustre fs'
+                             'Measures are associated to the fictive job '
+                             'with 0 as identifier (job_id)')
+
     
     group = parser.add_argument_group('Taskstat')
 
