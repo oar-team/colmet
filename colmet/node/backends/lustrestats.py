@@ -5,10 +5,10 @@ import glob
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
-from colmet.common.metrics.lustre import LustrestatsCounters
+from colmet.common.metrics.lustrestats import LustrestatsCounters
 
 
-class LustreStatsBackend(InputBaseBackend):
+class LustrestatsBackend(InputBaseBackend):
     __backend_name__ = "lustrestats"
 
     def open(self):
@@ -70,7 +70,7 @@ class LustreStats(object):
                     if re.match('write_bytes', line):
                         values = line.split()
                         lustre_nb_write += int(values[1])
-                        lustre_bytes_write += int(values[-1]
+                        lustre_bytes_write += int(values[-1])
                         
         lustrestats_data = {'lustre_nb_read': lustre_nb_read, 'lustre_bytes_read': lustre_bytes_read,
                             'lustre_nb_write': lustre_nb_write, 'lustre_bytes_write': lustre_bytes_write

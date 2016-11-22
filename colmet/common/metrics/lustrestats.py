@@ -10,9 +10,9 @@ class LustrestatsCounters(BaseCounters):
 
     counters_lustrestats = {
         # 'key': ( offset,length, type, repr, acc )
-        'lustre_nb_read': (UInt64(), 'counts', 'none', 'lustre_nb_read'),
+        'lustre_nb_read': (UInt64(), 'count', 'none', 'lustre_nb_read'),
         'lustre_bytes_read': (UInt64(), 'bytes', 'none', 'lustre_bytes_read'),
-        'lustre_nb_write': (UInt64(), 'counts', 'none', 'lustre_nb_write'),
+        'lustre_nb_write': (UInt64(), 'count', 'none', 'lustre_nb_write'),
         'lustre_bytes_write': (UInt64(), 'bytes', 'none', 'lustre_bytes_write'),
         }
         

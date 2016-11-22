@@ -10,8 +10,8 @@ class InfinibandstatsCounters(BaseCounters):
 
     counters_infinibandstats = {
         # 'key': ( offset,length, type, repr, acc )
-        'portXmitData': (UInt64(), '4bytes', 'none', 'portXmitData'),
-        'portRcvData': (UInt64(), '4bytes', 'none', 'portRcvData'),
+        'portXmitData': (UInt64(), 'bytes', 'none', 'portXmitData'),
+        'portRcvData': (UInt64(), 'bytes', 'none', 'portRcvData'),
         'portXmitPkts': (UInt64(), 'count', 'none', 'portXmitPkts'),
         'portRcvPkts': (UInt64(), 'count', 'none', 'portRcvPkts')
         }
@@ -20,7 +20,7 @@ class InfinibandstatsCounters(BaseCounters):
         'portXmitData',
         'portRcvData',
         'portXmitPkts',
-        'portXmitPkts'
+        'portRcvPkts'
     ]
 
     _counters = []
