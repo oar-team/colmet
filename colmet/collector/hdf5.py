@@ -260,7 +260,7 @@ class FileAccess(object):
         dirname = os.path.dirname(path)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
-        hdf5_file = tables.openFile(path, filemode, filters=filters)
+        hdf5_file = tables.open_file(path, filemode, filters=filters)
 
         return hdf5_file
 
@@ -347,7 +347,7 @@ class JobFile(object):
         group_path = "/%s" % group_name
         if group_path not in self.job_file:
             root = self.job_file.root
-            self.job_file.createGroup(root, group_name)
+            self.job_file.create_group(root, group_name)
 
         table_name = "metrics"
         table_path = "%s/%s" % (group_path, table_name)
@@ -361,21 +361,21 @@ class JobFile(object):
 
             self.job_metric_backend = metric_backend
             self.job_metric_counters_class = get_counters_class(metric_backend)
-            self.job_file.createTable(
+            self.job_file.create_table(
                 group_path,
                 table_name,
                 self.job_metric_hdf5_class.get_table_description(),
                 "Metrics for the Job %s" % self.job_id
             )
-            self.job_table = self.job_file.getNode(table_path)
-            self.job_table.setAttr('metric_backend', metric_backend)
-            self.job_table.setAttr('backend_version', HDF5_BACKEND_VERSION)
+            self.job_table = self.job_file.get_node(table_path)
+            self.job_table.set_attr('metric_backend', metric_backend)
+            self.job_table.set_attr('backend_version', HDF5_BACKEND_VERSION)
 
         else:
-            self.job_table = self.job_file.getNode(table_path)
-            self.job_metric_backend = self.job_table.getAttr('metric_backend')
+            self.job_table = self.job_file.get_node(table_path)
+            self.job_metric_backend = self.job_table.get_attr('metric_backend')
             self.job_backend_version = \
-                self.job_table.getAttr('backend_version')
+                self.job_table.get_attr('backend_version')
             self.job_metric_counters_class = \
                 get_counters_class(self.job_metric_backend)
 

@@ -22,7 +22,7 @@ Requirements
 
 * Python Version 2.7 or newer
    - python-zmq 2.2.0 or newer
-   - python-tables 2.3.1 or newer
+   - python-tables 3.3.0 or newer
    - python-pyinotify 0.9.3-2 or newer
 
 Installation
