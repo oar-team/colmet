@@ -19,10 +19,10 @@ class HDF5TaskstatsCounters(object):
 
     class HDF5TableDescription(tables.IsDescription):
 
-        metric_backend = tables.StringCol(255)
         timestamp = tables.Int64Col(dflt=-1)
         hostname = tables.StringCol(255)
         job_id = tables.Int64Col(dflt=-1)
+        metric_backend = tables.StringCol(255)
 
         cpu_count = tables.Int64Col(dflt=-1)
         cpu_delay_total = tables.Int64Col(dflt=-1)
@@ -94,10 +94,10 @@ class HDF5ProcstatsCounters(object):
 
     class HDF5TableDescription(tables.IsDescription):
 
-        metric_backend = tables.StringCol(255)
         timestamp = tables.Int64Col(dflt=-1)
         hostname = tables.StringCol(255)
         job_id = tables.Int64Col(dflt=-1)
+        metric_backend = tables.StringCol(255)
 
         uptime_total = tables.Int64Col(dflt=-1)
         uptime_idle = tables.Int64Col(dflt=-1)
@@ -175,7 +175,7 @@ class HDF5ProcstatsCounters(object):
         # sys_numa_allocation = tables.Int64Col(dflt=-1)
         # sys_numa_allocation = tables.Int64Col(dflt=-1)
         # sys_numa_interleave = tables.Int64Col(dflt=-1)
-
+        
     missing_keys = []
 
     @classmethod
@@ -210,6 +210,102 @@ class HDF5ProcstatsCounters(object):
                     LOG.warning(e)
 
 
+class HDF5InfinibandStatsCounters(object):
+    Counters = get_counters_class("infinibandstats_default")
+
+    class HDF5TableDescription(tables.IsDescription):
+
+        timestamp = tables.Int64Col(dflt=-1)
+        hostname = tables.StringCol(255)
+        job_id = tables.Int64Col(dflt=-1)
+        metric_backend = tables.StringCol(255)
+        
+        portXmitData = tables.Int64Col(dflt=-1)
+        portRcvData = tables.Int64Col(dflt=-1)
+        portXmitPkts = tables.Int64Col(dflt=-1)
+        portRcvPkts = tables.Int64Col(dflt=-1)
+
+    missing_keys = []
+
+    @classmethod
+    def get_table_description(cls):
+        return cls.HDF5TableDescription
+
+    @classmethod
+    def to_counters(cls, row):
+        counters = cls.Counters()
+        for key in cls.Counters._header_definitions.keys():
+            counters._set_header(key, row[key])
+
+        for key in cls.Counters._counter_definitions.keys():
+            counters._set_counter(key, row[key])
+        return counters
+
+    @classmethod
+    def to_row(cls, row, counters):
+        for key in cls.Counters._header_definitions.keys():
+            try:
+                row[key] = counters._get_header(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+        for key in cls.Counters._counter_definitions.keys():
+            try:
+                row[key] = counters._get_counter(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+
+class HDF5LustreStatsCounters(object):
+    Counters = get_counters_class("lustrestats_default")
+
+    class HDF5TableDescription(tables.IsDescription):
+
+        timestamp = tables.Int64Col(dflt=-1)
+        hostname = tables.StringCol(255)
+        job_id = tables.Int64Col(dflt=-1)
+        metric_backend = tables.StringCol(255)
+        
+        lustre_nb_read = tables.Int64Col(dflt=-1)
+        lustre_bytes_read = tables.Int64Col(dflt=-1)
+        lustre_nb_write = tables.Int64Col(dflt=-1)
+        lustre_bytes_write = tables.Int64Col(dflt=-1)
+        
+    missing_keys = []
+
+    @classmethod
+    def get_table_description(cls):
+        return cls.HDF5TableDescription
+
+    @classmethod
+    def to_counters(cls, row):
+        counters = cls.Counters()
+        for key in cls.Counters._header_definitions.keys():
+            counters._set_header(key, row[key])
+
+        for key in cls.Counters._counter_definitions.keys():
+            counters._set_counter(key, row[key])
+        return counters
+
+    @classmethod
+    def to_row(cls, row, counters):
+        for key in cls.Counters._header_definitions.keys():
+            try:
+                row[key] = counters._get_header(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+        for key in cls.Counters._counter_definitions.keys():
+            try:
+                row[key] = counters._get_counter(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+                    
 class HDF5OutputBackend(OutputBaseBackend):
     '''
     stdout backend class
@@ -281,8 +377,10 @@ class FileAccess(object):
 class JobFile(object):
     fileaccess = FileAccess()
     hdf5_counters = {
-        HDF5ProcstatsCounters.Counters: HDF5ProcstatsCounters,
-        HDF5TaskstatsCounters.Counters: HDF5TaskstatsCounters
+        'taskstats_default': HDF5TaskstatsCounters,
+        'procstats_default': HDF5ProcstatsCounters,
+        'infinibandstats_default': HDF5InfinibandStatsCounters,
+        'lustrestats_default': HDF5LustreStatsCounters
     }
     path_level = 4
 
@@ -291,10 +389,10 @@ class JobFile(object):
         self.job_id = job_id
         self.job_file = None
         self.job_filemode = filemode
-        self.job_table = None
-        self.job_metric_counters_class = None
-        self.job_metric_backend = None
+        self.job_table = {} # one table per metric's backend
 
+        self.job_backend_version = None
+        
         if hasattr(options, 'hdf5_filepath') \
                 and options.hdf5_filepath is not None:
             self.hdf5_filepath = options.hdf5_filepath
@@ -336,11 +434,8 @@ class JobFile(object):
         """
         JobFile.fileaccess.close_file_by_path(self.hdf5_filepath)
 
-    @property
-    def job_metric_hdf5_class(self):
-        return self.hdf5_counters[self.job_metric_counters_class]
 
-    def _init_job_file_if_needed(self, metric_backend=None):
+    def _init_job_file_if_needed(self):
         self._open_job_file()
 
         group_name = "job_%s" % self.job_id
@@ -349,9 +444,15 @@ class JobFile(object):
             root = self.job_file.root
             self.job_file.create_group(root, group_name)
 
-        table_name = "metrics"
-        table_path = "%s/%s" % (group_path, table_name)
 
+    def _init_job_table_if_needed(self, metric_backend):
+
+        group_name = "job_%s" % self.job_id
+        group_path = "/%s" % group_name
+
+        table_name = metric_backend
+        table_path = "%s/%s" % (group_path, table_name)
+        
         if table_path not in self.job_file:
             if metric_backend is None:
                 raise ValueError(
@@ -359,33 +460,33 @@ class JobFile(object):
                     "defined to create the table"
                 )
 
-            self.job_metric_backend = metric_backend
-            self.job_metric_counters_class = get_counters_class(metric_backend)
+            job_metric_hdf5_class = self.hdf5_counters[metric_backend]
             self.job_file.create_table(
                 group_path,
                 table_name,
-                self.job_metric_hdf5_class.get_table_description(),
+                job_metric_hdf5_class.get_table_description(),
                 "Metrics for the Job %s" % self.job_id
             )
-            self.job_table = self.job_file.get_node(table_path)
-            self.job_table.set_attr('metric_backend', metric_backend)
-            self.job_table.set_attr('backend_version', HDF5_BACKEND_VERSION)
+            self.job_table[metric_backend] = self.job_file.get_node(table_path)
+            self.job_table[metric_backend].set_attr('backend_version', HDF5_BACKEND_VERSION)
 
         else:
-            self.job_table = self.job_file.get_node(table_path)
-            self.job_metric_backend = self.job_table.get_attr('metric_backend')
-            self.job_backend_version = \
-                self.job_table.get_attr('backend_version')
-            self.job_metric_counters_class = \
-                get_counters_class(self.job_metric_backend)
+            self.job_table[metric_backend] = self.job_file.get_node(table_path)
+            self.job_backend_version = self.job_table[metric_backend].get_attr('backend_version')
+            
 
     def append_stats(self, stats):
-        if self.job_table is None:
-            self._init_job_file_if_needed(stats[0].metric_backend)
-
-        row = self.job_table.row
         for stat in stats:
-            self.job_metric_hdf5_class.to_row(row, stat)
-            row.append()
+            metric_backend = stat.metric_backend
+        
+            if self.job_file is None:
+                self._init_job_file_if_needed()
 
-        self.job_table.flush()
+            if metric_backend not in self.job_table:
+                self._init_job_table_if_needed(metric_backend)
+
+            row = self.job_table[metric_backend].row
+            job_metric_hdf5_class = self.hdf5_counters[metric_backend]
+            job_metric_hdf5_class.to_row(row, stat)
+            row.append()
+            self.job_table[metric_backend].flush()
