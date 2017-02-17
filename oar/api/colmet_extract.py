@@ -40,13 +40,15 @@ output_metrics={}
 for interval in intervals:
     if start < interval[1] and stop >= interval[0]:
         f = h5py.File(colmet_hdf5_files_path_prefix+"."+str(interval[0])+".hdf5")
-        m = 'job_'+job_id+'/metrics'
-        if m in f:
-            for metric in metrics:
-              if metric in output_metrics.keys():
-                  output_metrics[metric].extend(f[m][metric].tolist())
-              else:
-                  output_metrics[metric]=f[m][metric].tolist()
+
+        for metric_backend in ['taskstats_default', 'procstats_default', 'infinibandstats_default', 'lustrestats_default']:
+            m = 'job_' + job_id + '/' metric_backend 
+            if m in f:
+                for metric in metrics:
+                    if metric in output_metrics.keys():
+                        output_metrics[metric].extend(f[m][metric].tolist())
+                    else:
+                        output_metrics[metric]=f[m][metric].tolist()
 
 # Empty case
 if not "timestamp" in output_metrics.keys():
