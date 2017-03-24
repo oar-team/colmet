@@ -42,7 +42,7 @@ for interval in intervals:
         f = h5py.File(colmet_hdf5_files_path_prefix+"."+str(interval[0])+".hdf5")
 
         for metric_backend in ['taskstats_default', 'procstats_default', 'infinibandstats_default', 'lustrestats_default']:
-            m = 'job_' + job_id + '/' metric_backend 
+            m = 'job_' + job_id + '/' + metric_backend 
             if m in f:
                 for metric in metrics:
                     if metric in output_metrics.keys():
