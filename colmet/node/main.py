@@ -157,7 +157,7 @@ def main():
                        action='append', default=[],
                        help='task ids to monitor', metavar='TID')
     group.add_argument('--cpuset_rootpath', dest='cpuset_rootpath',
-                       action='append', default=["/dev/oar_cgroups/oar/"],
+                       action='append', default=["/dev/oar_cgroups_links/cpuset/oar/"],
                        help='cpuset root path', metavar='CPUSETROOTPATH')
     group.add_argument('--regex_job_id', dest='regex_job_id',
                        action='append', default=['_(\d+)$'],
