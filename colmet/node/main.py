@@ -24,6 +24,8 @@ class Task(object):
 
     def __init__(self, name, options):
         self.name = name
+        if not options.cpuset_rootpath :
+            options.cpuset_rootpath=["/dev/oar_cgroups_links/cpuset/oar/"]
         self.options = options
         self.input_backends = []
         self.taskstats_backend = TaskstatsBackend(self.options)
@@ -156,8 +158,10 @@ def main():
     group.add_argument('-t', '--tid', type=int, dest='tids',
                        action='append', default=[],
                        help='task ids to monitor', metavar='TID')
+    # please let default as [] in the following, because of https://bugs.python.org/issue16399
+    # the default cpuset path is set into the Task contructor
     group.add_argument('--cpuset_rootpath', dest='cpuset_rootpath',
-                       action='append', default=["/dev/oar_cgroups/oar/"],
+                       action='append', default=[],
                        help='cpuset root path', metavar='CPUSETROOTPATH')
     group.add_argument('--regex_job_id', dest='regex_job_id',
                        action='append', default=['_(\d+)$'],
