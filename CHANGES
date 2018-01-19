@@ -1,10 +1,15 @@
 Colmet CHANGELOG
 ================
 
-Version 0.5.4.dev0
-------------------
+Version 0.5.4
+-------------
 
-**unreleased**
+Released on January 19th 2018
+
+- hdf5 extractor script for OAR RESTFUL API
+- Added infiniband backend
+- Added lustre backend
+- Fixed cpuset_rootpath default always appended
 
 Version 0.5.3
 -------------
