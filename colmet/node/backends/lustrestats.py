@@ -60,7 +60,7 @@ class LustreStats(object):
         lustre_nb_write = 0
         lustre_bytes_write = 0
         
-        for stats_file_name in glob.glob('/proc/fs/lustre/llite/lustre-*/stats'):
+        for stats_file_name in glob.glob('/proc/fs/lustre/llite/*/stats'):
             with open(stats_file_name) as stats_file:
                 for line in stats_file:
                     if re.match('read_bytes', line):
