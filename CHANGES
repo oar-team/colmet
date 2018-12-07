@@ -1,6 +1,12 @@
 Colmet CHANGELOG
 ================
 
+Version 0.5.5dev0
+-------------
+
+- Add -x option to perfquery to gather infiniband counters
+- Change lustre counter path
+
 Version 0.5.4
 -------------
 
