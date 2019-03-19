@@ -15,7 +15,7 @@ struct _rapl_t {
 typedef struct _rapl_t* rapl_t;
 
 int init_rapl();
-void clean_rapl(rapl_t rapl);
+int clean_rapl();
 int get_rapl_size();
 
 extern rapl_t g_rapl;

@@ -45,15 +45,14 @@ int get_rapl_size(){
 }
 
 
-void clean_rapl(rapl_t rapl) {
-  for (int package = 0; package < rapl->nbpackages; package++) {
-    if (powercap_rapl_destroy(&rapl->pkgs[package]))
-      perror("powercap_rapl_destroy");
-    for (int zone=0; zone<rapl->nbzones; zone++)
-      free(rapl->names[package*rapl->nbzones+zone]);
+int clean_rapl() {
+  for (int package = 0; package < g_rapl->nbpackages; package++) {
+    for (int zone=0; zone<g_rapl->nbzones; zone++)
+      free(g_rapl->names[package*g_rapl->nbzones+zone]);
   }
-  free(rapl->names);
-  free(rapl->pkgs);
-  free(rapl);
+  free(g_rapl->names);
+  free(g_rapl->pkgs);
+  free(g_rapl);
+  return 0;
 }
 
