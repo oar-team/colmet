@@ -18,4 +18,6 @@ int init_rapl();
 int clean_rapl();
 int get_rapl_size();
 
+void get_powercap_rapl_get_energy_uj(uint64_t *values);
+
 extern rapl_t g_rapl;
