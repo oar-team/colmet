@@ -5,15 +5,14 @@ from subprocess import check_output
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
-from colmet.common.metrics.RAPLstats import InfinibandstatsCounters
+from colmet.common.metrics.RAPLstats import RAPLstatsCounters
 
 
-
-class RAPLBackend(InputBaseBackend):
+class RAPLstatsBackend(InputBaseBackend):
     __backend_name__ = "RAPLstats"
 
     def open(self):
-        self.RAPLstats = RAPLStats(self.options)
+        self.RAPLstats = RAPLstats(self.options)
         # job with id equal to 0 is the fictive job to gather nodes' monitoring
         # measures
         self.job_0 = Job(self, 0, self.options)

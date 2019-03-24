@@ -10,15 +10,14 @@ import time
 from colmet import VERSION
 from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
+from colmet.node.backends.RAPLstats import RAPLstatsBackend
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
 
-
 LOG = logging.getLogger()
-
 
 class Task(object):
 
@@ -36,6 +35,9 @@ class Task(object):
             self.input_backends.append(InfinibandstatsBackend(self.options))
         if self.options.enable_lustrestats:
             self.input_backends.append(LustrestatsBackend(self.options))
+        #TODO do a proper argument parsing 
+        self.input_backends.append(RAPLstatsBackend(self.options))
+
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
     @as_thread
