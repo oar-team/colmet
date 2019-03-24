@@ -5,7 +5,7 @@ from subprocess import check_output
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
-from colmet.common.metrics.infinibandstats import InfinibandstatsCounters
+from colmet.common.metrics.RAPLstats import InfinibandstatsCounters
 
 
 
@@ -41,7 +41,7 @@ class RAPLstats(object):
     def get_stats(self):
         RAPLstats_data = {}
 
-        RAPLstats_data["max_energy_range_uj"] = 1234
-        RAPLstats_data["energy_uj"] = 1234
+        RAPLstats_data["maxEnergyRangeUJ"] = 1234
+        RAPLstats_data["energyUJ"] = 1234
 
         return RAPLstatsCounters(RAPLstats_buffer=RAPLstats_data)
