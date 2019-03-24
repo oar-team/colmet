@@ -15,9 +15,10 @@ rapl_t g_rapl;
 
 int init_rapl() {
   g_rapl = malloc(sizeof(struct _rapl_t));
+  g_rapl->nbzones = nbzones;
+  g_rapl->zones = rapl_zones;
 
   // get number of processor sockets
-
   g_rapl->nbpackages = powercap_rapl_get_num_packages();
   if (g_rapl->nbpackages == 0) {
     //no packages found
