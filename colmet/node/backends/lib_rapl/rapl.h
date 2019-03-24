@@ -18,6 +18,14 @@ int init_rapl();
 int clean_rapl();
 int get_rapl_size();
 
-void get_powercap_rapl_get_energy_uj(uint64_t *values);
+/**
+ * Get the max energy range in microjoules.
+ */
+void get_powercap_rapl_get_max_energy_range_uj(uint64_t* val);
+
+/**
+ * Get the current energy in microjoules.
+ */
+void get_powercap_rapl_get_energy_uj(uint64_t* val);
 
 extern rapl_t g_rapl;

@@ -66,3 +66,14 @@ void get_powercap_rapl_get_energy_uj(uint64_t *values)
     }
   }
 }
+
+void get_powercap_rapl_get_max_energy_range_uj(uint64_t *values)
+{
+  for (int package = 0; package < g_rapl->nbpackages; package++)
+  {
+    for (int zone = 0; zone < g_rapl->nbzones; zone++)
+    {
+      powercap_rapl_get_max_energy_range_uj(&g_rapl->pkgs[package], g_rapl->zones[zone], &values[package * g_rapl->nbzones + zone]);
+    }
+  }
+}
