@@ -35,8 +35,8 @@ class Task(object):
             self.input_backends.append(InfinibandstatsBackend(self.options))
         if self.options.enable_lustrestats:
             self.input_backends.append(LustrestatsBackend(self.options))
-        #TODO do a proper argument parsing 
-        self.input_backends.append(RAPLstatsBackend(self.options))
+        if self.options.enable_RAPLstats:
+            self.input_backends.append(RAPLstatsBackend(self.options))
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -135,7 +135,7 @@ def main():
                              'subdirectories contents. Measures are '
                              'associated to the fictive job with 0 as '
                              'identifier (job_id)')
-    
+
     parser.add_argument('--enable-infiniband', action="store_true",
                         default=False, dest="enable_infinibandstats",
                         help='Enables monitoring of node\'s infiniband port'
@@ -148,7 +148,13 @@ def main():
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
-    
+    parser.add_argument("--enable-RAPL", action="store_true",
+                        default=False, dest="enable_RAPLstats",
+                        help='Enables monitoring of node s using RAPL'
+                             'Measures are associated to the fictive job '
+                             'with 0 as identifier (job_id)')
+
+
     group = parser.add_argument_group('Taskstat')
 
     group.add_argument('-c', '--cgroup', dest='cgroups',
