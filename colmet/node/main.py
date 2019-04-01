@@ -87,7 +87,8 @@ class Task(object):
             for backend in self.input_backends:
                 pulled_counters = backend.pull()
 
-                if backend.get_backend_name() == 'taskstats':
+                if backend.get_backend_name() == 'taskstats'\
+                or backend.get_backend_name() == "PAPIstats":
                     if len(pulled_counters) > 0:
                         for counters in pulled_counters:
                             counters_list += counters
