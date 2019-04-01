@@ -12,6 +12,7 @@ from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
+from colmet.node.backends.PAPIstats import PAPIstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
@@ -37,9 +38,14 @@ class Task(object):
         if self.options.enable_lustrestats:
             self.input_backends.append(LustrestatsBackend(self.options))
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
+        #TODO check les options
+        self.papistats_back = PAPIstatsBackend(self.options)
+        self.input_backends.append(self.papistats_back)
+
 
     @as_thread
     def check_jobs_thread(self):
+        #TODO ajouter appistats ici
         notifier = \
             AsyncFileNotifier(paths=self.options.cpuset_rootpath,
                               callback=self.taskstats_backend.update_job_list)
@@ -49,6 +55,7 @@ class Task(object):
 
     def update_job_list(self):
         self.taskstats_backend.update_job_list()
+        self.papistats_back.update_job_list()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
