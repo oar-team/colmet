@@ -42,6 +42,8 @@ class RAPLstats(object):
         self.raplLib.init_rapl()
         self.raplsize = self.raplLib.get_rapl_size()
 
+        print("RAPL size: " + str(self.raplsize))
+
         self.maxEnergy = (ctypes.c_uint64 * self.raplsize)()
         self.oldEnergy = (ctypes.c_uint64 * self.raplsize)()
 
@@ -52,13 +54,13 @@ class RAPLstats(object):
         RAPLstats_data = {}
 
         energy = (ctypes.c_uint64 * self.raplsize)()
-
         self.raplLib.get_powercap_rapl_get_max_energy_range_uj(self.maxEnergy)
         self.raplLib.get_powercap_rapl_get_energy_uj(energy)
-
-        RAPLstats_data["maxEnergyRangeUJ"] = self.maxEnergy[0]
-        #TODO do it for all the zone
-        RAPLstats_data["energyUJ"] = energy[0] - self.oldEnergy[0]
+        i = 0
+        for i in range(self.raplsize):
+            RAPLstats_data["name_" + str(i)] = self.maxEnergy[i]
+            RAPLstats_data["maxEnergyRangeUJ_" + str(i)] = self.maxEnergy[i]
+            RAPLstats_data["energyUJ_" + str(i)] = energy[i] - self.oldEnergy[i]
 
         self.oldEnergy = energy
 

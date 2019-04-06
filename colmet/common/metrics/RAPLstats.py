@@ -1,4 +1,5 @@
 import logging
+import ctypes
 
 LOG = logging.getLogger()
 
@@ -7,24 +8,30 @@ from .base import UInt64, BaseCounters
 
 class RAPLstatsCounters(BaseCounters):
     __metric_name__ = 'RAPLstats_default'
+    
+    raplLib = ctypes.cdll.LoadLibrary("./lib_rapl.so")
+    raplLib.init_rapl()
+    raplsize = raplLib.get_rapl_size()
 
-    counters_RAPLstats = {
-        # 'key': ( offset,length, type, repr, acc )
-        'maxEnergyRangeUJ': (UInt64(), 'count', 'none', 'maxEnergyRangeUJ'),
-        'energyUJ': (UInt64(), 'count', 'none', 'energyUJ')
-        }
-        
-    counters_RAPLstats_to_get = [
-        'maxEnergyRangeUJ',
-        'energyUJ'
-    ]
+    #def __init__(self):
+    counters_RAPLstats = {}
+    nbr_zones = 4
+    for i in range(raplsize):
+        counters_RAPLstats["name_" + str(i)] = (UInt64(), 'count', 'none', 'maxEnergyRangeUJ')
+        counters_RAPLstats["maxEnergyRangeUJ_" + str(i)] = (UInt64(), 'count', 'none', 'maxEnergyRangeUJ')
+        counters_RAPLstats["energyUJ_" + str(i)] = (UInt64(), 'count', 'none', 'energyUJ')
+            
+    counters_RAPLstats_to_get = []
+    for i in range(raplsize):
+        counters_RAPLstats_to_get.append("name_" + str(i))
+        counters_RAPLstats_to_get.append("maxEnergyRangeUJ_" + str(i))
+        counters_RAPLstats_to_get.append("energyUJ_" + str(i))
 
     _counters = []
-        
+                
     for c_name in counters_RAPLstats_to_get:
         (c_type, c_repr, c_acc, c_descr) = counters_RAPLstats[c_name]
         _counters.append((c_name, c_type, c_repr, c_acc, c_descr))
-
     @classmethod
     def get_zero_counters(cls):
         return cls(RAPLstats_buffer=None, raw=None)
