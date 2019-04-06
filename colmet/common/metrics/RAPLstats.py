@@ -3,7 +3,7 @@ import ctypes
 
 LOG = logging.getLogger()
 
-from .base import UInt64, BaseCounters
+from .base import String, UInt64, BaseCounters
 
 
 class RAPLstatsCounters(BaseCounters):
@@ -17,7 +17,7 @@ class RAPLstatsCounters(BaseCounters):
     counters_RAPLstats = {}
     nbr_zones = 4
     for i in range(raplsize):
-        counters_RAPLstats["name_" + str(i)] = (UInt64(), 'count', 'none', 'maxEnergyRangeUJ')
+        counters_RAPLstats["name_" + str(i)] = (String(255), 'string', 'none', '')
         counters_RAPLstats["maxEnergyRangeUJ_" + str(i)] = (UInt64(), 'count', 'none', 'maxEnergyRangeUJ')
         counters_RAPLstats["energyUJ_" + str(i)] = (UInt64(), 'count', 'none', 'energyUJ')
             

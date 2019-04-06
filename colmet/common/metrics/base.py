@@ -92,7 +92,8 @@ class MetaCountersType(type):
         "nsec": lambda value: "%s (seconds)" % MetaCountersType._normalize(value, 1000, 1000, ['n', 'u', 'm', '']),
         "count": lambda value: "%s (count)" % MetaCountersType._normalize(value, 1000, 10000, ['', 'K', 'M', 'G', 'T']),
         "mbytes-usec": lambda value: "%s (bytes*seconds)" % MetaCountersType._normalize(float(value * 1024 * 1024 / 1000 / 1000), 1024, 10000, [' ', 'K', 'M', 'G', 'T']),
-        "n/a": lambda value: "%s" % str(value)
+        "n/a": lambda value: "%s" % str(value),
+        "string": lambda value: "%s" % str(value)
     }
 
     @staticmethod

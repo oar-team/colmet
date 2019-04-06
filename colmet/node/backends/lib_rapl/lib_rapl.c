@@ -45,7 +45,6 @@ int get_rapl_size(){
   return g_rapl->nbpackages * g_rapl->nbzones;
 }
 
-
 int clean_rapl() {
   for (int package = 0; package < g_rapl->nbpackages; package++) {
     for (int zone=0; zone<g_rapl->nbzones; zone++)
@@ -56,6 +55,23 @@ int clean_rapl() {
   free(g_rapl);
   return 0;
 }
+
+//ssize_t powercap_rapl_get_name(const powercap_rapl_pkg* pkg, powercap_rapl_zone zone, char* buf, size_t size);
+void get_powercap_rapl_name(char ** values)
+{
+  int i = 0;
+  char retour[255];
+  for (int package = 0; package < g_rapl->nbpackages; package++)
+  {
+    for (int zone = 0; zone < g_rapl->nbzones; zone++)
+    {
+      powercap_rapl_get_name(&g_rapl->pkgs[package], g_rapl->zones[zone], retour, sizeof(retour));
+      strcpy(values[i], retour);
+      i++;
+    }
+  }
+}
+
 
 void get_powercap_rapl_get_energy_uj(uint64_t *values)
 {

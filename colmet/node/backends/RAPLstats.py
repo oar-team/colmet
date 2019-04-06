@@ -50,6 +50,12 @@ class RAPLstats(object):
         #First value doesn't mean anything
         self.raplLib.get_powercap_rapl_get_energy_uj(self.oldEnergy)
 
+        #These value won't change
+        self.name_buffer = [ctypes.create_string_buffer(255) for i in range(self.raplsize)]
+        self.name_pointers = (ctypes.c_char_p*self.raplsize)(*map(ctypes.addressof, self.name_buffer))
+        self.raplLib.get_powercap_rapl_name(self.name_pointers)
+        self.names = [s.value for s in self.name_buffer]
+
     def get_stats(self):
         RAPLstats_data = {}
 
@@ -58,7 +64,7 @@ class RAPLstats(object):
         self.raplLib.get_powercap_rapl_get_energy_uj(energy)
         i = 0
         for i in range(self.raplsize):
-            RAPLstats_data["name_" + str(i)] = self.maxEnergy[i]
+            RAPLstats_data["name_" + str(i)] = self.names[i]
             RAPLstats_data["maxEnergyRangeUJ_" + str(i)] = self.maxEnergy[i]
             RAPLstats_data["energyUJ_" + str(i)] = energy[i] - self.oldEnergy[i]
 

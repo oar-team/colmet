@@ -28,4 +28,6 @@ void get_powercap_rapl_get_max_energy_range_uj(uint64_t* val);
  */
 void get_powercap_rapl_get_energy_uj(uint64_t* val);
 
+void get_powercap_rapl_name(char ** values);
+
 extern rapl_t g_rapl;
