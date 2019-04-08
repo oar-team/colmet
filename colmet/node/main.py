@@ -56,7 +56,8 @@ class Task(object):
 
     def update_job_list(self):
         self.taskstats_backend.update_job_list()
-        self.papistats_back.update_job_list()
+        if self.options.enable_papi:
+            self.papistats_back.update_job_list()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
@@ -157,7 +158,7 @@ def main():
 
     parser.add_argument('--enable-PAPI', action="store_true",
                         default=False, dest="enable_papi",
-                        help='Enables monitoring of jobs from the performance API'
+                        help='Enables monitoring of jobs from the performance API')
 
     
     group = parser.add_argument_group('Taskstat')
