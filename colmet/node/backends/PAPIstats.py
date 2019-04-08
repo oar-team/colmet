@@ -99,7 +99,6 @@ class PAPIStats(object):
         self.options = option
 
     def get_stats(self, job_id):
-        
         PAPIstats_data = {}
         PAPIstats_data["papi_nb_read"] = int(job_id)
         PAPIstats_data["papi_nb_write"] = 5678
