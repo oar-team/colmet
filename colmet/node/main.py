@@ -12,6 +12,7 @@ from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
+from colmet.node.backends.PAPIstats import PAPIstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
@@ -36,10 +37,16 @@ class Task(object):
             self.input_backends.append(InfinibandstatsBackend(self.options))
         if self.options.enable_lustrestats:
             self.input_backends.append(LustrestatsBackend(self.options))
+        if self.options.enable_papi:
+            self.papistats_back = PAPIstatsBackend(self.options)
+            self.input_backends.append(self.papistats_back)
+
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
+
 
     @as_thread
     def check_jobs_thread(self):
+        #TODO ajouter appistats ici
         notifier = \
             AsyncFileNotifier(paths=self.options.cpuset_rootpath,
                               callback=self.taskstats_backend.update_job_list)
@@ -49,6 +56,8 @@ class Task(object):
 
     def update_job_list(self):
         self.taskstats_backend.update_job_list()
+        if self.options.enable_papi:
+            self.papistats_back.update_job_list()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
@@ -80,7 +89,8 @@ class Task(object):
             for backend in self.input_backends:
                 pulled_counters = backend.pull()
 
-                if backend.get_backend_name() == 'taskstats':
+                if backend.get_backend_name() == 'taskstats'\
+                or backend.get_backend_name() == "PAPIstats":
                     if len(pulled_counters) > 0:
                         for counters in pulled_counters:
                             counters_list += counters
@@ -145,6 +155,10 @@ def main():
                         help='Enables monitoring of node\'s mounting lustre fs'
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
+
+    parser.add_argument('--enable-PAPI', action="store_true",
+                        default=False, dest="enable_papi",
+                        help='Enables monitoring of jobs from the performance API')
 
     
     group = parser.add_argument_group('Taskstat')
