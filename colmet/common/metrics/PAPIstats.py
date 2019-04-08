@@ -12,13 +12,15 @@ class PAPIstatsCounters(BaseCounters):
     __metric_name__ = 'PAPIstats_default'
 
     counters_PAPIstats = {
-        'papi_nb_read': (UInt64(), 'count', 'none', 'lustre_nb_read'),
-        'papi_nb_write': (UInt64(), 'count', 'none', 'lustre_nb_read'),
+        'instructions': (UInt64(), 'count', 'none', 'lustre_nb_read'),
+        'cachemisses': (UInt64(), 'count', 'none', 'lustre_nb_read'),
+        'pagefaults': (UInt64(), 'count', 'none', 'lustre_nb_read'),
     }
 
     counters_PAPIstats_to_get = [
-        "papi_nb_read",
-        "papi_nb_write"
+        "instructions",
+        "cachemisses",
+        "pagefaults",
     ]
 
     _counters = []

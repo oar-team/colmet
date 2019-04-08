@@ -4,6 +4,7 @@ import errno
 import struct
 import copy
 import logging
+import ctypes
 
 from colmet.common.metrics.PAPIstats import PAPIstatsCounters
 from colmet.common.exceptions import (NoEnoughPrivilegeError,
@@ -97,10 +98,19 @@ class PAPIStats(object):
 
     def __init__(self, option):
         self.options = option
+        
+        self.PAPIlib = ctypes.cdll.LoadLibrary("./lib_papi.so")
+        self.PAPIlib.init_counters()
+        self.PAPIlib.start_counters()
+
+        self.PAPIvalues = (ctypes.c_uint64 * 3)()
 
     def get_stats(self, job_id):
+        self.PAPIlib.get_counters(self.PAPIvalues)
+
         PAPIstats_data = {}
-        PAPIstats_data["papi_nb_read"] = int(job_id)
-        PAPIstats_data["papi_nb_write"] = 5678
+        PAPIstats_data["instructions"] = self.PAPIvalues[0]
+        PAPIstats_data["cachemisses"] = self.PAPIvalues[1]
+        PAPIstats_data["pagefaults"] = self.PAPIvalues[2]
                         
         return PAPIstatsCounters(PAPIstats_buffer=PAPIstats_data)
