@@ -157,13 +157,11 @@ def main():
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
-<<<<<<< HEAD
     parser.add_argument('--enable-PAPI', action="store_true",
                         default=False, dest="enable_papi",
                         help='Enables monitoring of jobs from the performance API')
 
     
-=======
     parser.add_argument("--enable-RAPL", action="store_true",
                         default=False, dest="enable_RAPLstats",
                         help='Enables monitoring of node s using RAPL'
@@ -171,7 +169,6 @@ def main():
                              'with 0 as identifier (job_id)')
 
 
->>>>>>> rapl
     group = parser.add_argument_group('Taskstat')
 
     group.add_argument('-c', '--cgroup', dest='cgroups',
