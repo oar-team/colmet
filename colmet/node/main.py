@@ -10,6 +10,7 @@ import time
 from colmet import VERSION
 from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
+from colmet.node.backends.RAPLstats import RAPLstatsBackend
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.node.backends.PAPIstats import PAPIstatsBackend
@@ -17,9 +18,7 @@ from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
 
-
 LOG = logging.getLogger()
-
 
 class Task(object):
 
@@ -40,6 +39,8 @@ class Task(object):
         if self.options.enable_papi:
             self.papistats_back = PAPIstatsBackend(self.options)
             self.input_backends.append(self.papistats_back)
+        if self.options.enable_RAPLstats:
+            self.input_backends.append(RAPLstatsBackend(self.options))
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -143,7 +144,7 @@ def main():
                              'subdirectories contents. Measures are '
                              'associated to the fictive job with 0 as '
                              'identifier (job_id)')
-    
+
     parser.add_argument('--enable-infiniband', action="store_true",
                         default=False, dest="enable_infinibandstats",
                         help='Enables monitoring of node\'s infiniband port'
@@ -156,11 +157,21 @@ def main():
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
+<<<<<<< HEAD
     parser.add_argument('--enable-PAPI', action="store_true",
                         default=False, dest="enable_papi",
                         help='Enables monitoring of jobs from the performance API')
 
     
+=======
+    parser.add_argument("--enable-RAPL", action="store_true",
+                        default=False, dest="enable_RAPLstats",
+                        help='Enables monitoring of node s using RAPL'
+                             'Measures are associated to the fictive job '
+                             'with 0 as identifier (job_id)')
+
+
+>>>>>>> rapl
     group = parser.add_argument_group('Taskstat')
 
     group.add_argument('-c', '--cgroup', dest='cgroups',
