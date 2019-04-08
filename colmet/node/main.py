@@ -37,10 +37,11 @@ class Task(object):
             self.input_backends.append(InfinibandstatsBackend(self.options))
         if self.options.enable_lustrestats:
             self.input_backends.append(LustrestatsBackend(self.options))
+        if self.options.enable_papi:
+            self.papistats_back = PAPIstatsBackend(self.options)
+            self.input_backends.append(self.papistats_back)
+
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
-        #TODO check les options
-        self.papistats_back = PAPIstatsBackend(self.options)
-        self.input_backends.append(self.papistats_back)
 
 
     @as_thread
@@ -153,6 +154,10 @@ def main():
                         help='Enables monitoring of node\'s mounting lustre fs'
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
+
+    parser.add_argument('--enable-PAPI', action="store_true",
+                        default=False, dest="enable_papi",
+                        help='Enables monitoring of jobs from the performance API'
 
     
     group = parser.add_argument_group('Taskstat')
