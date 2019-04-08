@@ -100,7 +100,11 @@ class PAPIStats(object):
         self.options = option
         
         self.PAPIlib = ctypes.cdll.LoadLibrary("./lib_papi.so")
-        self.PAPIlib.init_counters()
+        
+        job_id_str = ctypes.create_string_buffer(str("/oar/jfontfreyde_1859472"))
+        job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
+        self.PAPIlib.init_counters(job_id_p)
+
         self.PAPIlib.start_counters()
 
         self.PAPIvalues = (ctypes.c_uint64 * 3)()
