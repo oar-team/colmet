@@ -16,14 +16,12 @@ LOG = logging.getLogger()
 
 
 class PAPIstatsBackend(InputBaseBackend):
-
     __backend_name__ = "PAPIstats"
 
     def open(self):
         self.jobs = {}
 
         self.papistats = PAPIStats(self.options)
-
         if len(self.job_id_list) < 1 \
                 and self.options.cpuset_rootpath == []:
             raise JobNeedToBeDefinedError()
@@ -36,33 +34,18 @@ class PAPIstatsBackend(InputBaseBackend):
 
     def close(self):
         pass
-    """
-    def build_request(self, pid):
-        return self.taskstats_nl.build_request(pid)
 
-    def get_task_stats(self, request):
-        counters = self.taskstats_nl.get_single_task_stats(request)
-        return counters
-    """
     def get_papi_stats(self, job_id):
-        return self.papistats.get_stats(job_id)
+        return self.papistats.get_stats(self.filenames[str(job_id)])
 
     def pull(self):
         for job in self.jobs.values():
-            LOG.debug("pull job :" + str(job.job_id))
             job.update_stats()
         return [job.get_stats() for job in self.jobs.values()]
 
     def get_counters_class(self):
         return PAPIstatsCounters
-    """
-    def create_options_job_cgroups(self, cgroups):
-        # options are duplicated to allow modification per jobs, here
-        # cgroups parametter
-        options = copy.copy(self.options)
-        options.cgroups = cgroups
-        return options
-    """
+
     def update_job_list(self):
         """Used to maintained job list upto date by adding new jobs and
         removing ones to monitor accordingly to cpuset_rootpath and
@@ -72,18 +55,17 @@ class PAPIstatsBackend(InputBaseBackend):
         regex_job_id = self.options.regex_job_id[0]
 
         job_ids = set([])
-        filenames = {}
+        self.filenames = {}
         for filename in os.listdir(cpuset_rootpath):
             jid = re.findall(regex_job_id, filename)
             if len(jid) > 0:
                 job_ids.add(jid[0])
-                filenames[jid[0]] = filename
+                self.filenames[jid[0]] = filename
 
         monitored_job_ids = set(self.job_id_list)
         # Add new jobs
         for job_id in (job_ids - monitored_job_ids):
-            job_path = cpuset_rootpath + "/" + filenames[job_id]
-            #options = self.create_options_job_cgroups([job_path])
+            job_path = cpuset_rootpath + "/" + self.filenames[job_id]
             options =  self.options
             options.PAPI = True
             self.jobs[job_id] = Job(self, int(job_id), options)
@@ -98,18 +80,21 @@ class PAPIStats(object):
 
     def __init__(self, option):
         self.options = option
-        
-        self.PAPIlib = ctypes.cdll.LoadLibrary("./lib_papi.so")
-        
-        job_id_str = ctypes.create_string_buffer(str("/oar/jfontfreyde_1859472"))
-        job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
-        self.PAPIlib.init_counters(job_id_p)
+        self.isInit = False
 
-        self.PAPIlib.start_counters()
+    def get_stats(self, job_filename):
+        if not self.isInit:
+            self.PAPIlib = ctypes.cdll.LoadLibrary("./lib_papi.so")    
 
-        self.PAPIvalues = (ctypes.c_uint64 * 3)()
+            job_id_str = ctypes.create_string_buffer(str("/oar/") + job_filename)
+            job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
+            self.PAPIlib.init_counters(job_id_p)
 
-    def get_stats(self, job_id):
+            self.PAPIlib.start_counters()
+
+            self.PAPIvalues = (ctypes.c_uint64 * 3)()
+            self.isInit = True
+
         self.PAPIlib.get_counters(self.PAPIvalues)
 
         PAPIstats_data = {}
