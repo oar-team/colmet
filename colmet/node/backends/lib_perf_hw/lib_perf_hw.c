@@ -80,6 +80,8 @@ counter_t init_counters(char * job_name) {
     pe.config = perf_key[i];
     g_counter->counters[i] = malloc(nbcores*sizeof(int));
 
+    //loop on cores because per-cgroup monitoring is not available with cpu = -1 : https://stackoverflow.com/questions/52892668/using-perf-event-open-to-monitor-docker-containers
+    //in cgroup-mode the event is measured only if the thread running on the monitored CPU belongs to the designated cgroup http://man7.org/linux/man-pages/man2/perf_event_open.2.html (should we test that ?)
     for (int core=0; core<nbcores; core++) {
       g_counter->counters[i][core] = perf_event_open(&pe, fd1, core, -1, PERF_FLAG_PID_CGROUP|PERF_FLAG_FD_CLOEXEC);
     }

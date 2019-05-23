@@ -6,7 +6,7 @@ import copy
 import logging
 import ctypes
 
-from colmet.common.metrics.PAPIstats import PAPIstatsCounters
+from colmet.common.metrics.perfhwstats import PerfhwstatsCounters
 from colmet.common.exceptions import (NoEnoughPrivilegeError,
                                       JobNeedToBeDefinedError)
 from colmet.common.backends.base import InputBaseBackend
@@ -15,13 +15,13 @@ from colmet.common.job import Job
 LOG = logging.getLogger()
 
 
-class PAPIstatsBackend(InputBaseBackend):
-    __backend_name__ = "PAPIstats"
+class PerfhwstatsBackend(InputBaseBackend):
+    __backend_name__ = "perfhwstats"
 
     def open(self):
         self.jobs = {}
 
-        self.papistats = PAPIStats(self.options)
+        self.perfhwstats = PerfhwStats(self.options)
         if len(self.job_id_list) < 1 \
                 and self.options.cpuset_rootpath == []:
             raise JobNeedToBeDefinedError()
@@ -35,8 +35,8 @@ class PAPIstatsBackend(InputBaseBackend):
     def close(self):
         pass
 
-    def get_papi_stats(self, job_id):
-        return self.papistats.get_stats(self.filenames[str(job_id)])
+    def get_perfhw_stats(self, job_id):
+        return self.perfhwstats.get_stats(self.filenames[str(job_id)])
 
     def pull(self):
         for job in self.jobs.values():
@@ -44,7 +44,7 @@ class PAPIstatsBackend(InputBaseBackend):
         return [job.get_stats() for job in self.jobs.values()]
 
     def get_counters_class(self):
-        return PAPIstatsCounters
+        return PerfhwstatsCounters
 
     def update_job_list(self):
         """Used to maintained job list upto date by adding new jobs and
@@ -67,7 +67,7 @@ class PAPIstatsBackend(InputBaseBackend):
         for job_id in (job_ids - monitored_job_ids):
             job_path = cpuset_rootpath + "/" + self.filenames[job_id]
             options =  self.options
-            options.PAPI = True
+            options.perfhw = True
             self.jobs[job_id] = Job(self, int(job_id), options)
         # Del ended jobs
 
@@ -76,7 +76,7 @@ class PAPIstatsBackend(InputBaseBackend):
         # udpate job_id list to monitor
         self.job_id_list = list(job_ids)
 
-class PAPIStats(object):
+class PerfhwStats(object):
 
     def __init__(self, option):
         self.options = option
@@ -84,22 +84,22 @@ class PAPIStats(object):
 
     def get_stats(self, job_filename):
         if not self.isInit:
-            self.PAPIlib = ctypes.cdll.LoadLibrary("./lib_papi.so")    
+            self.perfhwlib = ctypes.cdll.LoadLibrary("./lib_perf_hw.so")    
 
             job_id_str = ctypes.create_string_buffer(str("/oar/") + job_filename)
             job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
-            self.PAPIlib.init_counters(job_id_p)
+            self.perfhwlib.init_counters(job_id_p)
 
-            self.PAPIlib.start_counters()
+            self.perfhwlib.start_counters()
 
-            self.PAPIvalues = (ctypes.c_uint64 * 3)()
+            self.perfhwvalues = (ctypes.c_uint64 * 3)()
             self.isInit = True
 
-        self.PAPIlib.get_counters(self.PAPIvalues)
+        self.perfhwlib.get_counters(self.perfhwvalues)
 
-        PAPIstats_data = {}
-        PAPIstats_data["instructions"] = self.PAPIvalues[0]
-        PAPIstats_data["cachemisses"] = self.PAPIvalues[1]
-        PAPIstats_data["pagefaults"] = self.PAPIvalues[2]
+        perfhwstats_data = {}
+        perfhwstats_data["instructions"] = self.perfhwvalues[0]
+        perfhwstats_data["cachemisses"] = self.perfhwvalues[1]
+        perfhwstats_data["pagefaults"] = self.perfhwvalues[2]
                         
-        return PAPIstatsCounters(PAPIstats_buffer=PAPIstats_data)
+        return PerfhwstatsCounters(perfhwstats_buffer=perfhwstats_data)

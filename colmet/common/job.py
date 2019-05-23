@@ -55,7 +55,7 @@ class TaskInfo(Info):
         Info.update_stats(self, timestamp, job_id, hostname)
 
 
-class PAPIInfo(Info):
+class PerfhwInfo(Info):
     '''
     Represent Information corresponding to a task
     '''
@@ -277,12 +277,12 @@ class Job(object):
 
         #TODO change that
         try:
-            options.PAPI
+            options.perfhw
         except AttributeError:
-            options.PAPI = False
-        if(options.PAPI):
+            options.perfhw = False
+        if(options.perfhw):
             self.job_children.append(
-                PAPIInfo(job_id, input_backend)
+                PerfhwInfo(job_id, input_backend)
             )
         else:
             self.job_children.extend(
