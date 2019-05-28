@@ -5,7 +5,7 @@
 
 Prise en main Grid5000, OAR et installation Colmet
 
-``` bash
+```
 ssh lrocher@access.grid5000.fr
 ssh grenoble
 oarsub -I
