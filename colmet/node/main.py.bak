@@ -1,7 +1,6 @@
 '''
 Colmet-node User Interface
 '''
-from __future__ import print_function
 import logging
 import argparse
 import signal
