@@ -94,6 +94,11 @@ class Attr:
     def __init__(self, attr_type, data, *values):
         self.type = attr_type
         if len(values):
+            byte_values = ()
+            for value in values:
+                byte_values += (bytes(value, 'utf-8'),)
+            print("values", values)
+            print("bytes_values :", byte_values)
             self.data = struct.pack(data, *values)
         else:
             self.data = data
@@ -128,7 +133,7 @@ class StrAttr(Attr):
 
 class NulStrAttr(Attr):
     def __init__(self, attr_type, data):
-        Attr.__init__(self, attr_type, "%dsB" % len(data), data, 0)
+        Attr.__init__(self, attr_type, b"%dsB" % len(data), data, 0)
 
 class U32Attr(Attr):
     def __init__(self, attr_type, val):
