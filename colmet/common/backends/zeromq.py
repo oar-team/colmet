@@ -43,7 +43,7 @@ class ZMQInputBackend(InputBaseBackend):
                 raw = self.socket.recv(zmq.NOBLOCK, copy=False)
                 counters_list.extend(BaseCounters.unpack_to_list(raw.bytes))
                 del raw
-        except zmq.ZMQError, e:
+        except zmq.ZMQError as e:
             if e.errno != zmq.EAGAIN:
                 raise e
         LOG.debug("%s counters received" % len(counters_list))
