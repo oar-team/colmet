@@ -134,6 +134,7 @@ class MetaCountersType(type):
     }
 
     def __new__(cls, name, bases, attrs):
+        print("CLS NAME BASES ATTRS", cls, name, bases, attrs)
         if len(bases) > 1:
             raise TypeError("Counters cannot be derived from multiple class")
 
@@ -156,7 +157,7 @@ class MetaCountersType(type):
                         attrs[key] = parent_item.copy()
                     else:
                         attrs[key] = parent_item
-
+        print("Apres : CLS NAME BASES ATTRS", cls, name, bases, attrs)
         return type.__new__(cls, name, bases, attrs)
 
     def __init__(self, name, bases, attrs):
