@@ -96,9 +96,11 @@ class Attr:
         if len(values):
             byte_values = ()
             for value in values:
-                byte_values += (bytes(value, 'utf-8'),)
-            print("values", values)
-            print("bytes_values :", byte_values)
+                if isinstance(value, str):
+                    byte_values += (bytes(value, 'utf-8'),)
+                else:
+                    byte_values += (value,)
+            print("byte_values", byte_values)
             self.data = struct.pack(data, *values)
         else:
             self.data = data
