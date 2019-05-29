@@ -137,11 +137,11 @@ class MetaCountersType(type):
         if len(bases) > 1:
             raise TypeError("Counters cannot be derived from multiple class")
 
-        attrs['_header_definitions'] = {}
-        attrs['_counter_definitions'] = {}
-        attrs['_fmt'] = None
-        attrs['_counter_representations'] = MetaCountersType._counter_representations
-        attrs['_counter_accumulation_functions'] = MetaCountersType._counter_accumulation_functions
+        attrs[b'_header_definitions'] = {}
+        attrs[b'_counter_definitions'] = {}
+        attrs[b'_fmt'] = None
+        attrs[b'_counter_representations'] = MetaCountersType._counter_representations
+        attrs[b'_counter_accumulation_functions'] = MetaCountersType._counter_accumulation_functions
 
         # Copy the header/counter definition from the parent class if
         # any

@@ -101,7 +101,7 @@ class Attr:
                 else:
                     byte_values += (value,)
             print("byte_values", byte_values)
-            self.data = struct.pack(data, *values)
+            self.data = struct.pack(data, *byte_values)
         else:
             self.data = data
 
@@ -188,7 +188,7 @@ class Message:
             contents = []
             for attr in payload:
                 contents.append(attr._dump())
-            self.payload = ''.join(contents)
+            self.payload = b''.join(contents)
         else:
             self.payload = payload
 
