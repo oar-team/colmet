@@ -5,7 +5,7 @@ base functions to register/unregister counter and also pack/unpack data.
 '''
 from functools import reduce
 from datetime import datetime
-from colmet.common.exceptions import CounterAlreadyExistError, NoneValueError
+from ..exceptions import CounterAlreadyExistError, NoneValueError
 
 
 import struct
@@ -134,7 +134,6 @@ class MetaCountersType(type):
     }
 
     def __new__(cls, name, bases, attrs):
-        print("CLS NAME BASES ATTRS", cls, name, bases, attrs)
         if len(bases) > 1:
             raise TypeError("Counters cannot be derived from multiple class")
 
@@ -157,7 +156,6 @@ class MetaCountersType(type):
                         attrs[key] = parent_item.copy()
                     else:
                         attrs[key] = parent_item
-        print("Apres : CLS NAME BASES ATTRS", cls, name, bases, attrs)
         return type.__new__(cls, name, bases, attrs)
 
     def __init__(self, name, bases, attrs):
@@ -207,9 +205,10 @@ class MetaCountersType(type):
         if c_index is None:
             if len(self._counter_definitions) > 0:
                 c_index = 1 + max([index for (_, (_, _, _, _, index, _)) in
-                                  self._counter_definitions.iteritems()])
+                                  self._counter_definitions.items()])
             else:
                 c_index = 0
+
 
         self._counter_definitions[c_name] = (
             c_type,
@@ -235,7 +234,7 @@ class MetaCountersType(type):
         if h_index is None:
             if len(self._header_definitions) > 0:
                 h_index = 1 + max([index for (_, (_, _, index, _))
-                                  in self._header_definitions.iteritems()])
+                                  in self._header_definitions.items()])
             else:
                 h_index = 0
 
@@ -284,7 +283,7 @@ class MetaCountersType(type):
         self._fmt_counter_ordered_keys = list(c_key_list)
 
 
-class BaseCounters(object):
+class BaseCounters(object, metaclass=MetaCountersType):
     '''
     This class define the base class for a metric. It provides the basic
     functions for packing/unpacking, registering header/counter.
@@ -295,7 +294,8 @@ class BaseCounters(object):
     By default the headers contain the 'metric_backend', the 'hostname',
     the 'job_id', and the 'timestamp'.  '''
 
-    __metaclass__ = MetaCountersType
+
+    # __metaclass__ = MetaCountersType
     __metric_name__ = "base"
     _headers = [('metric_backend', String(255), 'string'),
                 ('hostname', String(255), 'string'),
@@ -320,13 +320,20 @@ class BaseCounters(object):
     @staticmethod
     def pack_from_list(counters_list):
         length = reduce(operator.add, [counters._fmt_length for counters in counters_list])
+        print("length", length)
+        print("length type : ", type(length))
         raw = ctypes.create_string_buffer(length)
-
+        print("raw pack :", raw)
+        print("raw pack type :", type(raw))
         offset = 0
         for counters in counters_list:
             new_offset = offset + counters._fmt_length
+            print("counter 1 : ", type(counters))
             counters.pack_into(raw, offset)
+            print("counter 2 : ")
             offset = new_offset
+        print("raw fin :", raw)
+        print("raw type fin :", type(raw))
         return raw
 
     @staticmethod
@@ -474,9 +481,18 @@ class BaseCounters(object):
         Convert the data into the packed form to a specific buffer
         '''
 
+        print("pack into 1")
+        print("raw buffer, ", raw_buffer)
+        print("raw buffer type, ", type(raw_buffer))
         fmt_values = ([self._header_definitions[key][0].before_pack(self._get_header(key)) for key in self._fmt_header_ordered_keys]
                       + [self._counter_definitions[key][0].before_pack(self._get_counter(key)) for key in self._fmt_counter_ordered_keys])
+        print("pack into 2")
+        print(self._fmt, type(self._fmt))
+        print(raw_buffer)
+        print(offset)
+        print(*fmt_values)
         struct.pack_into(self._fmt, raw_buffer, offset, *fmt_values)
+        print("pack into 3")
 
     def unpack_from(self, raw_buffer, offset=0):
         '''
@@ -522,7 +538,7 @@ class BaseCounters(object):
         d_counters = destination._counter_values
         o_counters = other_stats._counter_values
         s_counters = self._counter_values
-        for (name, (_, _, acc_fn, _, _, _)) in self._counter_definitions.iteritems():
+        for (name, (_, _, acc_fn, _, _, _)) in self._counter_definitions.items():
             d_counters[name] = \
                 self._counter_accumulation_functions[acc_fn](s_counters[name],
                                                              o_counters[name],

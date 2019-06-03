@@ -141,7 +141,7 @@ class ProcessInfo(Info):
         Retrieve the list of tasks of the current process
         '''
         try:
-            tids = map(int, os.listdir('/proc/%d/task' % self.tgid))
+            tids = list(map(int, os.listdir('/proc/%d/task' % self.tgid)))
         except OSError:
             self.mark = True
             return []
@@ -174,7 +174,7 @@ class CGroupInfo(Info):
         '''
         try:
             f_tasks = open(os.path.join(self.cgroup_path, 'tasks'), 'r')
-            pids = map(int, f_tasks.read().split())
+            pids = list(map(int, f_tasks.read().split()))
             f_tasks.close()
         except OSError:
             return []
