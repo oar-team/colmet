@@ -80,7 +80,6 @@ class ZMQOutputBackend(OutputBaseBackend):
         push the metrics to the output backend
         '''
         if len(counters_list) > 0:
-            # raw = BaseCounters.pack_from_list(counters_list)
             try:
                 raw = BaseCounters.pack_from_list(counters_list)
                 self.socket.send(raw)

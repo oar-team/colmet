@@ -379,7 +379,7 @@ class BaseCounters(object, metaclass=MetaCountersType):
         if self._packed:
             self._buf.raw.zfill(self._fmt_length)
         else:
-            for c_name in self._counter_definitions.keys():
+            for c_name in list(self._counter_definitions):
                 self._set_counter(c_name, None)
 
     def _set_header(self, key, value):
@@ -426,11 +426,11 @@ class BaseCounters(object, metaclass=MetaCountersType):
         '''
         msg_counters = {}
         key_maxlen = 0
-        for key in self._counter_definitions.keys():
+        for key in list(self._counter_definitions):
             if len(key) > key_maxlen:
                 key_maxlen = len(key)
         msg_format_values = "\n\t" + prefix + "%" + str(key_maxlen) + "s : %s"
-        for k in self._counter_definitions.keys():
+        for k in list(self._counter_definitions):
             (_, c_repr, _, c_index, _, _) = self._counter_definitions[k]
             if c_index not in msg_counters:
                 msg_counters[c_index] = ""
@@ -439,7 +439,7 @@ class BaseCounters(object, metaclass=MetaCountersType):
                 k,
                 self._counter_representations[c_repr](self._get_counter(k))
             )
-        sorted_msg = [msg_counters[k] for k in sorted(msg_counters.keys())]
+        sorted_msg = [msg_counters[k] for k in sorted(list(msg_counters))]
         return (prefix + '{%s\n' + prefix + '}') % ("".join(sorted_msg))
 
     #

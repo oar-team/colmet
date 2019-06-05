@@ -64,23 +64,23 @@ class HDF5TaskstatsCounters(object):
     @classmethod
     def to_counters(cls, row):
         counters = cls.Counters()
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             counters._set_header(key, row[key])
 
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             counters._set_counter(key, row[key])
         return counters
 
     @classmethod
     def to_row(cls, row, counters):
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
                 if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
@@ -185,23 +185,23 @@ class HDF5ProcstatsCounters(object):
     @classmethod
     def to_counters(cls, row):
         counters = cls.Counters()
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             counters._set_header(key, row[key])
 
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             counters._set_counter(key, row[key])
         return counters
 
     @classmethod
     def to_row(cls, row, counters):
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
                 if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
@@ -231,23 +231,23 @@ class HDF5RAPLStatsCounters(object):
     @classmethod
     def to_counters(cls, row):
         counters = cls.Counters()
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             counters._set_header(key, row[key])
 
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             counters._set_counter(key, row[key])
         return counters
 
     @classmethod
     def to_row(cls, row, counters):
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
                 if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
@@ -280,23 +280,23 @@ class HDF5InfinibandStatsCounters(object):
     @classmethod
     def to_counters(cls, row):
         counters = cls.Counters()
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             counters._set_header(key, row[key])
 
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             counters._set_counter(key, row[key])
         return counters
 
     @classmethod
     def to_row(cls, row, counters):
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
                 if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
@@ -328,23 +328,23 @@ class HDF5LustreStatsCounters(object):
     @classmethod
     def to_counters(cls, row):
         counters = cls.Counters()
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             counters._set_header(key, row[key])
 
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             counters._set_counter(key, row[key])
         return counters
 
     @classmethod
     def to_row(cls, row, counters):
-        for key in cls.Counters._header_definitions.keys():
+        for key in list(cls.Counters._header_definitions):
             try:
                 row[key] = counters._get_header(key)
             except Exception as e:
                 if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
-        for key in cls.Counters._counter_definitions.keys():
+        for key in list(cls.Counters._counter_definitions):
             try:
                 row[key] = counters._get_counter(key)
             except Exception as e:
@@ -382,7 +382,7 @@ class HDF5OutputBackend(OutputBaseBackend):
                 counters_dict[job_id] = list()
             counters_dict[job_id].append(counters)
 
-        for (job_id, c_list) in counters_dict.iteritems():
+        for (job_id, c_list) in counters_dict.items():
             jobstat = self._get_job_stat(job_id)
             jobstat.append_stats(c_list)
 
@@ -506,6 +506,9 @@ class JobFile(object):
                     "The metric backend must be "
                     "defined to create the table"
                 )
+
+            print("hdf5 counters", self.hdf5_counters)
+            print("metric backend", metric_backend)
 
             job_metric_hdf5_class = self.hdf5_counters[metric_backend]
             self.job_file.create_table(

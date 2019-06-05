@@ -206,7 +206,7 @@ class CGroupInfo(Info):
                 task = self.get_task(tid)
                 task.update_stats(timestamp, job_id, hostname)
 
-            for tid, task in self.tasks.items():
+            for tid, task in list(self.tasks.items()):
                 if task.mark:
                     msg = (
                         "Process/Task %s no more exists."
