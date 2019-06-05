@@ -9,7 +9,7 @@ from .base import UInt8, UInt16, UInt32, UInt64, String, BaseCounters
 
 
 class PerfhwstatsCounters(BaseCounters):
-    __metric_name__ = 'Perfhwstats_default'
+    __metric_name__ = 'perfhwstats_default'
 
     counters_perfhwstats = {
         'instructions': (UInt64(), 'count', 'none', 'instructions'),
