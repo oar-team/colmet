@@ -64,7 +64,7 @@ class String(BaseType):
         self.struct_code = '%ss' % length
         self.length = struct.calcsize("<%s" % self.struct_code)
 
-    after_unpack = lambda self, value: value.rstrip("\0")
+    after_unpack = lambda self, value: value.rstrip(b"\0").decode('utf-8')
 
 
 #####################
@@ -312,28 +312,21 @@ class BaseCounters(object, metaclass=MetaCountersType):
     @staticmethod
     def create_metric_from_raw(raw):
         from . import get_counters_class
-        backend = struct.unpack('255s', raw[0:255])[0].rstrip("\0")
-        counters_class = get_counters_class(backend)
+        backend = struct.unpack('255s', raw[0:255])[0]
+        backend = backend.rstrip(b"\0")
+        counters_class = get_counters_class(backend.decode("utf-8"))
         counters = counters_class(raw=raw[0:counters_class._fmt_length])
         return counters
 
     @staticmethod
     def pack_from_list(counters_list):
         length = reduce(operator.add, [counters._fmt_length for counters in counters_list])
-        print("length", length)
-        print("length type : ", type(length))
         raw = ctypes.create_string_buffer(length)
-        print("raw pack :", raw)
-        print("raw pack type :", type(raw))
         offset = 0
         for counters in counters_list:
             new_offset = offset + counters._fmt_length
-            print("counter 1 : ", type(counters))
             counters.pack_into(raw, offset)
-            print("counter 2 : ")
             offset = new_offset
-        print("raw fin :", raw)
-        print("raw type fin :", type(raw))
         return raw
 
     @staticmethod
@@ -481,18 +474,20 @@ class BaseCounters(object, metaclass=MetaCountersType):
         Convert the data into the packed form to a specific buffer
         '''
 
-        print("pack into 1")
-        print("raw buffer, ", raw_buffer)
-        print("raw buffer type, ", type(raw_buffer))
         fmt_values = ([self._header_definitions[key][0].before_pack(self._get_header(key)) for key in self._fmt_header_ordered_keys]
                       + [self._counter_definitions[key][0].before_pack(self._get_counter(key)) for key in self._fmt_counter_ordered_keys])
-        print("pack into 2")
-        print(self._fmt, type(self._fmt))
-        print(raw_buffer)
-        print(offset)
-        print(*fmt_values)
+
+        fmt_values_list = list(fmt_values)
+
+        for index, value in enumerate(fmt_values_list):
+            if isinstance(value, str):
+                value = bytes(value, 'utf-8')
+                fmt_values_list[index] = value
+
+        fmt_values = tuple(fmt_values_list)
+
         struct.pack_into(self._fmt, raw_buffer, offset, *fmt_values)
-        print("pack into 3")
+
 
     def unpack_from(self, raw_buffer, offset=0):
         '''

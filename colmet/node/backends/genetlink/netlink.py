@@ -100,7 +100,6 @@ class Attr:
                     byte_values += (bytes(value, 'utf-8'),)
                 else:
                     byte_values += (value,)
-            print("byte_values", byte_values)
             self.data = struct.pack(data, *byte_values)
         else:
             self.data = data

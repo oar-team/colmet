@@ -39,7 +39,7 @@ class ZMQInputBackend(InputBaseBackend):
     def pull(self, buffer_size=1000):
         counters_list = []
         try:
-            for i in xrange(buffer_size):
+            for i in range(buffer_size):
                 raw = self.socket.recv(zmq.NOBLOCK, copy=False)
                 counters_list.extend(BaseCounters.unpack_to_list(raw.bytes))
                 del raw
@@ -80,7 +80,9 @@ class ZMQOutputBackend(OutputBaseBackend):
         push the metrics to the output backend
         '''
         if len(counters_list) > 0:
+            # raw = BaseCounters.pack_from_list(counters_list)
             try:
                 raw = BaseCounters.pack_from_list(counters_list)
+                self.socket.send(raw)
             except struct.error as e:
                 LOG.error("An error occurred during packet creation : %s" % e)

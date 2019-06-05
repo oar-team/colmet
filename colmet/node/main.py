@@ -105,7 +105,6 @@ class Task(object):
             LOG.debug("time to take measure: %s sec" % (time.time() - now))
 
             if len(counters_list) > 0:
-                # print "nb counters_list", len(counters_list)
                 try:
                     self.zeromq_output_backend.push(counters_list)
                     LOG.debug("%s metrics has been pushed with zeromq"

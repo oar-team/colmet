@@ -86,7 +86,7 @@ class PerfhwStats(object):
         if not self.isInit:
             self.perfhwlib = ctypes.cdll.LoadLibrary("./lib_perf_hw.so")    
 
-            job_id_str = ctypes.create_string_buffer(str("/oar/") + job_filename)
+            job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
             job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
             self.perfhwlib.init_counters(job_id_p)
 

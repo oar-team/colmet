@@ -64,8 +64,8 @@ class Task(object):
                 try:
                     backend.push(self.counters_list)
                     LOG.debug("%s metrics has been pushed with %s"
-                              % (len(self.counters_list),
-                                 backend.get_backend_name()))
+                          % (len(self.counters_list),
+                             backend.get_backend_name()))
                 except (NoneValueError, TypeError):
                     LOG.debug("Values for metrics are not there.")
         del self.counters_list[:]
