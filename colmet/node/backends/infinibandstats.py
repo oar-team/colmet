@@ -1,7 +1,7 @@
 import os
 import re
 
-from subprocess import check_output
+from subprocess import check_output, STDOUT, CalledProcessError
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
@@ -41,10 +41,15 @@ class InfinibandStats(object):
     def get_stats(self):
         
         infinibandstats_data = {}
-        
-        # perfquery = check_output(["/usr/sbin/perfquery", "-x"])
-        perfquery = check_output(["/usr/sbin/perfquery"])
-        
+
+        perfquery = None
+
+        try:
+            perfquery = check_output(["/usr/sbin/perfquery"])
+            perfquery = perfquery.decode("utf-8")
+        except CalledProcessError as e:
+            print("Error calling perfquery : ", e.returncode)
+
         m = re.search(r'PortXmitData:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portXmitData'] = 4 * int(m.group(1))
