@@ -266,8 +266,18 @@ class HDF5RAPLStatsCounters(object):
         job_id = tables.Int64Col(dflt=-1)
         metric_backend = tables.StringCol(255)
 
-        maxEnergyRangeUJ = tables.Int64Col(dflt=-1)
-        energyUJ = tables.Int64Col(dflt=-1)
+        energyUJ_0 = tables.Int64Col(dflt=-1)
+        energyUJ_1 = tables.Int64Col(dflt=-1)
+        energyUJ_2 = tables.Int64Col(dflt=-1)
+        energyUJ_3 = tables.Int64Col(dflt=-1)
+        energyUJ_4 = tables.Int64Col(dflt=-1)
+        energyUJ_5 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_0 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_1 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_2 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_3 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_4 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_5 = tables.Int64Col(dflt=-1)
 
     missing_keys = []
 
@@ -555,9 +565,6 @@ class JobFile(object):
                     "defined to create the table"
                 )
 
-            print("hdf5 counters", self.hdf5_counters)
-            print("metric backend", metric_backend)
-
             job_metric_hdf5_class = self.hdf5_counters[metric_backend]
             self.job_file.create_table(
                 group_path,
@@ -576,7 +583,6 @@ class JobFile(object):
     def append_stats(self, stats):
         for stat in stats:
             metric_backend = stat.metric_backend
-        
             if self.job_file is None:
                 self._init_job_file_if_needed()
 
