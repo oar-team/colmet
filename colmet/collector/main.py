@@ -1,6 +1,5 @@
-'''
-Colmet-node User Interface
-'''
+"""Colmet-node User Interface"""
+
 from __future__ import print_function
 import logging
 import argparse
@@ -9,10 +8,10 @@ import sys
 import copy
 import time
 
-from colmet import VERSION
-from colmet.common.backends.zeromq import ZMQInputBackend
-from colmet.common.backends.base import StdoutBackend
-from colmet.common.exceptions import Error, NoneValueError
+from .. import VERSION
+from ..common.backends.zeromq import ZMQInputBackend
+from ..common.backends.base import StdoutBackend
+from ..common.exceptions import Error, NoneValueError
 
 
 LOG = logging.getLogger()
@@ -39,10 +38,13 @@ class Task(object):
             if not options.hdf5_filepath.endswith(".hdf5"):
                 options.hdf5_filepath = "%s.%s.hdf5" % \
                     (options.hdf5_filepath, int(time.time()))
-            from colmet.collector.hdf5 import HDF5OutputBackend
+            from ..collector.hdf5 import HDF5OutputBackend
             self.output_backends.append(HDF5OutputBackend(options))
         if self.options.enable_stdout_backend:
             self.output_backends.append(StdoutBackend(options))
+        if self.options.elastic_host is not None:
+            from ..collector.elasticsearch import ElasticsearchOutputBackend
+            self.output_backends.append(ElasticsearchOutputBackend(options))
         for backend in self.output_backends:
             backend.open()
 
@@ -178,11 +180,16 @@ def main():
                             '"zlib" (the default), "lzo", "bzip2" and "blosc" '
                             'are supported.')
 
+    group = parser.add_argument_group('Elasticsearch')
+
+    group.add_argument("--elastic-host", dest='elastic_host', default=None,
+                       help="The address of Elasticsearch server, ex:'localhost:9200'")
+
     args = parser.parse_args()
 
-    if (args.hdf5_filepath is None and args.enable_stdout_backend is False):
+    if args.hdf5_filepath is None and args.enable_stdout_backend is False and args.elastic_host is None:
         parser.error("You need to provide at least one output backend "
-                     "[hdf5|stdout]")
+                     "[hdf5|stdout|elasticsearch]")
 
     # Set the logging value (always display CRITICAL and ERROR)
     logging.basicConfig(
