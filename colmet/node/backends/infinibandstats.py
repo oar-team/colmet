@@ -42,7 +42,7 @@ class InfinibandStats(object):
         
         infinibandstats_data = {}
 
-        perfquery = None
+        perfquery = ""
 
         try:
             perfquery = check_output(["/usr/sbin/perfquery", "-x"])
@@ -53,14 +53,25 @@ class InfinibandStats(object):
         m = re.search(r'PortXmitData:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portXmitData'] = 4 * int(m.group(1))
+        else:
+            infinibandstats_data['portXmitData'] = -1
+
         m = re.search(r'PortRcvData:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portRcvData'] = 4 * int(m.group(1))
+        else:
+            infinibandstats_data['portRcvData'] = -1
+
         m = re.search(r'PortXmitPkts:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portXmitPkts'] = int(m.group(1))
+        else:
+            infinibandstats_data['portXmitPkts'] = -1
+
         m = re.search(r'PortRcvPkts:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portRcvPkts'] = int(m.group(1))
-                        
+        else:
+            infinibandstats_data['portRcvPkts'] = -1
+
         return InfinibandstatsCounters(infinibandstats_buffer=infinibandstats_data)
