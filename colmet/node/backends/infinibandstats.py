@@ -45,7 +45,7 @@ class InfinibandStats(object):
         perfquery = None
 
         try:
-            perfquery = check_output(["/usr/sbin/perfquery -x"])
+            perfquery = check_output(["/usr/sbin/perfquery", "-x"])
             perfquery = perfquery.decode("utf-8")
         except CalledProcessError as e:
             print("Error calling perfquery : ", e.returncode)
