@@ -12,7 +12,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
     __backend_name__ = "elasticsearch"
 
     def open(self):
-        pass
+        self.s = requests.Session()
 
     def close(self):
         pass
@@ -40,12 +40,12 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         self.create_index_if_necessary(index)
         url = "{elastic_host}/{index}/_doc/".format(elastic_host=elastic_host, index=index)
         headers = {"Content-Type": "application/json"}
-        r = requests.post(url=url, headers=headers, data=elastic_document)
+        r = self.s.post(url=url, headers=headers, data=elastic_document)
 
     def create_index_if_necessary(self, index):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
-        r = requests.head(url)
+        r = self.s.head(url)
         if r.status_code ==404:  # create nex index
             mapping = {
                 "mappings": {
@@ -60,4 +60,4 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             mapping = json.dumps(mapping)
             headers = {"Content-Type": "application/json"}
             url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
-            r = requests.put(url=url, headers=headers, data=mapping)
+            r = self.s.put(url=url, headers=headers, data=mapping)
