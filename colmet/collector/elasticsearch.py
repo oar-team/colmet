@@ -25,7 +25,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             for counter_header in list(counter._header_definitions):  # add job_id, hostname, timestamp
                 counter_header_value = counter._get_header(counter_header)
                 if counter_header == "metric_backend":
-                    metric_backend_value = counter_header_value  # name of the backend that is used as index is Elasticsearch
+                    metric_backend_value = counter_header_value.lower()  # name of the backend that is used as index is Elasticsearch
                 else:
                     elastic_document[counter_header] = counter_header_value
             for counter_metric in list(counter._counter_definitions):  # add metric values
