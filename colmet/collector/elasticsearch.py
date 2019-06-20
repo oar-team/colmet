@@ -37,6 +37,27 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
     def index_document(self, elastic_document, index):
         """Index document in Elasticsearch using its http api"""
         elastic_host = self.options.elastic_host
+        self.create_index_if_necessary(index)
         url = "{elastic_host}/{index}/_doc/".format(elastic_host=elastic_host, index=index)
         headers = {"Content-Type": "application/json"}
         r = requests.post(url=url, headers=headers, data=elastic_document)
+
+    def create_index_if_necessary(self, index):
+        elastic_host = self.options.elastic_host
+        url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
+        r = requests.head(url)
+        if r.status_code ==404:  # create nex index
+            mapping = {
+                "mappings": {
+                    "properties": {
+                        "timestamp": {
+                            "type": "date",
+                            "format": "epoch_second"
+                        }
+                    }
+                }
+            }
+            mapping = json.dumps(mapping)
+            headers = {"Content-Type": "application/json"}
+            url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
+            r = requests.put(url=url, headers=headers, data=mapping)
