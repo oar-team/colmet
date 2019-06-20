@@ -12,6 +12,7 @@ requirements = [
     'tables',
     'pyinotify',
     'pyzmq',
+    'requests',
 ]
 
 
@@ -58,6 +59,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Monitoring',
         'Topic :: System :: Clustering',
-        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 3.5'
     ]
 )
