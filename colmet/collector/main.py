@@ -8,10 +8,10 @@ import sys
 import copy
 import time
 
-from .. import VERSION
-from ..common.backends.zeromq import ZMQInputBackend
-from ..common.backends.base import StdoutBackend
-from ..common.exceptions import Error, NoneValueError
+from colmet import VERSION
+from colmet.common.backends.zeromq import ZMQInputBackend
+from colmet.common.backends.base import StdoutBackend
+from colmet.common.exceptions import Error, NoneValueError
 
 
 LOG = logging.getLogger()
@@ -38,12 +38,12 @@ class Task(object):
             if not options.hdf5_filepath.endswith(".hdf5"):
                 options.hdf5_filepath = "%s.%s.hdf5" % \
                     (options.hdf5_filepath, int(time.time()))
-            from ..collector.hdf5 import HDF5OutputBackend
+            from colmet.collector.hdf5 import HDF5OutputBackend
             self.output_backends.append(HDF5OutputBackend(options))
         if self.options.enable_stdout_backend:
             self.output_backends.append(StdoutBackend(options))
         if self.options.elastic_host is not None:
-            from ..collector.elasticsearch import ElasticsearchOutputBackend
+            from colmet.collector.elasticsearch import ElasticsearchOutputBackend
             self.output_backends.append(ElasticsearchOutputBackend(options))
         for backend in self.output_backends:
             backend.open()

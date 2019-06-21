@@ -49,6 +49,11 @@ class UInt64(BaseType):
     length = struct.calcsize("<%s" % struct_code)
 
 
+class Int64(BaseType):
+    struct_code = 'q'
+    length = struct.calcsize("<%s" % struct_code)
+
+
 class UFloat(BaseType):
     struct_code = 'f'
     length = struct.calcsize("<%s" % struct_code)
