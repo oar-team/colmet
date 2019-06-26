@@ -81,25 +81,32 @@ class PerfhwStats(object):
     def __init__(self, option):
         self.options = option
         self.isInit = False
+        self.perfhwvalues = None
 
     def get_stats(self, job_filename):
         if not self.isInit:
-            self.perfhwlib = ctypes.cdll.LoadLibrary("./lib_perf_hw.so")    
-
+            self.perfhwlib = ctypes.cdll.LoadLibrary("./lib_perf_hw.so")
             job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
             job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
+
             self.perfhwlib.init_counters(job_id_p)
-
             self.perfhwlib.start_counters()
-
             self.perfhwvalues = (ctypes.c_uint64 * 3)()
             self.isInit = True
 
-        self.perfhwlib.get_counters(self.perfhwvalues)
+        if self.perfhwlib.get_counters(self.perfhwvalues) == 0:  # c lib returning values successfully
+            perfhwstats_data = {
+                "instructions": self.perfhwvalues[0],
+                "cachemisses": self.perfhwvalues[1],
+                "pagefaults": self.perfhwvalues[2]
+            }
+        else:
+            self.isInit = False
+            perfhwstats_data = {
+                "instructions": -1,
+                "cachemisses": -1,
+                "pagefaults": -1
+            }
+            LOG.warning("cannot get perf_event counters values, replaced by -1 values")
 
-        perfhwstats_data = {}
-        perfhwstats_data["instructions"] = self.perfhwvalues[0]
-        perfhwstats_data["cachemisses"] = self.perfhwvalues[1]
-        perfhwstats_data["pagefaults"] = self.perfhwvalues[2]
-                        
         return PerfhwstatsCounters(perfhwstats_buffer=perfhwstats_data)

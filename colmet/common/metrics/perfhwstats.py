@@ -5,16 +5,16 @@ import logging
 
 LOG = logging.getLogger()
 
-from .base import UInt8, UInt16, UInt32, UInt64, String, BaseCounters
+from .base import UInt8, UInt16, UInt32, UInt64, Int64, String, BaseCounters
 
 
 class PerfhwstatsCounters(BaseCounters):
     __metric_name__ = 'perfhwstats_default'
 
     counters_perfhwstats = {
-        'instructions': (UInt64(), 'count', 'none', 'instructions'),
-        'cachemisses': (UInt64(), 'count', 'none', 'cachemisses'),
-        'pagefaults': (UInt64(), 'count', 'none', 'pagefaults'),
+        'instructions': (Int64(), 'count', 'none', 'instructions'),
+        'cachemisses': (Int64(), 'count', 'none', 'cachemisses'),
+        'pagefaults': (Int64(), 'count', 'none', 'pagefaults'),
     }
 
     counters_perfhwstats_to_get = [

@@ -29,7 +29,7 @@ counter_t init_counters();
 void clean_counters();
 void start_counters();
 void reset_counters();
-void get_counters(long long *values);
+int get_counters(long long *values);
 
 const int nb_perf = 3;
 const char* perf_names[3] = {"instructions", "cachemisses", "pagefaults"};
@@ -39,11 +39,6 @@ const __u64 perf_key[3] = {PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_CACHE_MISSE
 static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
 		int cpu, int group_fd, unsigned long flags) {
   long res = syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
-  if (res == -1) {
-    perror("perf_event_open");
-    fprintf(stderr, "Error opening leader %llx\n", hw_event->config);
-    exit(EXIT_FAILURE);
-  }
   return res;
 }
 
@@ -109,18 +104,18 @@ void reset_counters() {
       ioctl(g_counter->counters[counter][core], PERF_EVENT_IOC_RESET, 0);
 }
 
-void get_counters(long long *values) {
+int get_counters(long long *values) {
   for(int i=0; i<g_counter->nbperf; i++) {
     long long accu=0;
     long long count;
     for (int core=0; core<g_counter->nbcores; core++) {
       if (-1 == read(g_counter->counters[i][core], &count, sizeof(long long))) {
-        fprintf(stderr, "PB Lecture resultat");
-        exit(EXIT_FAILURE);
+        return -1;
       }
       accu += count;
     }
     values[i] = accu;
   }
-  reset_counters(g_counter);
+  reset_counters();
+  return 0;
 }
