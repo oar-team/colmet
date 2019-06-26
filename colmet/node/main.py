@@ -99,7 +99,7 @@ class Task(object):
                 else:
                     counters_list += pulled_counters
 
-                LOG.debug("%s metrics has been pulled width %s" %
+                LOG.debug("%s metrics has been pulled with %s" %
                           (len(pulled_counters), backend.get_backend_name()))
 
             LOG.debug("time to take measure: %s sec" % (time.time() - now))
