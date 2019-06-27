@@ -1,5 +1,7 @@
 import logging
 import ctypes
+import os
+import sys
 
 import inspect
 
@@ -12,8 +14,9 @@ class RAPLstatsCounters(BaseCounters):
 
     __metric_name__ = 'RAPLstats_default'
 
+    lib_path = os.getenv('LIB_RAPL_PATH', "/usr/lib/lib_rapl.so")
+    raplLib = ctypes.cdll.LoadLibrary(lib_path)
 
-    raplLib = ctypes.cdll.LoadLibrary("./lib_rapl.so")
     raplLib.init_rapl()
 
     # raplsize = raplLib.get_rapl_size()

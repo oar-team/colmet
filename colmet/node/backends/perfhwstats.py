@@ -85,7 +85,8 @@ class PerfhwStats(object):
 
     def get_stats(self, job_filename):
         if not self.isInit:
-            self.perfhwlib = ctypes.cdll.LoadLibrary("./lib_perf_hw.so")
+            lib_path = os.getenv('LIB_PERFHW_PATH', "/usr/lib/lib_perf_hw.so")
+            self.perfhwlib = ctypes.cdll.LoadLibrary(lib_path)
             job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
             job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
 

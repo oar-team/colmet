@@ -37,7 +37,9 @@ class RAPLstats(object):
 
     def __init__(self, option):
         self.options = option
-        self.raplLib = ctypes.cdll.LoadLibrary("./lib_rapl.so")
+
+        lib_path = os.getenv('LIB_RAPL_PATH', "/usr/lib/lib_rapl.so")
+        self.raplLib = ctypes.cdll.LoadLibrary(lib_path)
         
         self.raplLib.init_rapl()
         self.raplsize = self.raplLib.get_rapl_size()
