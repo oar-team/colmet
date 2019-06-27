@@ -272,12 +272,25 @@ class HDF5RAPLStatsCounters(object):
         energyUJ_3 = tables.Int64Col(dflt=-1)
         energyUJ_4 = tables.Int64Col(dflt=-1)
         energyUJ_5 = tables.Int64Col(dflt=-1)
+        energyUJ_6 = tables.Int64Col(dflt=-1)
+        energyUJ_7 = tables.Int64Col(dflt=-1)
+        energyUJ_8 = tables.Int64Col(dflt=-1)
+        energyUJ_9 = tables.Int64Col(dflt=-1)
+        energyUJ_10 = tables.Int64Col(dflt=-1)
+        energyUJ_11 = tables.Int64Col(dflt=-1)
+
         maxEnergyRangeUJ_0 = tables.Int64Col(dflt=-1)
         maxEnergyRangeUJ_1 = tables.Int64Col(dflt=-1)
         maxEnergyRangeUJ_2 = tables.Int64Col(dflt=-1)
         maxEnergyRangeUJ_3 = tables.Int64Col(dflt=-1)
         maxEnergyRangeUJ_4 = tables.Int64Col(dflt=-1)
         maxEnergyRangeUJ_5 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_6 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_7 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_8 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_9 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_10 = tables.Int64Col(dflt=-1)
+        maxEnergyRangeUJ_11 = tables.Int64Col(dflt=-1)
 
     missing_keys = []
 

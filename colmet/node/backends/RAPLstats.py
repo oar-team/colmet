@@ -42,8 +42,6 @@ class RAPLstats(object):
         self.raplLib.init_rapl()
         self.raplsize = self.raplLib.get_rapl_size()
 
-        print("RAPL size: " + str(self.raplsize))
-
         self.maxEnergy = (ctypes.c_uint64 * self.raplsize)()
         self.oldEnergy = (ctypes.c_uint64 * self.raplsize)()
 
@@ -64,9 +62,15 @@ class RAPLstats(object):
         self.raplLib.get_powercap_rapl_get_energy_uj(energy)
         i = 0
         for i in range(self.raplsize):
+
             RAPLstats_data["name_" + str(i)] = self.names[i]
             RAPLstats_data["maxEnergyRangeUJ_" + str(i)] = self.maxEnergy[i]
             RAPLstats_data["energyUJ_" + str(i)] = energy[i] - self.oldEnergy[i]
+
+        for i in range(self.raplsize, 12): # assuming 4 cpu x 3 measure per cpu
+            RAPLstats_data["name_" + str(i)] = "no value available"
+            RAPLstats_data["maxEnergyRangeUJ_" + str(i)] = -1
+            RAPLstats_data["energyUJ_" + str(i)] = -1
 
         self.oldEnergy = energy
 
