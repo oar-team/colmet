@@ -1,9 +1,6 @@
 import logging
 import ctypes
 import os
-import sys
-
-import inspect
 
 LOG = logging.getLogger()
 

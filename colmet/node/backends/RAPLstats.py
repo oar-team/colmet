@@ -2,8 +2,6 @@ import os
 import re
 import ctypes
 
-from subprocess import check_output
-
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
 from colmet.common.metrics.RAPLstats import RAPLstatsCounters
