@@ -2,7 +2,9 @@
 # *-* coding: utf-8 *-*
 import re
 import os.path as op
+import os
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 
 
 here = op.abspath(op.dirname(__file__))
@@ -25,6 +27,28 @@ def read(fname):
 def get_version():
     return re.compile(r".*__version__ = '(.*?)'", re.S)\
              .match(read(op.join(here, 'colmet', '__init__.py'))).group(1)
+
+
+def install_c_libs():
+
+    print("installin powercap librairies")
+    os.system("wget http://http.us.debian.org/debian/pool/main/p/powercap/libpowercap0_0.1.1-1_amd64.deb")
+    os.system("wget http://http.us.debian.org/debian/pool/main/p/powercap/powercap-utils_0.1.1-1_amd64.deb")
+    os.system("wget http://http.us.debian.org/debian/pool/main/p/powercap/libpowercap-dev_0.1.1-1_amd64.deb")
+    os.system(
+        "sudo dpkg -i libpowercap0_0.1.1-1_amd64.deb libpowercap-dev_0.1.1-1_amd64.deb powercap-utils_0.1.1-1_amd64.deb")
+    os.system("rm -f libpowercap0_0.1.1-1_amd64.deb libpowercap-dev_0.1.1-1_amd64.deb powercap-utils_0.1.1-1_amd64.deb")
+
+    print("installing perfwh C library")
+    os.system("make -C ./colmet/node/backends/lib_perf_hw/")
+    print("installing RAPL C library")
+    os.system("make -C ./colmet/node/backends/lib_rapl/")
+
+
+class CustomInstall(install):
+    def run(self):
+        install.run(self)
+        install_c_libs()
 
 
 setup(
@@ -60,5 +84,6 @@ setup(
         'Topic :: System :: Monitoring',
         'Topic :: System :: Clustering',
         'Programming Language :: Python :: 3.5'
-    ]
+    ],
+    cmdclass={'install': CustomInstall}
 )
