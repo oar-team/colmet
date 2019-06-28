@@ -30,15 +30,6 @@ def get_version():
 
 
 def install_c_libs():
-
-    print("installin powercap librairies")
-    os.system("wget http://http.us.debian.org/debian/pool/main/p/powercap/libpowercap0_0.1.1-1_amd64.deb")
-    os.system("wget http://http.us.debian.org/debian/pool/main/p/powercap/powercap-utils_0.1.1-1_amd64.deb")
-    os.system("wget http://http.us.debian.org/debian/pool/main/p/powercap/libpowercap-dev_0.1.1-1_amd64.deb")
-    os.system(
-        "sudo dpkg -i libpowercap0_0.1.1-1_amd64.deb libpowercap-dev_0.1.1-1_amd64.deb powercap-utils_0.1.1-1_amd64.deb")
-    os.system("rm -f libpowercap0_0.1.1-1_amd64.deb libpowercap-dev_0.1.1-1_amd64.deb powercap-utils_0.1.1-1_amd64.deb")
-
     print("installing perfwh C library")
     os.system("make -C ./colmet/node/backends/lib_perf_hw/")
     print("installing RAPL C library")
