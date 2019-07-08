@@ -2,6 +2,8 @@ extern crate serde;
 extern crate rmp_serde as rmps;
 extern crate zmq;
 
+mod stdout;
+
 use std::collections::HashMap;
 use serde::{Deserialize};
 use rmps::{Deserializer};
@@ -17,7 +19,7 @@ fn main() {
 
     loop {
         match receiver.recv_bytes(1) {
-            Ok(x) => display_metrics(x),
+            Ok(x) => stdout::display_metrics(x),
             Err(e) => println!("error {}", e),
         };
 
@@ -26,10 +28,5 @@ fn main() {
 
 }
 
-fn display_metrics(x: Vec<u8>){
-    let mut de = Deserializer::new(&x[..]);
-    let res : Vec<(String, String, u64, HashMap<String, HashMap<String, u64>>)> = Deserialize::deserialize(&mut de).unwrap();
 
-    println!("{:?}", res);
-}
 
