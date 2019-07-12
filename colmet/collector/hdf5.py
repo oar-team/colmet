@@ -292,6 +292,19 @@ class HDF5RAPLStatsCounters(object):
         maxEnergyRangeUJ_10 = tables.Int64Col(dflt=-1)
         maxEnergyRangeUJ_11 = tables.Int64Col(dflt=-1)
 
+        name_0 = tables.StringCol(255)
+        name_1 = tables.StringCol(255)
+        name_2 = tables.StringCol(255)
+        name_3 = tables.StringCol(255)
+        name_4 = tables.StringCol(255)
+        name_5 = tables.StringCol(255)
+        name_6 = tables.StringCol(255)
+        name_7 = tables.StringCol(255)
+        name_8 = tables.StringCol(255)
+        name_9 = tables.StringCol(255)
+        name_10 = tables.StringCol(255)
+        name_11 = tables.StringCol(255)
+
     missing_keys = []
 
     @classmethod
