@@ -36,8 +36,7 @@ class TaskInfo(Info):
         Info.__init__(self, input_backend)
         self.tid = tid
         self.mark = True
-        self.backend_request = self.counters_class.build_request(input_backend,
-                                                                 tid)
+        self.backend_request = self.counters_class.build_request(input_backend, tid)
 
     def update_stats(self, timestamp, job_id, hostname):
         '''
@@ -63,9 +62,8 @@ class PerfhwInfo(Info):
         Info.__init__(self, input_backend)
         self.job_id = job_id
         self.mark = True
-        """self.backend_request = self.counters_class.build_request(input_backend,
-                                                                 job_id)
-"""
+        # self.backend_request = self.counters_class.build_request(input_backend, job_id)
+
     def update_stats(self, timestamp, job_id, hostname):
         '''
         Update the current metrics of the task
@@ -273,14 +271,7 @@ class Job(object):
         # TODO rm
         self.void_cpuset = True
 
-
-
-        #TODO change that
-        try:
-            options.perfhw
-        except AttributeError:
-            options.perfhw = False
-        if(options.perfhw):
+        if input_backend.__backend_name__ == "perfhwstats":
             self.job_children.append(
                 PerfhwInfo(job_id, input_backend)
             )
@@ -294,6 +285,7 @@ class Job(object):
             self.job_children.extend(
                 [CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups]
             )
+
 
         # to monitor global node resources activities
         if job_id == 0:

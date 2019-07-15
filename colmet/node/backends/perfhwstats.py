@@ -46,6 +46,13 @@ class PerfhwstatsBackend(InputBaseBackend):
     def get_counters_class(self):
         return PerfhwstatsCounters
 
+    def create_options_job_cgroups(self, cgroups):
+        # options are duplicated to allow modification per jobs, here
+        # cgroups parametter
+        options = copy.copy(self.options)
+        options.cgroups = cgroups
+        return options
+
     def update_job_list(self):
         """Used to maintained job list upto date by adding new jobs and
         removing ones to monitor accordingly to cpuset_rootpath and
@@ -66,8 +73,7 @@ class PerfhwstatsBackend(InputBaseBackend):
         # Add new jobs
         for job_id in (job_ids - monitored_job_ids):
             job_path = cpuset_rootpath + "/" + self.filenames[job_id]
-            options =  self.options
-            options.perfhw = True
+            options = self.create_options_job_cgroups([job_path])
             self.jobs[job_id] = Job(self, int(job_id), options)
         # Del ended jobs
 
@@ -90,6 +96,7 @@ class PerfhwStats(object):
             job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
             job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
 
+            print("calling lib perfhw with job", job_filename)
             self.perfhwlib.init_counters(job_id_p)
             self.perfhwlib.start_counters()
             self.perfhwvalues = (ctypes.c_uint64 * 3)()

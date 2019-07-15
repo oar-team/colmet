@@ -51,7 +51,7 @@ class Task(object):
         #TODO ajouter appistats ici
         notifier = \
             AsyncFileNotifier(paths=self.options.cpuset_rootpath,
-                              callback=self.taskstats_backend.update_job_list)
+                              callback=self.update_job_list)
         # Initial job list update
         self.update_job_list()
         notifier.loop()
