@@ -14,6 +14,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <stdbool.h>
 
 typedef struct _counter_t* counter_t;
 
@@ -23,13 +25,21 @@ struct _counter_t {
   int **counters;
 };
 
-counter_t g_counter;
+typedef struct _cgroup_t *cgroup_t;
 
-counter_t init_counters();
-void clean_counters();
-void start_counters();
-void reset_counters();
-int get_counters(long long *values);
+struct _cgroup_t {
+   char *cgroup_name;
+   counter_t g_counter;
+   struct _cgroup_t *next;
+};
+
+cgroup_t head = NULL;
+cgroup_t current = NULL;
+
+cgroup_t find(char *cgroup_name);
+void insertFirst(char *cgroup_name, counter_t g_counter);
+cgroup_t remove_cgroup(char *cgroup_name);
+
 
 const int nb_perf = 3;
 const char* perf_names[3] = {"instructions", "cachemisses", "pagefaults"};
@@ -39,6 +49,11 @@ const __u64 perf_key[3] = {PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_CACHE_MISSE
 static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
 		int cpu, int group_fd, unsigned long flags) {
   long res = syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
+
+  if (res == -1) {
+    fprintf(stderr, "Error opening leader %llx %d\n", hw_event->config, errno);
+//    exit(EXIT_FAILURE);
+  }
   return res;
 }
 
@@ -46,7 +61,7 @@ char* concat(const char *s1, const char *s2)
 {
     char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
     if(result == NULL)
-      return;
+      return NULL;
     strcpy(result, s1);
     strcat(result, s2);
     return result;
@@ -59,14 +74,17 @@ counter_t init_counters(char * job_name) {
   pe.size = sizeof(struct perf_event_attr);
   pe.disabled = 1;
 
-  char * filename = concat("/sys/fs/cgroup/perf_event", job_name); 
+  char * filename = concat("/sys/fs/cgroup/perf_event", job_name);
   int fd1 = open(filename, O_RDONLY);
-  if(fd1 == NULL){
-    return 0;
+  if (fd1 < 0)
+  {
+      printf("error opening cgroup file %d \n", fd1);
+      return NULL;
   }
   printf("Gathering infos for: %s\n", filename);
 
-  g_counter = malloc(sizeof(struct _counter_t));
+
+  counter_t g_counter = malloc(sizeof(counter_t));
   g_counter->nbperf = nb_perf;
   g_counter->nbcores=nbcores;
   g_counter->counters=malloc(nb_perf*sizeof(int*));
@@ -75,15 +93,16 @@ counter_t init_counters(char * job_name) {
     pe.config = perf_key[i];
     g_counter->counters[i] = malloc(nbcores*sizeof(int));
 
-    //loop on cores because per-cgroup monitoring is not available with cpu = -1 : https://stackoverflow.com/questions/52892668/using-perf-event-open-to-monitor-docker-containers
-    //in cgroup-mode the event is measured only if the thread running on the monitored CPU belongs to the designated cgroup http://man7.org/linux/man-pages/man2/perf_event_open.2.html (should we test that ?)
+    // loop on cores because per-cgroup monitoring is not available with cpu = -1 : https://stackoverflow.com/questions/52892668/using-perf-event-open-to-monitor-docker-containers
+    // in cgroup-mode the event is measured only if the thread running on the monitored CPU belongs to the designated cgroup http://man7.org/linux/man-pages/man2/perf_event_open.2.html
     for (int core=0; core<nbcores; core++) {
       g_counter->counters[i][core] = perf_event_open(&pe, fd1, core, -1, PERF_FLAG_PID_CGROUP|PERF_FLAG_FD_CLOEXEC);
     }
   }
+  return g_counter;
 }
 
-void clean_counters() {
+void clean_counters(counter_t g_counter) {
   for(int counter=0; counter<g_counter->nbperf; counter++) {
     for(int core=0; core<g_counter->nbcores; core++)
       close(g_counter->counters[counter][core]);
@@ -93,29 +112,190 @@ void clean_counters() {
   free(g_counter);
 }
 
-void start_counters() {
+counter_t start_counters(char *cgroup_name) {
+  cgroup_t cgroup = find(cgroup_name);
+  counter_t g_counter = NULL;
+
+  if (cgroup == NULL) {
+     printf("start_counters : Cgroup not found \n");
+     return NULL;
+  } else {
+     g_counter = cgroup->g_counter;
+     printf("gcounter nbperf %d \n", g_counter->nbperf);
+  }
+
   for(int counter=0; counter<g_counter->nbperf; counter++)
     for(int core=0; core<g_counter->nbcores; core++)
       ioctl(g_counter->counters[counter][core], PERF_EVENT_IOC_ENABLE, 0);
+  return g_counter;
 }
-void reset_counters() {
+counter_t reset_counters(counter_t g_counter) {
   for(int counter=0; counter<g_counter->nbperf; counter++)
     for(int core=0; core<g_counter->nbcores; core++)
       ioctl(g_counter->counters[counter][core], PERF_EVENT_IOC_RESET, 0);
+  return g_counter;
 }
 
-int get_counters(long long *values) {
+int get_counters(long long *values, char *cgroup_name) {
+  printf("get counters initing cgroups \n");
+  init_cgroup(cgroup_name);
+
+  printList();
+  printf("get counters, cgroup name :  %s \n", cgroup_name);
+  cgroup_t cgroup = find(cgroup_name);
+  counter_t g_counter = NULL;
+
+  if (cgroup == NULL) {
+     printf("get_counters : Cgroup not found \n");
+     return -1;
+  } else {
+     g_counter = cgroup->g_counter;
+     printf("gcounter nbperf %d \n", g_counter->nbperf);
+  }
+
   for(int i=0; i<g_counter->nbperf; i++) {
     long long accu=0;
     long long count;
     for (int core=0; core<g_counter->nbcores; core++) {
       if (-1 == read(g_counter->counters[i][core], &count, sizeof(long long))) {
+        printf("Error reading counter values \n");
         return -1;
       }
       accu += count;
     }
     values[i] = accu;
+    printf("un compteur : %lld \n", accu);
   }
-  reset_counters();
+  reset_counters(g_counter);
+  printf("list after get counters \n");
+  printList();
   return 0;
 }
+
+// insert the cgroup in the list, init and start its counters
+// if the cgroup is already in the list, does nothing
+int init_cgroup(char *cgroup_name) {
+    printf("init cgroup list : \n");
+    printList();
+    cgroup_t cgroup = find(cgroup_name);
+    if (cgroup != NULL) {
+        printf("cgroup already in the list \n");
+        return 0;
+    } else {
+        counter_t g_counter = init_counters(cgroup_name);
+        if (g_counter != NULL) {
+            printf("counter initialized successfully \n");
+            printf("init cgroup : %s \n", cgroup_name);
+            insertFirst(cgroup_name, g_counter);
+            start_counters(cgroup_name);
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+}
+
+void printList() {
+   cgroup_t ptr = head;
+   printf("[ ");
+   while(ptr != NULL) {
+      printf("(%s , %d) ",ptr->cgroup_name, ptr->g_counter->nbcores);
+      ptr = ptr->next;
+   }
+   printf(" ] \n");
+}
+
+// insert a cgroup at the beginning of the cgroup list
+void insertFirst(char *cgroup_name, counter_t g_counter) {
+   printf("insert first : %s \n", cgroup_name);
+   cgroup_t link = (cgroup_t) malloc(sizeof(cgroup_t));
+   link->cgroup_name = cgroup_name;
+   printf("link -> cgroupname %s \n", link->cgroup_name);
+   link->g_counter = g_counter;
+   link->next = head;
+   head = link;
+   printf("list after insert first : ");
+   printList();
+}
+
+// return the cgroup with given name in the list, return NULL if the cgroup is not in the list
+cgroup_t find(char *cgroup_name) {
+   cgroup_t current = head;
+   if(head == NULL) {
+      return NULL;
+   }
+   printf("list used by find function \n");
+   printList();
+   while (strcmp(current->cgroup_name, cgroup_name) != 0) {
+      printf("function find : %s %s \n", current->cgroup_name, cgroup_name);
+      if(current->next == NULL) {
+         return NULL;
+      } else {
+         current = current->next;
+      }
+   }
+   return current;
+}
+
+// clean counters of the cgroup and free the cgroup
+void clean_cgroup(cgroup_t cgroup) {
+  counter_t g_counter = NULL;
+  if (cgroup == NULL) {
+     printf("clean_cgroup : Cgroup not found \n");
+     return;
+  } else {
+     g_counter = cgroup->g_counter;
+     printf("cleaning cgroup \n");
+  }
+  clean_counters(g_counter);
+  free(cgroup);
+}
+
+// remove from the list the cgroup with given name and free it
+cgroup_t remove_cgroup(char *cgroup_name) {
+   cgroup_t current = head;
+   cgroup_t previous = NULL;
+   if(head == NULL) {
+      return NULL;
+   }
+    while (strcmp(current->cgroup_name, cgroup_name) != 0) {
+      if(current->next == NULL) {
+         return NULL;
+      } else {
+         previous = current;
+         current = current->next;
+      }
+   }
+   if(current == head) {
+      head = head->next;
+   } else {
+      previous->next = current->next;
+   }
+   clean_cgroup(current);
+}
+
+//int main( ) {
+//    init_cgroup("/oar/lrocher_1874552o");
+//    sleep(1);
+//    long long *values = malloc(sizeof(long long) *3);
+//    get_counters(values, "/oar/lrocher_1874552");
+//    free(values);
+//    cgroup_t cgroup = remove_cgroup("/oar/lrocher_1874552");
+//    return 0;
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
