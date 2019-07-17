@@ -15,11 +15,17 @@ from colmet.common.job import Job
 LOG = logging.getLogger()
 
 
+perfhwlib = None
+
 class PerfhwstatsBackend(InputBaseBackend):
     __backend_name__ = "perfhwstats"
 
     def open(self):
         self.jobs = {}
+        self.filenames = {}
+        lib_path = os.getenv('LIB_PERFHW_PATH', "/usr/lib/lib_perf_hw.so")
+        global perfhwlib
+        perfhwlib = ctypes.cdll.LoadLibrary(lib_path)
 
         self.perfhwstats = PerfhwStats(self.options)
         if len(self.job_id_list) < 1 \
@@ -62,7 +68,7 @@ class PerfhwstatsBackend(InputBaseBackend):
         regex_job_id = self.options.regex_job_id[0]
 
         job_ids = set([])
-        self.filenames = {}
+        # self.filenames = {}
         for filename in os.listdir(cpuset_rootpath):
             jid = re.findall(regex_job_id, filename)
             if len(jid) > 0:
@@ -78,6 +84,12 @@ class PerfhwstatsBackend(InputBaseBackend):
         # Del ended jobs
 
         for job_id in (monitored_job_ids - job_ids):
+            global perfhwlib
+            job_name = self.filenames[job_id]
+            job_name_buffer = ctypes.create_string_buffer(b"/oar/"  + bytes(job_name, 'utf-8'))
+            job_id_p = ctypes.c_char_p(ctypes.addressof(job_name_buffer))
+            perfhwlib.remove_cgroup(job_id_p)
+            del self.filenames[job_id]
             del self.jobs[job_id]
         # udpate job_id list to monitor
         self.job_id_list = list(job_ids)
@@ -90,26 +102,20 @@ class PerfhwStats(object):
         self.perfhwvalues = None
 
     def get_stats(self, job_filename):
-        if not self.isInit:
-            lib_path = os.getenv('LIB_PERFHW_PATH', "/usr/lib/lib_perf_hw.so")
-            self.perfhwlib = ctypes.cdll.LoadLibrary(lib_path)
-            job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
-            job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
+        global perfhwlib
+        job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
+        job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
 
-            print("calling lib perfhw with job", job_filename)
-            self.perfhwlib.init_counters(job_id_p)
-            self.perfhwlib.start_counters()
-            self.perfhwvalues = (ctypes.c_uint64 * 3)()
-            self.isInit = True
+        perfhwlib.init_cgroup(job_id_p)
+        self.perfhwvalues = (ctypes.c_uint64 * 3)()
 
-        if self.perfhwlib.get_counters(self.perfhwvalues) == 0:  # c lib returning values successfully
+        if perfhwlib.get_counters(self.perfhwvalues, job_id_p) == 0:  # c lib returning values successfully
             perfhwstats_data = {
                 "instructions": self.perfhwvalues[0],
                 "cachemisses": self.perfhwvalues[1],
                 "pagefaults": self.perfhwvalues[2]
             }
         else:
-            self.isInit = False
             perfhwstats_data = {
                 "instructions": -1,
                 "cachemisses": -1,
