@@ -46,12 +46,6 @@ cgroup_t find(char *cgroup_name);
 void insertFirst(char *cgroup_name, counter_t g_counter);
 void remove_cgroup(char *cgroup_name);
 
-//const int nb_perf = 3;
-//const char* perf_names[3] = {"instructions", "cachemisses", "pagefaults"};
-//const __u32 perf_type[3] = {PERF_TYPE_HARDWARE,PERF_TYPE_HARDWARE,PERF_TYPE_SOFTWARE};
-//const __u64 perf_key[3] = {PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_CACHE_MISSES, PERF_COUNT_SW_PAGE_FAULTS};
-
-
 // name : metric name in natural language
 // perf_type : type of event associated with the metric (field type of perf_event_attr struct)
 // perf_key : metric name (field config of perf_event_attr struct)

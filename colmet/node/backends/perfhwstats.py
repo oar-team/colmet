@@ -113,13 +113,6 @@ class PerfhwStats(object):
         job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
         job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
 
-        # if job_filename == "lrocher_2":
-        #     metrics_str = ctypes.create_string_buffer(b"instructions,instructions,instructions,instructions,instructions")
-        #     metrics_p = (ctypes.c_char_p)(ctypes.addressof(metrics_str))
-        # else:
-        #     metrics_str = ctypes.create_string_buffer(b"instructions,page_faults,instructions,instructions,instructions")
-        #     metrics_p = (ctypes.c_char_p)(ctypes.addressof(metrics_str))
-
         perf_counters = ','.join(self.options.perfhw_list)
 
         perf_counters_b = ctypes.create_string_buffer(perf_counters.encode("utf-8"))
