@@ -2,6 +2,7 @@ import os
 import re
 import errno
 import struct
+import time
 import copy
 import logging
 import ctypes
@@ -102,11 +103,19 @@ class PerfhwStats(object):
         self.isInit = False
         self.perfhwvalues = None
 
-        if len(self.options.perfhw_list) > 5:
-            LOG.warning("too many perf counters, kept the first 5 counters")
-            self.options.perfhw_list = self.options.perfhw_list[:5]
+        self.max_nb_counter = 5
+
+        if len(self.options.perfhw_list) > self.max_nb_counter:
+            LOG.warning("too many perf counters, kept the first " + str(self.max_nb_counter) + "counters")
+            self.options.perfhw_list = self.options.perfhw_list[:self.max_nb_counter]
 
         self.nb_counters = len(self.options.perfhw_list)
+
+        metrics_mapping = open("./perfhw_mapping." + str(time.time()) + ".txt", "w+")
+
+        for i in range(self.max_nb_counter):
+            metric_name = self.options.perfhw_list[i] if i < self.nb_counters else "no counter"
+            metrics_mapping.write("counter" + str(i+1) + " : " + metric_name + "\n")
 
     def get_stats(self, job_filename):
         global perfhwlib
