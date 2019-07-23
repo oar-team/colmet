@@ -12,15 +12,20 @@ class PerfhwstatsCounters(BaseCounters):
     __metric_name__ = 'perfhwstats_default'
 
     counters_perfhwstats = {
-        'instructions': (Int64(), 'count', 'none', 'instructions'),
-        'cachemisses': (Int64(), 'count', 'none', 'cachemisses'),
-        'pagefaults': (Int64(), 'count', 'none', 'pagefaults'),
+        'counter1': (Int64(), 'count', 'none', 'counter1'),
+        'counter2': (Int64(), 'count', 'none', 'counter2'),
+        'counter3': (Int64(), 'count', 'none', 'counter3'),
+        'counter4': (Int64(), 'count', 'none', 'counter4'),
+        'counter5': (Int64(), 'count', 'none', 'counter5'),
     }
 
     counters_perfhwstats_to_get = [
-        "instructions",
-        "cachemisses",
-        "pagefaults",
+        "counter1",
+        "counter2",
+        "counter3",
+        "counter4",
+        "counter5",
+
     ]
 
     _counters = []

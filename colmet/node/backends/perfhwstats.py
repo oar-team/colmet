@@ -14,8 +14,8 @@ from colmet.common.job import Job
 
 LOG = logging.getLogger()
 
-
 perfhwlib = None
+
 
 class PerfhwstatsBackend(InputBaseBackend):
     __backend_name__ = "perfhwstats"
@@ -86,13 +86,14 @@ class PerfhwstatsBackend(InputBaseBackend):
         for job_id in (monitored_job_ids - job_ids):
             global perfhwlib
             job_name = self.filenames[job_id]
-            job_name_buffer = ctypes.create_string_buffer(b"/oar/"  + bytes(job_name, 'utf-8'))
+            job_name_buffer = ctypes.create_string_buffer(b"/oar/" + bytes(job_name, 'utf-8'))
             job_id_p = ctypes.c_char_p(ctypes.addressof(job_name_buffer))
             perfhwlib.remove_cgroup(job_id_p)
             del self.filenames[job_id]
             del self.jobs[job_id]
         # udpate job_id list to monitor
         self.job_id_list = list(job_ids)
+
 
 class PerfhwStats(object):
 
@@ -101,25 +102,47 @@ class PerfhwStats(object):
         self.isInit = False
         self.perfhwvalues = None
 
+        if len(self.options.perfhw_list) > 5:
+            LOG.warning("too many perf counters, kept the first 5 counters")
+            self.options.perfhw_list = self.options.perfhw_list[:5]
+
+        self.nb_counters = len(self.options.perfhw_list)
+
     def get_stats(self, job_filename):
         global perfhwlib
         job_id_str = ctypes.create_string_buffer(b"/oar/" + bytes(job_filename, 'utf-8'))
         job_id_p = (ctypes.c_char_p)(ctypes.addressof(job_id_str))
 
-        perfhwlib.init_cgroup(job_id_p)
-        self.perfhwvalues = (ctypes.c_uint64 * 3)()
+        # if job_filename == "lrocher_2":
+        #     metrics_str = ctypes.create_string_buffer(b"instructions,instructions,instructions,instructions,instructions")
+        #     metrics_p = (ctypes.c_char_p)(ctypes.addressof(metrics_str))
+        # else:
+        #     metrics_str = ctypes.create_string_buffer(b"instructions,page_faults,instructions,instructions,instructions")
+        #     metrics_p = (ctypes.c_char_p)(ctypes.addressof(metrics_str))
+
+        perf_counters = ','.join(self.options.perfhw_list)
+
+        perf_counters_b = ctypes.create_string_buffer(perf_counters.encode("utf-8"))
+        perf_counters_p = (ctypes.c_char_p)(ctypes.addressof(perf_counters_b))
+
+        perfhwlib.init_cgroup(job_id_p, perf_counters_p)
+        self.perfhwvalues = (ctypes.c_uint64 * self.nb_counters)()
 
         if perfhwlib.get_counters(self.perfhwvalues, job_id_p) == 0:  # c lib returning values successfully
             perfhwstats_data = {
-                "instructions": self.perfhwvalues[0],
-                "cachemisses": self.perfhwvalues[1],
-                "pagefaults": self.perfhwvalues[2]
+                "counter1": self.perfhwvalues[0] if self.nb_counters>=1 else -1,
+                "counter2": self.perfhwvalues[1] if self.nb_counters>=2 else -1,
+                "counter3": self.perfhwvalues[2] if self.nb_counters>=3 else -1,
+                "counter4": self.perfhwvalues[3] if self.nb_counters>=4 else -1,
+                "counter5": self.perfhwvalues[4] if self.nb_counters>=5 else -1,
             }
         else:
             perfhwstats_data = {
-                "instructions": -1,
-                "cachemisses": -1,
-                "pagefaults": -1
+                "counter1": -1,
+                "counter2": -1,
+                "counter3": -1,
+                "counter4": -1,
+                "counter5": -1,
             }
             LOG.warning("cannot get perf_event counters values, replaced by -1 values")
 

@@ -161,6 +161,10 @@ def main():
                         default=False, dest="enable_perfhw",
                         help='Enables monitoring of jobs from the performance API')
 
+    parser.add_argument('--perfhw-list', nargs='+',
+                        default=["instructions","cache_misses", "page_faults"], dest="perfhw_list",
+                        help='space separated list of performance counters')
+
     
     parser.add_argument("--enable-RAPL", action="store_true",
                         default=False, dest="enable_RAPLstats",
