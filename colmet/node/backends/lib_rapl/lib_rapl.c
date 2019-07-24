@@ -4,12 +4,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "rapl.h"
 
-#define MAX_LEN_NAME 100
+#define MAX_LEN_NAME 200
 
 const int nbzones = 3;
-const int rapl_zones[3] = { POWERCAP_RAPL_ZONE_PACKAGE,   POWERCAP_RAPL_ZONE_CORE,   POWERCAP_RAPL_ZONE_DRAM};
+const int rapl_zones[3] = {POWERCAP_RAPL_ZONE_PACKAGE, POWERCAP_RAPL_ZONE_CORE, POWERCAP_RAPL_ZONE_DRAM};
+
+
 
 rapl_t g_rapl;
 
@@ -35,7 +38,14 @@ int init_rapl() {
   for (int package = 0; package < g_rapl->nbpackages; package++) {
     for(int zone=0; zone<g_rapl->nbzones; zone++) {
      g_rapl->names[package*g_rapl->nbzones+zone]=malloc(MAX_LEN_NAME);
-      powercap_rapl_get_name(&g_rapl->pkgs[package], rapl_zones[zone], g_rapl->names[package*g_rapl->nbzones+zone], MAX_LEN_NAME);
+     int ret = powercap_rapl_get_name(&g_rapl->pkgs[package], rapl_zones[zone], g_rapl->names[package*g_rapl->nbzones+zone], MAX_LEN_NAME);
+
+
+     printf("=== package %d === \n", package);
+     printf("zone %d \n", zone);
+     printf("ret : %d \n", ret);
+     printf("rapl name %s \n", g_rapl->names[package*g_rapl->nbzones+zone]);
+
     }
   }
   return 0;
@@ -65,8 +75,35 @@ void get_powercap_rapl_name(char ** values)
   {
     for (int zone = 0; zone < g_rapl->nbzones; zone++)
     {
-      powercap_rapl_get_name(&g_rapl->pkgs[package], g_rapl->zones[zone], retour, sizeof(retour));
-      strcpy(values[i], retour);
+      if (zone == 0){
+        powercap_rapl_get_name(&g_rapl->pkgs[package], g_rapl->zones[zone], retour, sizeof(retour));
+      }
+
+      char tmp[255];
+      int ret = powercap_rapl_get_name(&g_rapl->pkgs[package], g_rapl->zones[zone], tmp, sizeof(retour));
+      if (ret < 0){
+       strcpy(values[i],"counter not supported by hardware");
+      }
+      else{
+          strcpy(values[i], retour);
+
+          if (zone == 0){
+            strcat(values[i], "_zone:package");
+          }
+
+          if (zone == 1){
+            strcat(values[i], "_zone:core");
+          }
+
+          if (zone == 2){
+            strcat(values[i], "_zone:dram");
+          }
+      }
+
+      printf("i %d \n", i);
+      printf("package %d \n", package);
+      printf("zone %d \n", zone);
+      printf("retour %s \n", values[i]);
       i++;
     }
   }

@@ -1,6 +1,7 @@
 import os
 import re
 import ctypes
+import time
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
@@ -54,6 +55,25 @@ class RAPLstats(object):
         self.raplLib.get_powercap_rapl_name(self.name_pointers)
         self.names = [s.value for s in self.name_buffer]
 
+        metrics_mapping = open("./RAPL_mapping." + str(time.time()) + ".txt", "w+")
+
+        for i in range(self.raplsize):
+            if self.names[i].decode("utf-8") == "counter not supported by hardware":
+                metric_name = "counter not supported by hardware"
+            else:
+                metric_name = "energy_microjoule_" + self.names[i].decode("utf-8")
+            metrics_mapping.write("counter_" + str(2 * i + 1) + " : " + metric_name + "\n")
+
+            if self.names[i].decode("utf-8") == "counter not supported by hardware":
+                metric_name = "counter not supported by hardware"
+            else:
+                metric_name = "max_energy_range_microjoule_" + self.names[i].decode("utf-8")
+            metrics_mapping.write("counter_" + str(2 * i + 1 + 1) + " : " + metric_name + "\n")
+
+        for i in range(self.raplsize * 2, RAPLstatsCounters.raplsize):
+            metric_name = "no counter"
+            metrics_mapping.write("counter_" + str(i + 1) + " : " + str(metric_name) + "\n")
+
     def get_stats(self):
         RAPLstats_data = {}
 
@@ -62,16 +82,15 @@ class RAPLstats(object):
         self.raplLib.get_powercap_rapl_get_energy_uj(energy)
         i = 0
         for i in range(self.raplsize):
+            print("i ", i)
+            RAPLstats_data["counter_" + str(2*i+1)] = energy[i] - self.oldEnergy[i]
+            RAPLstats_data["counter_" + str(2*i+1+1)] = self.maxEnergy[i]
 
-            RAPLstats_data["name_" + str(i)] = self.names[i]
-            RAPLstats_data["maxEnergyRangeUJ_" + str(i)] = self.maxEnergy[i]
-            RAPLstats_data["energyUJ_" + str(i)] = energy[i] - self.oldEnergy[i]
-
-        for i in range(self.raplsize, 12): # assuming 4 cpu x 3 measure per cpu
-            RAPLstats_data["name_" + str(i)] = "no value available"
-            RAPLstats_data["maxEnergyRangeUJ_" + str(i)] = -1
-            RAPLstats_data["energyUJ_" + str(i)] = -1
+        for i in range(self.raplsize*2, RAPLstatsCounters.raplsize):
+            RAPLstats_data["counter_" + str(i+1)] = -1
+            RAPLstats_data["counter_" + str(i+1)] = -1
 
         self.oldEnergy = energy
 
+        print("rapl stats data ", RAPLstats_data)
         return RAPLstatsCounters(RAPLstats_buffer=RAPLstats_data)

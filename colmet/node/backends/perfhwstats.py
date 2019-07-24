@@ -132,19 +132,19 @@ class PerfhwStats(object):
 
         if perfhwlib.get_counters(self.perfhwvalues, job_id_p) == 0:  # c lib returning values successfully
             perfhwstats_data = {
-                "counter1": self.perfhwvalues[0] if self.nb_counters>=1 else -1,
-                "counter2": self.perfhwvalues[1] if self.nb_counters>=2 else -1,
-                "counter3": self.perfhwvalues[2] if self.nb_counters>=3 else -1,
-                "counter4": self.perfhwvalues[3] if self.nb_counters>=4 else -1,
-                "counter5": self.perfhwvalues[4] if self.nb_counters>=5 else -1,
+                "counter_1": self.perfhwvalues[0] if self.nb_counters>=1 else -1,
+                "counter_2": self.perfhwvalues[1] if self.nb_counters>=2 else -1,
+                "counter_3": self.perfhwvalues[2] if self.nb_counters>=3 else -1,
+                "counter_4": self.perfhwvalues[3] if self.nb_counters>=4 else -1,
+                "counter_5": self.perfhwvalues[4] if self.nb_counters>=5 else -1,
             }
         else:
             perfhwstats_data = {
-                "counter1": -1,
-                "counter2": -1,
-                "counter3": -1,
-                "counter4": -1,
-                "counter5": -1,
+                "counter_1": -1,
+                "counter_2": -1,
+                "counter_3": -1,
+                "counter_4": -1,
+                "counter_5": -1,
             }
             LOG.warning("cannot get perf_event counters values, replaced by -1 values")
 
