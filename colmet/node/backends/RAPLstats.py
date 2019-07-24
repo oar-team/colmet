@@ -82,7 +82,6 @@ class RAPLstats(object):
         self.raplLib.get_powercap_rapl_get_energy_uj(energy)
         i = 0
         for i in range(self.raplsize):
-            print("i ", i)
             RAPLstats_data["counter_" + str(2*i+1)] = energy[i] - self.oldEnergy[i]
             RAPLstats_data["counter_" + str(2*i+1+1)] = self.maxEnergy[i]
 
@@ -92,5 +91,4 @@ class RAPLstats(object):
 
         self.oldEnergy = energy
 
-        print("rapl stats data ", RAPLstats_data)
         return RAPLstatsCounters(RAPLstats_buffer=RAPLstats_data)

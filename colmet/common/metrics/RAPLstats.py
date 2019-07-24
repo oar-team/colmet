@@ -12,22 +12,16 @@ class RAPLstatsCounters(BaseCounters):
     __metric_name__ = 'RAPLstats_default'
 
     # raplsize = raplLib.get_rapl_size()
-    raplsize = 24 # we assume there are 4 cpu per node * 3 zones per cpu * 2 metrics per cpu, il less we will return -1 metrics
+    raplsize = 24 # we assume there are 4 cpu per node * 3 zones per cpu * 2 metrics per cpu, if less we will return -1 metrics
 
     #def __init__(self):
     counters_RAPLstats = {}
     for i in range(raplsize):
-        # counters_RAPLstats["name_" + str(i)] = (String(255), 'string', 'none', '')
-        # counters_RAPLstats["maxEnergyRangeUJ_" + str(i)] = (Int64(), 'count', 'none', 'maxEnergyRangeUJ')
-        # counters_RAPLstats["energyUJ_" + str(i)] = (Int64(), 'count', 'none', 'energyUJ')
         counters_RAPLstats["counter_" + str(i+1)] = (Int64(), 'count', 'none', "counter" + str(i+1))
 
     counters_RAPLstats_to_get = []
 
     for i in range(raplsize):
-        # counters_RAPLstats_to_get.append("name_" + str(i))
-        # counters_RAPLstats_to_get.append("maxEnergyRangeUJ_" + str(i))
-        # counters_RAPLstats_to_get.append("energyUJ_" + str(i))
         counters_RAPLstats_to_get.append("counter_" + str(i+1))
 
     _counters = []

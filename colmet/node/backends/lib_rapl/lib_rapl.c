@@ -39,13 +39,6 @@ int init_rapl() {
     for(int zone=0; zone<g_rapl->nbzones; zone++) {
      g_rapl->names[package*g_rapl->nbzones+zone]=malloc(MAX_LEN_NAME);
      int ret = powercap_rapl_get_name(&g_rapl->pkgs[package], rapl_zones[zone], g_rapl->names[package*g_rapl->nbzones+zone], MAX_LEN_NAME);
-
-
-     printf("=== package %d === \n", package);
-     printf("zone %d \n", zone);
-     printf("ret : %d \n", ret);
-     printf("rapl name %s \n", g_rapl->names[package*g_rapl->nbzones+zone]);
-
     }
   }
   return 0;
@@ -99,11 +92,6 @@ void get_powercap_rapl_name(char ** values)
             strcat(values[i], "_zone:dram");
           }
       }
-
-      printf("i %d \n", i);
-      printf("package %d \n", package);
-      printf("zone %d \n", zone);
-      printf("retour %s \n", values[i]);
       i++;
     }
   }
