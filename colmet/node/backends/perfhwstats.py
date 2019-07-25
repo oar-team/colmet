@@ -111,11 +111,11 @@ class PerfhwStats(object):
 
         self.nb_counters = len(self.options.perfhw_list)
 
-        metrics_mapping = open("./perfhw_mapping." + str(time.time()) + ".txt", "w+")
+        metrics_mapping = open("./perfhw_mapping." + str(time.time()) + ".csv", "w+")
 
         for i in range(self.max_nb_counter):
-            metric_name = self.options.perfhw_list[i] if i < self.nb_counters else "no counter"
-            metrics_mapping.write("counter" + str(i+1) + " : " + metric_name + "\n")
+            metric_name = self.options.perfhw_list[i] if i < self.nb_counters else "no_counter"
+            metrics_mapping.write("counter" + str(i+1) + "," + metric_name + "\n")
 
     def get_stats(self, job_filename):
         global perfhwlib

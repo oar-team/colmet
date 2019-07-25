@@ -81,15 +81,15 @@ void get_powercap_rapl_name(char ** values)
           strcpy(values[i], retour);
 
           if (zone == 0){
-            strcat(values[i], "_zone:package");
+            strcat(values[i], ",zone_package");
           }
 
           if (zone == 1){
-            strcat(values[i], "_zone:core");
+            strcat(values[i], ",zone_core");
           }
 
           if (zone == 2){
-            strcat(values[i], "_zone:dram");
+            strcat(values[i], ",zone_dram");
           }
       }
       i++;

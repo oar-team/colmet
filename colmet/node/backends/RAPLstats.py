@@ -55,24 +55,24 @@ class RAPLstats(object):
         self.raplLib.get_powercap_rapl_name(self.name_pointers)
         self.names = [s.value for s in self.name_buffer]
 
-        metrics_mapping = open("./RAPL_mapping." + str(time.time()) + ".txt", "w+")
+        metrics_mapping = open("./RAPL_mapping." + str(time.time()) + ".csv", "w+")
 
         for i in range(self.raplsize):
             if self.names[i].decode("utf-8") == "counter not supported by hardware":
-                metric_name = "counter not supported by hardware"
+                metric_name = "counter_not_supported_by_hardware,,"
             else:
-                metric_name = "energy_microjoule_" + self.names[i].decode("utf-8")
-            metrics_mapping.write("counter_" + str(2 * i + 1) + " : " + metric_name + "\n")
+                metric_name = "energy_microjoule," + self.names[i].decode("utf-8")
+            metrics_mapping.write("counter_" + str(2 * i + 1) + "," + metric_name + "\n")
 
             if self.names[i].decode("utf-8") == "counter not supported by hardware":
-                metric_name = "counter not supported by hardware"
+                metric_name = "counter_not_supported_by_hardware,,"
             else:
-                metric_name = "max_energy_range_microjoule_" + self.names[i].decode("utf-8")
-            metrics_mapping.write("counter_" + str(2 * i + 1 + 1) + " : " + metric_name + "\n")
+                metric_name = "max_energy_range_microjoule," + self.names[i].decode("utf-8")
+            metrics_mapping.write("counter_" + str(2 * i + 1 + 1) + "," + metric_name + "\n")
 
         for i in range(self.raplsize * 2, RAPLstatsCounters.raplsize):
-            metric_name = "no counter"
-            metrics_mapping.write("counter_" + str(i + 1) + " : " + str(metric_name) + "\n")
+            metric_name = "no_counter,,"
+            metrics_mapping.write("counter_" + str(i + 1) + "," + str(metric_name) + "\n")
 
     def get_stats(self):
         RAPLstats_data = {}
