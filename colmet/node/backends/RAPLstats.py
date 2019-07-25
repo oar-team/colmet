@@ -18,7 +18,7 @@ class RAPLstatsBackend(InputBaseBackend):
         self.job_0 = Job(self, 0, self.options)
 
     def close(self):
-        pass
+        self.RAPLstats.raplLib.clean_rapl()
 
     def get_RAPLstats(self):
         counters = self.RAPLstats.get_stats()

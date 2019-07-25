@@ -41,7 +41,8 @@ class Task(object):
             self.perfhwstats_back = PerfhwstatsBackend(self.options)
             self.input_backends.append(self.perfhwstats_back)
         if self.options.enable_RAPLstats:
-            self.input_backends.append(RAPLstatsBackend(self.options))
+            self.RAPLstatsBackend = RAPLstatsBackend(self.options)
+            self.input_backends.append(self.RAPLstatsBackend)
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -74,7 +75,9 @@ class Task(object):
     def terminate(self, signum, frame):
         LOG.info("Received a signal (%d)" % signum)
         LOG.info("Terminating %s properly..." % self.name)
+        self.RAPLstatsBackend.close()
         self.zeromq_output_backend.close()
+
         sys.exit(0)
 
     def sleep(self):
@@ -165,7 +168,7 @@ def main():
                         default=["instructions","cache_misses", "page_faults"], dest="perfhw_list",
                         help='space separated list of performance counters')
 
-    
+
     parser.add_argument("--enable-RAPL", action="store_true",
                         default=False, dest="enable_RAPLstats",
                         help='Enables monitoring of node s using RAPL'
