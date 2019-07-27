@@ -1,0 +1,47 @@
+name: colmet-node
+version: "0.1"
+about: Collect cpu, memory and i/o statistics about proccesses in a cgroup.
+
+args:
+    - verbose:
+        short: v
+        multiple: true
+        help: Sets the level of verbosity
+    - sample-period:
+        short: s
+        long: sample-period
+        help: sampling period of measuring in seconds
+        default_value: "5"
+    - enable-infiniband:
+        long: enable-infiniband
+        help: Enables monitoring of infiniband port. Measures are associated to the fictive job with 0 as identifier.
+        default_value: "false"
+    - enable-lustre:
+        long: enable-lustre
+        help: Enables monitoring mounting lustre fs. Measures are associated to the fictive job with 0 as identifier.
+        default_value: "false"
+    - enable-perfhw:
+        long: enable-perfhw
+        help: Enables monitoring of jobs from the performance API.
+        default_value: "false"
+    - enable-RAPL:
+        long: enable-RAPL
+        help: Enables monitoring using Running Average Power Limit (RAPL). Measures are associated to the fictive job with 0 as identifier.
+        default_value: "false"
+    - zeromq-uri:
+        long: zeromq-uri
+        help: ZeroMQ URI
+        default_value: "tcp://127.0.0.1:5556"
+    - zeromq-hwm:
+        long: zeromq-hwm
+        help: The high water mark is a hard limit on the maximum number of outstanding messages ZeroMQ shall queue in memory. The value of zero means no limit.
+        default_value: "1000"
+    - zeromq-linger:
+        long: zeromq-linger
+        help: Set the linger period for the specified socket. The value of -1 specifies an infinite linger period. The value of 0 specifies no linger period. Positive values specify an upper bound for the linger period in milliseconds.
+        default_value: "2000"
+    - cgroup-rootpath:
+        long: cgroup-rootpath
+        help: cpuset root path
+        default_value: "/sys/fs/cgroup/cpuset"
+
