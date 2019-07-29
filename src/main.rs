@@ -4,6 +4,9 @@ use std::collections::HashMap;
 extern crate log;
 extern crate simple_logger;
 
+extern crate regex;
+use regex::Regex;
+
 use log::Level;
 
 #[macro_use]
@@ -35,9 +38,11 @@ use inotify::{
 
 fn main(){
 
-    backends::test();
+
 
     let cli_args = parse_cli_args();
+    backends::test(cli_args.regex_job_id);
+
     init_logger(cli_args.verbose);
 
     let zmq_sender = zeromq::ZmqSender::init();
@@ -63,7 +68,6 @@ fn sleep_to_round_timestamp(duration_nanoseconds: u128) {
 }
 
 
-
 struct CliArgs {
     verbose: i32,
     sample_period: f64,
@@ -75,6 +79,7 @@ struct CliArgs {
     zeromq_hwm: i32,
     zeromq_linger: i32,
     cgroup_rootpath: String,
+    regex_job_id: String,
 }
 
 fn parse_cli_args() -> CliArgs {
@@ -91,6 +96,8 @@ fn parse_cli_args() -> CliArgs {
     let zeromq_hwm = value_t!(matches, "zeromq-hwm", i32).unwrap();
     let zeromq_linger = value_t!(matches, "zeromq-linger", i32).unwrap();
     let cgroup_rootpath = value_t!(matches, "cgroup-rootpath", String).unwrap();
+    let regex_job_id = value_t!(matches, "regex-job-id", String).unwrap();
+
 
     let cli_args = CliArgs {
         verbose,
@@ -103,6 +110,7 @@ fn parse_cli_args() -> CliArgs {
         zeromq_hwm,
         zeromq_linger,
         cgroup_rootpath,
+        regex_job_id
     };
     cli_args
 }

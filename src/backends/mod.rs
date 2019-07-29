@@ -3,6 +3,9 @@ use crate::backends::memory::MemoryBackend;
 use crate::backends::blkio::BlkioBackend;
 use crate::cgroup_manager::CgroupManager;
 use std::rc::Rc;
+use std::sync::Arc;
+use crate::CliArgs;
+use regex::Regex;
 
 
 mod blkio;
@@ -22,7 +25,7 @@ pub struct BackendsManager {
 }
 
 impl BackendsManager {
-    pub fn new() -> BackendsManager {
+    pub fn new(regex_job_id: String) -> BackendsManager {
         let backends = Vec::new();
         BackendsManager{backends}
     }
@@ -44,19 +47,18 @@ impl BackendsManager {
 }
 
 
-pub fn test() {
+pub fn test(regex_job_id: String) {
 
-    let mut backends_manager = BackendsManager::new();
+    let mut backends_manager = BackendsManager::new(regex_job_id.clone());
+    let cgroup_manager = CgroupManager::new(regex_job_id.clone());
 
-    let cgroup_manager = Rc::new(CgroupManager::new());
-
-    let memory_backend = MemoryBackend::new(Rc::clone(&cgroup_manager));
-    let memory_backend2 = MemoryBackend::new(Rc::clone(&cgroup_manager));
+    let memory_backend = MemoryBackend::new(Arc::clone(&cgroup_manager));
+    let memory_backend2 = MemoryBackend::new(Arc::clone(&cgroup_manager));
 
     memory_backend.say_hello();
     memory_backend2.say_hello();
 
-    let blkio_backend = BlkioBackend::new(Rc::clone(&cgroup_manager));
+    let blkio_backend = BlkioBackend::new(Arc::clone(&cgroup_manager));
 
     backends_manager.add_backend(Box::new(memory_backend));
     backends_manager.add_backend(Box::new(blkio_backend));

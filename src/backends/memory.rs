@@ -1,15 +1,16 @@
 use crate::backends::Backend;
 use crate::cgroup_manager::CgroupManager;
 use std::rc::Rc;
+use std::sync::Arc;
 
 
 pub struct MemoryBackend {
     pub backend_name: String,
-    cgroup_manager: Rc<CgroupManager>,
+    cgroup_manager: Arc<CgroupManager>,
 }
 
 impl MemoryBackend {
-    pub fn new(cgroup_manager: Rc<CgroupManager>) -> MemoryBackend {
+    pub fn new(cgroup_manager: Arc<CgroupManager>) -> MemoryBackend {
         let backend_name = "Memory".to_string();
         MemoryBackend {backend_name, cgroup_manager}
     }

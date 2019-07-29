@@ -1,15 +1,16 @@
 use crate::backends::Backend;
 use crate::cgroup_manager::CgroupManager;
 use std::rc::Rc;
+use std::sync::Arc;
 
 
 pub struct BlkioBackend {
     pub backend_name: String,
-    cgroup_manager: Rc<CgroupManager>,
+    cgroup_manager: Arc<CgroupManager>,
 }
 
 impl BlkioBackend {
-    pub fn new(cgroup_manager: Rc<CgroupManager>) -> BlkioBackend {
+    pub fn new(cgroup_manager: Arc<CgroupManager>) -> BlkioBackend {
         let backend_name = "Blkio".to_string();
         BlkioBackend {backend_name, cgroup_manager}
     }
