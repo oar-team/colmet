@@ -43,7 +43,7 @@ args:
     - cgroup-rootpath:
         long: cgroup-rootpath
         help: cpuset root path
-        default_value: '/sys/fs/cgroup/cpuset'
+        default_value: '/sys/fs/cgroup/cpuset/oar/'
     - regex-job-id:
           long: regex-job-id
           help: Regular expression to extract job_id from cpuset directory name.

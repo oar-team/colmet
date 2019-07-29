@@ -12,6 +12,7 @@ use std::thread::sleep;
 use std::thread;
 
 use std::env;
+use std::path::PathBuf;
 
 use inotify::{
     EventMask,
@@ -27,15 +28,17 @@ use std::borrow::{BorrowMut, Borrow};
 pub struct CgroupManager {
     cgroups: Mutex<HashMap<i32, String>>,
     regex_job_id: String,
+    cgroup_rootpath: String,
 
 }
 
 impl CgroupManager {
-    pub fn new(regex_job_id: String) -> Arc<CgroupManager> {
+    pub fn new(regex_job_id: String, cgroup_rootpath: String) -> Arc<CgroupManager> {
         let cgroups = Mutex::new(HashMap::new());
         let regex_job_id = regex_job_id;
-        let res = Arc::new(CgroupManager { cgroups, regex_job_id });
-        notify_jobs(Arc::clone(&res));
+        let cgroup_rootpath = cgroup_rootpath;
+        let res = Arc::new(CgroupManager { cgroups, regex_job_id, cgroup_rootpath:cgroup_rootpath.clone()});
+        notify_jobs(Arc::clone(&res), cgroup_rootpath.clone());
         res
     }
 
@@ -62,9 +65,10 @@ impl CgroupManager {
     }
 }
 
-pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>) {
+pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>, cgroup_rootpath: String) {
     let regex_job_id = Regex::new(&cgroup_manager.regex_job_id).unwrap();
-    let cgroups = fs::read_dir("./").unwrap();
+    println!("{:#?}", cgroup_rootpath);
+    let cgroups = fs::read_dir(cgroup_rootpath.clone()).unwrap();
     for cgroup in cgroups {
         let path = cgroup.unwrap().path();
         let cgroup_name = path.file_name().unwrap().to_str().unwrap();
@@ -76,8 +80,7 @@ pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>) {
     let mut inotify = Inotify::init()
         .expect("Failed to initialize inotify");
 
-    let current_dir = env::current_dir()
-        .expect("Failed to determine current directory");
+    let current_dir = PathBuf::from(cgroup_rootpath);
 
     inotify
         .add_watch(
@@ -92,7 +95,6 @@ pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>) {
 
     let child = thread::spawn(move || {
         loop {
-            print_ok();
             let events = inotify
                 .read_events_blocking(&mut buffer)
                 .expect("Failed to read inotify events");
@@ -116,8 +118,4 @@ pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>) {
             }
         }
     });
-}
-
-fn print_ok() {
-    println!("ok");
 }

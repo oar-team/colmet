@@ -2,6 +2,9 @@ use crate::backends::Backend;
 use crate::cgroup_manager::CgroupManager;
 use std::rc::Rc;
 use std::sync::Arc;
+use std::fs::File;
+use std::io::Read;
+use std::vec::IntoIter;
 
 
 pub struct MemoryBackend {
@@ -27,10 +30,35 @@ impl Backend for MemoryBackend {
     fn close(&self) {
     }
 
-    fn get_metric_names(&self) -> String {
-        "ok".to_string()
+    fn get_metric_names(&self) -> IntoIter<String> {
+        let mut file = File::open("/sys/fs/cgroup/memory/memory.stat").unwrap();
+        let mut content = String::new();
+        file.read_to_string(&mut content).unwrap();
+        let mut lines: Vec<&str> = content.split("\n").collect();
+        let mut res : Vec<String> = Vec::new();
+         for mut i in 0..lines.len()-1 {
+            let line = lines[i];
+            let tmp1 = line.to_string();
+            let tmp2 : Vec<&str> = tmp1.split(" ").collect();
+            res.push(tmp2[0].to_string());
+        }
+        let metric_names = res[..res.len()].to_vec().into_iter();
+        metric_names
     }
 
-    fn get_metric_values(&self) {
+    fn get_metric_values(&self) -> IntoIter<String> {
+        let mut file = File::open("/sys/fs/cgroup/memory/memory.stat").unwrap();
+        let mut content = String::new();
+        file.read_to_string(&mut content).unwrap();
+        let mut lines: Vec<&str> = content.split("\n").collect();
+        let mut res : Vec<String> = Vec::new();
+        for mut i in 0..lines.len()-1 {
+            let line = lines[i];
+            let tmp1 = line.to_string();
+            let tmp2 : Vec<&str> = tmp1.split(" ").collect();
+            res.push(tmp2[1].to_string());
+        }
+        let metric_values = res[..res.len()].to_vec().into_iter();
+        metric_values
     }
 }

@@ -41,7 +41,7 @@ fn main(){
 
 
     let cli_args = parse_cli_args();
-    backends::test(cli_args.regex_job_id);
+    backends::test(cli_args.regex_job_id, cli_args.cgroup_rootpath);
 
     init_logger(cli_args.verbose);
 
