@@ -1,47 +1,29 @@
-use std::collections::HashMap;
-
-#[macro_use]
-extern crate log;
-extern crate simple_logger;
-
-extern crate regex;
-use regex::Regex;
-
-use log::Level;
-
 #[macro_use]
 extern crate clap;
+extern crate inotify;
+#[macro_use]
+extern crate log;
+extern crate regex;
+extern crate simple_logger;
+
+use std::thread::sleep;
+use std::time::{Duration, SystemTime};
 
 // command line argument parser
 use clap::App;
-
-use std::time::{Duration, SystemTime};
-use std::thread::sleep;
-use std::thread;
+use log::Level;
 
 mod backends;
 
 mod cgroup_manager;
 mod zeromq;
 
-extern crate inotify;
-
-use std::env;
-
-use inotify::{
-    EventMask,
-    WatchMask,
-    Inotify,
-};
-
-
-
 fn main(){
 
 
 
     let cli_args = parse_cli_args();
-    backends::test(cli_args.regex_job_id, cli_args.cgroup_rootpath);
+    backends::test(cli_args.clone());
 
     init_logger(cli_args.verbose);
 
@@ -67,8 +49,8 @@ fn sleep_to_round_timestamp(duration_nanoseconds: u128) {
     sleep(Duration::new(0, duration_to_sleep as u32));
 }
 
-
-struct CliArgs {
+#[derive(Clone)]
+pub struct CliArgs {
     verbose: i32,
     sample_period: f64,
     enable_infiniband: bool,

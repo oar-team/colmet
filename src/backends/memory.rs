@@ -1,21 +1,37 @@
-use crate::backends::Backend;
-use crate::cgroup_manager::CgroupManager;
-use std::rc::Rc;
-use std::sync::Arc;
+extern crate gethostname;
+
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
+use std::sync::Arc;
+use std::time::SystemTime;
 use std::vec::IntoIter;
+
+use crate::backends::Backend;
+use crate::cgroup_manager::CgroupManager;
+use crate::backends::metric::Metric;
 
 
 pub struct MemoryBackend {
     pub backend_name: String,
     cgroup_manager: Arc<CgroupManager>,
+    metrics: HashMap<i32, Metric>,
 }
 
 impl MemoryBackend {
     pub fn new(cgroup_manager: Arc<CgroupManager>) -> MemoryBackend {
         let backend_name = "Memory".to_string();
-        MemoryBackend {backend_name, cgroup_manager}
+        let mut metrics = HashMap::new();
+        for (cgroup_id, cgroup_name) in cgroup_manager.get_cgroups() {
+            let filename = format!("/sys/fs/cgroup/memory/oar/{}/memory.stat", cgroup_name);
+            let metric_names = get_metric_names(filename);
+            let hostname: String = gethostname::gethostname().to_str().unwrap().to_string();
+            let now = SystemTime::now();
+            let timestamp = now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as i32;
+            let metric = Metric { job_id: cgroup_id, hostname, timestamp, backend_name: backend_name.clone(), metric_names, metric_values: None };
+            metrics.insert(cgroup_id, metric);
+        }
+        MemoryBackend { backend_name, cgroup_manager, metrics }
     }
 }
 
@@ -24,41 +40,49 @@ impl Backend for MemoryBackend {
         println!("hello my name is memory backend");
     }
 
-    fn open(&self) {
-    }
+    fn open(&self) {}
 
-    fn close(&self) {
-    }
+    fn close(&self) {}
 
-    fn get_metric_names(&self) -> IntoIter<String> {
-        let mut file = File::open("/sys/fs/cgroup/memory/memory.stat").unwrap();
-        let mut content = String::new();
-        file.read_to_string(&mut content).unwrap();
-        let mut lines: Vec<&str> = content.split("\n").collect();
-        let mut res : Vec<String> = Vec::new();
-         for mut i in 0..lines.len()-1 {
-            let line = lines[i];
-            let tmp1 = line.to_string();
-            let tmp2 : Vec<&str> = tmp1.split(" ").collect();
-            res.push(tmp2[0].to_string());
+    fn get_metrics(&mut self) -> HashMap<i32, Metric> {
+        for (cgroup_id, cgroup_name) in self.cgroup_manager.get_cgroups() {
+            let filename = format!("/sys/fs/cgroup/memory/oar/{}/memory.stat", cgroup_name);
+            let metric_values = get_metric_values(filename);
+            self.metrics.get_mut(&cgroup_id).unwrap().metric_values = Some(metric_values);
         }
-        let metric_names = res[..res.len()].to_vec().into_iter();
-        metric_names
+        println!("new metric {:#?}", self.metrics.clone());
+        self.metrics.clone()
     }
+}
 
-    fn get_metric_values(&self) -> IntoIter<String> {
-        let mut file = File::open("/sys/fs/cgroup/memory/memory.stat").unwrap();
-        let mut content = String::new();
-        file.read_to_string(&mut content).unwrap();
-        let mut lines: Vec<&str> = content.split("\n").collect();
-        let mut res : Vec<String> = Vec::new();
-        for mut i in 0..lines.len()-1 {
-            let line = lines[i];
-            let tmp1 = line.to_string();
-            let tmp2 : Vec<&str> = tmp1.split(" ").collect();
-            res.push(tmp2[1].to_string());
-        }
-        let metric_values = res[..res.len()].to_vec().into_iter();
-        metric_values
+fn get_metric_names(filename: String) -> IntoIter<String> {
+    let mut file = File::open(filename).unwrap();
+    let mut content = String::new();
+    file.read_to_string(&mut content).unwrap();
+    let lines: Vec<&str> = content.split("\n").collect();
+    let mut res: Vec<String> = Vec::new();
+    for i in 0..lines.len() - 1 {
+        let line = lines[i];
+        let tmp1 = line.to_string();
+        let tmp2: Vec<&str> = tmp1.split(" ").collect();
+        res.push(tmp2[0].to_string());
     }
+    let metric_names = res[..res.len()].to_vec().into_iter();
+    metric_names
+}
+
+fn get_metric_values(filename: String) -> IntoIter<String> {
+    let mut file = File::open(filename).unwrap();
+    let mut content = String::new();
+    file.read_to_string(&mut content).unwrap();
+    let lines: Vec<&str> = content.split("\n").collect();
+    let mut res: Vec<String> = Vec::new();
+    for i in 0..lines.len() - 1 {
+        let line = lines[i];
+        let tmp1 = line.to_string();
+        let tmp2: Vec<&str> = tmp1.split(" ").collect();
+        res.push(tmp2[1].to_string());
+    }
+    let metric_values = res[..res.len()].to_vec().into_iter();
+    metric_values
 }

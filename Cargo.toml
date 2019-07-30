@@ -15,3 +15,5 @@ inotify = "0.7.0"
 futures = "0.1.28"
 tempdir = "0.3.7"
 regex = "1.2.0"
+gethostname = "0.2.0"
+

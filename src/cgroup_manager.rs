@@ -1,35 +1,23 @@
-use std::collections::HashMap;
-use std::cell::RefCell;
-use std::fs;
-
 extern crate inotify;
-
 extern crate regex;
 
-use regex::Regex;
-
-use std::thread::sleep;
-use std::thread;
-
-use std::env;
+use std::borrow::BorrowMut;
+use std::collections::HashMap;
+use std::fs;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 use inotify::{
     EventMask,
-    WatchMask,
     Inotify,
+    WatchMask,
 };
-
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
-use std::borrow::{BorrowMut, Borrow};
-
+use regex::Regex;
 
 pub struct CgroupManager {
     cgroups: Mutex<HashMap<i32, String>>,
     regex_job_id: String,
-    cgroup_rootpath: String,
-
 }
 
 impl CgroupManager {
@@ -37,7 +25,7 @@ impl CgroupManager {
         let cgroups = Mutex::new(HashMap::new());
         let regex_job_id = regex_job_id;
         let cgroup_rootpath = cgroup_rootpath;
-        let res = Arc::new(CgroupManager { cgroups, regex_job_id, cgroup_rootpath:cgroup_rootpath.clone()});
+        let res = Arc::new(CgroupManager { cgroups, regex_job_id });
         notify_jobs(Arc::clone(&res), cgroup_rootpath.clone());
         res
     }
@@ -52,16 +40,12 @@ impl CgroupManager {
         map.borrow_mut().remove(&id);
     }
 
-    pub fn get_cgroups(& self) -> HashMap<i32, String>{
+    pub fn get_cgroups(&self) -> HashMap<i32, String> {
         self.cgroups.lock().unwrap().clone()
     }
 
     pub fn print_cgroups(&self) {
         println!("{:#?}", self.cgroups);
-    }
-
-    pub fn say_hello() {
-        println!("hello my name is cgroup manager");
     }
 }
 
@@ -93,7 +77,7 @@ pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>, cgroup_rootpath: String) 
 
     let mut buffer = [0u8; 4096];
 
-    let child = thread::spawn(move || {
+    let _child = thread::spawn(move || {
         loop {
             let events = inotify
                 .read_events_blocking(&mut buffer)
