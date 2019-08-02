@@ -24,7 +24,7 @@ Example : --enable-perfhw --perfhw-list instructions cpu_cycles cache_misses
 
 A file named perfhw_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between counter1, counter2, etc from hdf5 files and the actual name of the metric.
 
-Available metrics (refers to perf_event_open for signification) :
+Available metrics (refers to perf_event_open documentation for signification) :
 
 cpu_cycles 
 instructions 
