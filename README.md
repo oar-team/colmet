@@ -22,7 +22,7 @@ Optionnaly choose the metrics you want (max 5 metrics) using options --perfhw-li
 
 Example : --enable-perfhw --perfhw-list instructions cpu_cycles cache_misses
 
-A file named perfhw_mapping.[timestamp].csv is created in the working directory. It established the correspondence between counter1, counter2, etc from hdf5 files and the actual name of the metric.
+A file named perfhw_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between counter1, counter2, etc from hdf5 files and the actual name of the metric.
 
 Available metrics (refers to perf_event_open for signification) :
 
