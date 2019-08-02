@@ -56,7 +56,7 @@ typedef struct counter_option {
 } counter_option;
 
 // metrics that can be collected using perf_event_open
-// they are declared in /usr/include/linux/perf_event.h
+// they were obtained using the parsing script counters_option.py from mojito/s https://sourcesup.renater.fr/www/mojitos/
 static counter_option perf_static_info[] = {
 { .name = "cpu_cycles", .perf_type = PERF_TYPE_HARDWARE, .perf_key = PERF_COUNT_HW_CPU_CYCLES},
 { .name = "instructions", .perf_type = PERF_TYPE_HARDWARE, .perf_key = PERF_COUNT_HW_INSTRUCTIONS},
@@ -87,6 +87,7 @@ static counter_option perf_static_info[] = {
 { .name = "dummy", .perf_type = PERF_TYPE_SOFTWARE, .perf_key = PERF_COUNT_SW_DUMMY},
 { .name = "bpf_output", .perf_type = PERF_TYPE_SOFTWARE, .perf_key = PERF_COUNT_SW_BPF_OUTPUT},
 };
+
 static unsigned int nb_counter_option = 28;
 
 int nb_perf = 5;
