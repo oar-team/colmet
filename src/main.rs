@@ -6,6 +6,12 @@ extern crate log;
 extern crate regex;
 extern crate simple_logger;
 
+#[macro_use]
+extern crate lazy_static;
+
+#[macro_use]
+extern crate serde_derive;
+
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 
@@ -13,30 +19,36 @@ use std::time::{Duration, SystemTime};
 use clap::App;
 use log::Level;
 
-mod backends;
+use crate::backends::BackendsManager;
 
+mod backends;
 mod cgroup_manager;
 mod zeromq;
 
 fn main(){
-
-
-
     let cli_args = parse_cli_args();
-    backends::test(cli_args.clone());
 
     init_logger(cli_args.verbose);
 
     let zmq_sender = zeromq::ZmqSender::init();
     zmq_sender.open(&cli_args.zeromq_uri, cli_args.zeromq_linger, cli_args.zeromq_hwm);
-    zmq_sender.send("hello world!!!");
+//    zmq_sender.send("hello world!!!");
+//    zmq_sender.send("hello world!!!");
+//    zmq_sender.send("hello world!!!");
+
+
+    let mut backends_manager = BackendsManager::new();
+    backends_manager.init_backends(cli_args.clone());
 
     // main loop that pull backends measurements periodically ans send them with zeromq
     loop {
         let now = SystemTime::now();
         println!("{:#?}", now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis());
         // on appelle les backends et on envoie avec zmq
-        debug!("time to take measures {} nanoseconds", now.elapsed().unwrap().as_nanos());
+        let metric = backends_manager.get_all_metrics();
+        println!("going to send metric {:#?}", metric);
+        debug!("time to take measures {} microseconds", now.elapsed().unwrap().as_micros());
+        zmq_sender.send_metrics(metric);
         sleep_to_round_timestamp((cli_args.sample_period * 1000000000.0) as u128);
     }
 }

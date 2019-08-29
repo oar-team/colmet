@@ -6,6 +6,6 @@ pub struct Metric {
     pub hostname: String,
     pub timestamp: i32,
     pub backend_name: String,
-    pub metric_names: IntoIter<String>,
-    pub metric_values: Option<IntoIter<String>>,
+    pub metric_names: Vec<String>,
+    pub metric_values: Option<Vec<i64>>,
 }
