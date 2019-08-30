@@ -32,22 +32,14 @@ impl ZmqSender {
 
     pub fn send(&self, message:&str){
         self.socket.send(message, 0).unwrap();
-        println!("sent message");
     }
 
-    pub fn send_metrics(&self, metrics: HashMap<i32, (String, i32, Vec<(String, Vec<i32>, Vec<i64>)>)>) {
+    pub fn send_metrics(&self, metrics: HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)>) {
 
-
-        println!("m to s {:#?}", metrics.clone());
         let mut buf = Vec::new();
-
         metrics.serialize(&mut Serializer::new(&mut buf)).unwrap();
-        println!("buffer binaire {:#?}", buf);
-
         let mut de = Deserializer::new(&buf[..]);
-        let res: HashMap<i32, (String, i32, Vec<(String, Vec<i32>, Vec<i64>)>)> = Deserialize::deserialize(&mut de).unwrap();
-        println!("####################################### unserialized result {:#?}", res);
-
+        let res: HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)> = Deserialize::deserialize(&mut de).unwrap();
         self.socket.send(buf, 0).unwrap();
     }
 }

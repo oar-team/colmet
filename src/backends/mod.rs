@@ -7,6 +7,7 @@ use crate::backends::cpu::CpuBackend;
 use crate::backends::metric::Metric;
 use crate::cgroup_manager::CgroupManager;
 use crate::CliArgs;
+use std::time::SystemTime;
 
 pub(crate) mod metric;
 
@@ -107,14 +108,11 @@ impl BackendsManager {
     }
 
 
-    pub fn get_all_metrics(&mut self) -> HashMap<i32, (String, i32, Vec<(String, Vec<i32>, Vec<i64>)>)> {
-        let mut metrics: HashMap<i32, (String, i32, Vec<(String, Vec<i32>, Vec<i64>)>)>= HashMap::new();
-
+    pub fn get_all_metrics(&mut self) -> HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)> {
+        let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as i64;
+        let mut metrics: HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)>= HashMap::new();
         for backend in &mut self.backends {
             for (job_id, metric) in backend.get_metrics() {
-                println!("job id {:#?}", job_id);
-                println!("metric {:#?}", metric);
-
                 match metrics.get_mut(&job_id) {
                     Some(tmp) => {
                         let (hostname, timestamp, m) = tmp;
@@ -122,10 +120,9 @@ impl BackendsManager {
 
                     },
                     None => {
-                        metrics.insert(job_id, (metric.hostname, metric.timestamp, vec![(metric.backend_name, compress_metric_names(metric.metric_names), metric.metric_values.unwrap() )]));
+                        metrics.insert(job_id, (metric.hostname, timestamp, vec![(metric.backend_name, compress_metric_names(metric.metric_names), metric.metric_values.unwrap() )]));
                     },
                 }
-                println!("metrics {:#?}", metrics);
             }
         }
         metrics

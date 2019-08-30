@@ -46,7 +46,6 @@ fn main(){
         println!("{:#?}", now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis());
         // on appelle les backends et on envoie avec zmq
         let metric = backends_manager.get_all_metrics();
-        println!("going to send metric {:#?}", metric);
         debug!("time to take measures {} microseconds", now.elapsed().unwrap().as_micros());
         zmq_sender.send_metrics(metric);
         sleep_to_round_timestamp((cli_args.sample_period * 1000000000.0) as u128);
