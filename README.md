@@ -14,11 +14,27 @@ Test it on Grid5000:
 
 `source $HOME/.cargo/env`
 
-- Start Colmet-node
+- Clone Colmet repository and cd into it
 
-`cargo run`
+`git clone --single-branch --branch colmet-rust https://github.com/oar-team/colmet.git`
 
-...
+`cd Colmet`
+
+- Install ZeroMQ
+
+`apt-get install libzmq3-dev`
+
+- Install MsgPack (for collector)
+
+`pip3 install msgpack`
+
+- Compile and start Colmet-node
+
+`cargo run -- -vvv`
+
+- Start Colmet-collector (in another terminal in the same job)
+
+`python3 ./collector/main.py`
 
 
 Code architecture :
