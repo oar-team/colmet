@@ -59,7 +59,7 @@ bpf_output
 
 ### Temperature
 
-This backend get temperature from /sys/class/thermal/thermal_zone*/temp
+This backend gets temperatures from /sys/class/thermal/thermal_zone*/temp
 
 Usage : start colmet-node with option `--enable-temperature`
 
