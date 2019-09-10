@@ -3,6 +3,7 @@ import logging
 import time
 from zeromq import ZMQInputBackend
 from args_parser import ArgsParser
+from metric import Metric, MetricFactory
 
 
 def main():
@@ -30,61 +31,20 @@ def sleep(duration):
     # time.sleep(time_to_wait)
     time.sleep(1)
 
-METRIC_NAMES_MAP = {1: "cache",
-                    2: "rss",
-                    3: "rss_huge",
-                    4: "shmem",
-                    5: "mapped_file",
-                    6: "dirty",
-                    7: "writeback",
-                    8: "pgpgin",
-                    9: "pgpgout",
-                    10: "pgfault",
-                    11: "pgmajfault",
-                    12: "inactive_anon",
-                    13: "active_anon",
-                    14: "inactive_file",
-                    15: "active_file",
-                    16: "unevictable",
-                    17: "hierarchical_memory_limit",
-                    18: "total_cache",
-                    19: "total_rss",
-                    20: "total_rss_huge",
-                    21: "total_shmem",
-                    22: "total_mapped_file",
-                    23: "total_dirty",
-                    24: "total_writeback",
-                    25: "total_pgpgin",
-                    26: "total_pgpgout",
-                    27: "total_pgfault",
-                    28: "total_pgmajfault",
-                    29: "total_inactive_anon",
-                    30: "total_active_anon",
-                    31: "total_inactive_file",
-                    32: "total_active_file",
-                    33: "total_unevictable",
-                    34: "nr_periods", # Cpu Backend
-                    35: "nr_throttled",
-                    36: "throttled_time",
-                    }
-
 
 class StdoutBackend():
+
+    def __init__(self):
+        pass
 
     @staticmethod
     def push(measurements):
         if measurements:
-            measurements = measurements[0]
-            for job_id, job_measurements in measurements.items():
-                for backend_measurement in job_measurements[2]:
-                    print("\n", "Time :", job_measurements[1], " / Job :", job_id, " / Backend :", str(backend_measurement[0]))
-                    metric_names = []
-                    for compressed_metric__name in backend_measurement[1]:
-                        metric_names.append(METRIC_NAMES_MAP[compressed_metric__name])
-                    metrics = dict(zip(metric_names, backend_measurement[2]))
-                    # pprint.pprint(metrics, compact=False)
-                    for metric_name, metric_value in metrics.items():
-                        print('{:>25} : {}'.format(metric_name, str(metric_value)))
+            metrics = MetricFactory(measurements).get_metrics()
+            for metric in metrics:
+                print("\n", "Timestamp :", metric.timestamp, " / Job :", metric.job_id, " / Backend :", metric.backend_name)
+                for metric_name, metric_value in metric.metrics.items():
+                    print('{:>25} : {}'.format(metric_name, str(metric_value)))
 
 
 if __name__ == '__main__':
