@@ -88,6 +88,7 @@ class MetaCountersType(type):
     Define the representation of the counters.
     '''
     _counter_representations = {
+        'celsius': lambda value: "%s (celsius)" % str(value),
         'bytes': lambda value: "%s (bytes)" % MetaCountersType._normalize(value, 1024, 10000, ['', 'K', 'M', 'G', 'T']),
         'kbytes': lambda value: "%s (bytes)" % MetaCountersType._normalize(value, 1024, 10000, ['K', 'M', 'G', 'T']),
         "mbytes": lambda value: "%s (bytes)" % MetaCountersType._normalize(value, 1024, 10000, ['M', 'G', 'T']),
@@ -320,7 +321,9 @@ class BaseCounters(object, metaclass=MetaCountersType):
         backend = struct.unpack('255s', raw[0:255])[0]
         backend = backend.rstrip(b"\0")
         counters_class = get_counters_class(backend.decode("utf-8"))
+        print("counters class", counters_class, type(counters_class))
         counters = counters_class(raw=raw[0:counters_class._fmt_length])
+        print("counters", counters, type(counters))
         return counters
 
     @staticmethod

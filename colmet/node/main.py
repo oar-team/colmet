@@ -12,6 +12,8 @@ from colmet import VERSION
 from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
 from colmet.node.backends.RAPLstats import RAPLstatsBackend
+from colmet.node.backends.temperaturestats import TemperaturestatsBackend
+
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.node.backends.perfhwstats import PerfhwstatsBackend
@@ -43,6 +45,9 @@ class Task(object):
         if self.options.enable_RAPLstats:
             self.RAPLstatsBackend = RAPLstatsBackend(self.options)
             self.input_backends.append(self.RAPLstatsBackend)
+        if self.options.enable_temperaturestats:
+            self.temperaturestatsBackend = TemperaturestatsBackend(self.options)
+            self.input_backends.append(self.temperaturestatsBackend)
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -172,6 +177,12 @@ def main():
     parser.add_argument("--enable-RAPL", action="store_true",
                         default=False, dest="enable_RAPLstats",
                         help='Enables monitoring of node s using RAPL'
+                             'Measures are associated to the fictive job '
+                             'with 0 as identifier (job_id)')
+
+    parser.add_argument("--enable-temperature", action="store_true",
+                        default=False, dest="enable_temperaturestats",
+                        help='Enables monitoring of cpu temperature'
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
