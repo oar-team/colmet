@@ -1,6 +1,6 @@
 ## Colmet - Collecting metrics about jobs running in a distributed environnement
 
-This branch adds RAPL and hardware performance (based on perf_event_open interface) counters to colmet.
+This branch adds RAPL, hardware performance (based on perf_event_open interface) and temperature counters to Colmet.
 
 ### RAPL - Running Average Power Limit (Intel)
 
@@ -56,3 +56,12 @@ emulation_faults
 dummy
 bpf_output
 ```
+
+### Temperature
+
+This backend gets temperatures from /sys/class/thermal/thermal_zone*/temp
+
+Usage : start colmet-node with option `--enable-temperature`
+
+A file named temperature_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between `counter_1`, `counter_2`, etc from hdf5 files and the actual name of the metric.
+
