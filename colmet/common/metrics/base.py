@@ -321,9 +321,7 @@ class BaseCounters(object, metaclass=MetaCountersType):
         backend = struct.unpack('255s', raw[0:255])[0]
         backend = backend.rstrip(b"\0")
         counters_class = get_counters_class(backend.decode("utf-8"))
-        print("counters class", counters_class, type(counters_class))
         counters = counters_class(raw=raw[0:counters_class._fmt_length])
-        print("counters", counters, type(counters))
         return counters
 
     @staticmethod
