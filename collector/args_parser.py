@@ -35,5 +35,10 @@ class ArgsParser(object):
 
         parser.add_argument_group(group)
 
+        group = parser.add_argument_group('Elasticsearch')
+
+        group.add_argument("--elastic-host", dest='elastic_host', default=None,
+                           help="The address of Elasticsearch server, ex:'http://localhost:9200'")
+
         args = parser.parse_args()
         return args

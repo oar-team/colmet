@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use crate::backends::memory::MemoryBackend;
 use crate::backends::cpu::CpuBackend;
@@ -8,6 +8,8 @@ use crate::backends::metric::Metric;
 use crate::cgroup_manager::CgroupManager;
 use crate::CliArgs;
 use std::time::SystemTime;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub(crate) mod metric;
 
@@ -81,8 +83,8 @@ impl BackendsManager {
         BackendsManager { backends }
     }
 
-    pub fn init_backends(&mut self, cli_args: CliArgs) {
-        let cgroup_manager = CgroupManager::new(cli_args.regex_job_id.clone(), cli_args.cgroup_rootpath.clone());
+    pub fn init_backends(&mut self, cli_args: CliArgs, current_sample_period: Arc<Mutex<f64>>, initial_sample_period: f64) {
+        let cgroup_manager = CgroupManager::new(cli_args.regex_job_id.clone(), cli_args.cgroup_rootpath.clone(), current_sample_period, initial_sample_period);
         let memory_backend = MemoryBackend::new(Arc::clone(&cgroup_manager));
         let cpu_backend = CpuBackend::new(Arc::clone(&cgroup_manager));
 

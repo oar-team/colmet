@@ -3,7 +3,8 @@ import logging
 import time
 from zeromq import ZMQInputBackend
 from args_parser import ArgsParser
-from metric import Metric, MetricFactory
+from counter import CounterFactory
+from elasticsearch import ElasticsearchOutputBackend
 
 
 def main():
@@ -18,10 +19,13 @@ def main():
     zeromq = ZMQInputBackend()
     zeromq.open(args.zeromq_linger, args.zeromq_hwm, "tcp://0.0.0.0:5556")
     stdout_backend = StdoutBackend()
+    elasticsearch_backend = ElasticsearchOutputBackend(args.elastic_host)
 
     while True:
         received_data = zeromq.receive()
         stdout_backend.push(received_data)
+        if received_data:
+            elasticsearch_backend.push(CounterFactory(received_data).get_counters())
         sleep(args.sampling_period)
 
 
@@ -40,10 +44,10 @@ class StdoutBackend():
     @staticmethod
     def push(measurements):
         if measurements:
-            metrics = MetricFactory(measurements).get_metrics()
-            for metric in metrics:
-                print("\n", "Timestamp :", metric.timestamp, " / Job :", metric.job_id, " / Backend :", metric.backend_name)
-                for metric_name, metric_value in metric.metrics.items():
+            counters = CounterFactory(measurements).get_counters()
+            for counter in counters:
+                print("\n", "Timestamp :", counter.timestamp, " / Job :", counter.job_id, " / Hostname :", counter.hostname ,  "/ Backend :", counter.backend_name)
+                for metric_name, metric_value in counter.metrics.items():
                     print('{:>25} : {}'.format(metric_name, str(metric_value)))
 
 

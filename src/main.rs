@@ -20,25 +20,33 @@ use clap::App;
 use log::Level;
 
 use crate::backends::BackendsManager;
+use std::sync::{Arc, Mutex};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 mod backends;
 mod cgroup_manager;
 mod zeromq;
 
+
+fn simple_callback(){
+     println!("hello from callback handler");
+}
+
 fn main(){
     let cli_args = parse_cli_args();
+
+    let sp = cli_args.sample_period;
+
+    let sample_period = Arc::new(Mutex::new(cli_args.sample_period));
 
     init_logger(cli_args.verbose);
 
     let zmq_sender = zeromq::ZmqSender::init();
     zmq_sender.open(&cli_args.zeromq_uri, cli_args.zeromq_linger, cli_args.zeromq_hwm);
-//    zmq_sender.send("hello world!!!");
-//    zmq_sender.send("hello world!!!");
-//    zmq_sender.send("hello world!!!");
-
 
     let mut backends_manager = BackendsManager::new();
-    backends_manager.init_backends(cli_args.clone());
+    backends_manager.init_backends(cli_args.clone(), sample_period.clone(), cli_args.sample_period);
 
     // main loop that pull backends measurements periodically ans send them with zeromq
     loop {
@@ -48,7 +56,13 @@ fn main(){
         let metric = backends_manager.get_all_metrics();
         debug!("time to take measures {} microseconds", now.elapsed().unwrap().as_micros());
         zmq_sender.send_metrics(metric);
-        sleep_to_round_timestamp((cli_args.sample_period * 1000000000.0) as u128);
+        zmq_sender.receive_config(sample_period.clone());
+        println!("sample period {:#?}", sample_period.clone());
+
+
+        sleep_to_round_timestamp((*(&*sample_period).lock().unwrap()  * 1000000000.0) as u128);
+//        sleep(Duration::new(sample_period as u64, 0));
+
     }
 }
 
@@ -57,7 +71,8 @@ fn main(){
 fn sleep_to_round_timestamp(duration_nanoseconds: u128) {
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos();
     let duration_to_sleep = ((now / duration_nanoseconds) + 1) * duration_nanoseconds - now;
-    sleep(Duration::new(0, duration_to_sleep as u32));
+    println!("sleeping for {:#?} milliseconds", duration_to_sleep/1000000);
+    sleep(Duration::from_nanos(duration_to_sleep as u64));
 }
 
 #[derive(Clone)]
@@ -79,7 +94,7 @@ fn parse_cli_args() -> CliArgs {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
     let verbose = matches.occurrences_of("verbose") as i32;
-    let sample_period = value_t!(matches, "sample-period", f64).unwrap();
+    let mut sample_period = value_t!(matches, "sample-period", f64).unwrap();
     println!("sample perdiod {}", sample_period);
     let enable_infiniband = value_t!(matches, "enable-infiniband", bool).unwrap();
     let enable_lustre = value_t!(matches, "enable-lustre", bool).unwrap();

@@ -14,18 +14,22 @@ use inotify::{
     WatchMask,
 };
 use regex::Regex;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct CgroupManager {
     cgroups: Mutex<HashMap<i32, String>>,
     regex_job_id: String,
+    initial_sample_period: f64,
+    current_sample_period: Arc<Mutex<f64>>,
 }
 
 impl CgroupManager {
-    pub fn new(regex_job_id: String, cgroup_rootpath: String) -> Arc<CgroupManager> {
+    pub fn new(regex_job_id: String, cgroup_rootpath: String, current_sample_period: Arc<Mutex<f64>>, initial_sample_period: f64) -> Arc<CgroupManager> {
         let cgroups = Mutex::new(HashMap::new());
         let regex_job_id = regex_job_id;
         let cgroup_rootpath = cgroup_rootpath;
-        let res = Arc::new(CgroupManager { cgroups, regex_job_id });
+        let res = Arc::new(CgroupManager { cgroups, regex_job_id, initial_sample_period, current_sample_period });
         notify_jobs(Arc::clone(&res), cgroup_rootpath.clone());
         res
     }
@@ -38,6 +42,7 @@ impl CgroupManager {
     pub fn remove_cgroup(&self, id: i32) {
         let mut map = self.cgroups.lock().unwrap();
         map.borrow_mut().remove(&id);
+        *(&*self.current_sample_period).lock().unwrap() = self.initial_sample_period;
     }
 
     pub fn get_cgroups(&self) -> HashMap<i32, String> {

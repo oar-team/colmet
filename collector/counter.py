@@ -36,7 +36,7 @@ METRICS_NAMES = {1: "cache",  # Memory backend
                             36: "throttled_time",
                             }
 
-class Metric:
+class Counter:
     def __init__(self, hostname, timestamp, job_id, backend_name, metrics):
         self.hostname = hostname
         self.timestamp = timestamp
@@ -45,23 +45,23 @@ class Metric:
         self.metrics = metrics
 
 
-class MetricFactory:
+class CounterFactory:
     def __init__(self, data):
-        self.metrics = []
+        self.counters = []
         for job_id, tmp in data[0].items():
-            self.hostname = str(tmp[0])
+            self.hostname = tmp[0].decode('utf-8')
             self.timestamp = tmp[1]
             self.job_id = job_id
             for backend in tmp[2]:
-                self.backend_name = backend[0]
+                self.backend_name = backend[0].decode('utf-8')
                 tmp = backend[1]
                 self.metric_names = []
                 for compressed_metric_name in tmp:
                     self.metric_names.append(METRICS_NAMES[compressed_metric_name])
                 self.metric_values = backend[2]
                 self.backend_metrics = dict(zip(self.metric_names, self.metric_values))
-                metric = Metric(self.hostname, self.timestamp, self.job_id, self.backend_name, self.backend_metrics)
-                self.metrics.append(metric)
+                counter = Counter(self.hostname, self.timestamp, self.job_id, self.backend_name, self.backend_metrics)
+                self.counters.append(counter)
 
-    def get_metrics(self):
-        return self.metrics
+    def get_counters(self):
+        return self.counters
