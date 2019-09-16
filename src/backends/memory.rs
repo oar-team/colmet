@@ -5,7 +5,6 @@ use std::fs::File;
 use std::io::Read;
 use std::sync::Arc;
 use std::time::SystemTime;
-use std::vec::IntoIter;
 
 use crate::backends::Backend;
 use crate::cgroup_manager::CgroupManager;

@@ -2,42 +2,31 @@
 extern crate clap;
 extern crate inotify;
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate log;
 extern crate regex;
+extern crate serde_derive;
 extern crate simple_logger;
 
-#[macro_use]
-extern crate lazy_static;
-
-#[macro_use]
-extern crate serde_derive;
-
+use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 
 // command line argument parser
 use clap::App;
+
 use log::Level;
 
 use crate::backends::BackendsManager;
-use std::sync::{Arc, Mutex};
-use std::rc::Rc;
-use std::cell::RefCell;
 use crate::cgroup_manager::CgroupManager;
 
 mod backends;
 mod cgroup_manager;
 mod zeromq;
 
-
-fn simple_callback(){
-     println!("hello from callback handler");
-}
-
 fn main(){
     let cli_args = parse_cli_args();
-
-    let sp = cli_args.sample_period;
 
     let sample_period = Arc::new(Mutex::new(cli_args.sample_period));
 
@@ -91,7 +80,7 @@ fn parse_cli_args() -> CliArgs {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
     let verbose = matches.occurrences_of("verbose") as i32;
-    let mut sample_period = value_t!(matches, "sample-period", f64).unwrap();
+    let sample_period = value_t!(matches, "sample-period", f64).unwrap();
     println!("sample perdiod {}", sample_period);
     let enable_infiniband = value_t!(matches, "enable-infiniband", bool).unwrap();
     let enable_lustre = value_t!(matches, "enable-lustre", bool).unwrap();

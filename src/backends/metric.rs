@@ -1,4 +1,3 @@
-use std::vec::IntoIter;
 
 #[derive(Debug, Clone)]
 pub struct Metric {

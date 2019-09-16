@@ -14,8 +14,6 @@ use inotify::{
     WatchMask,
 };
 use regex::Regex;
-use std::rc::Rc;
-use std::cell::RefCell;
 
 pub struct CgroupManager {
     cgroups: Mutex<HashMap<i32, String>>,

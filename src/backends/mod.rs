@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 
 use crate::backends::memory::MemoryBackend;
 use crate::backends::cpu::CpuBackend;
@@ -8,8 +8,6 @@ use crate::backends::metric::Metric;
 use crate::cgroup_manager::CgroupManager;
 use crate::CliArgs;
 use std::time::SystemTime;
-use std::rc::Rc;
-use std::cell::RefCell;
 
 pub(crate) mod metric;
 
@@ -116,7 +114,7 @@ impl BackendsManager {
             for (job_id, metric) in backend.get_metrics() {
                 match metrics.get_mut(&job_id) {
                     Some(tmp) => {
-                        let (hostname, timestamp, m) = tmp;
+                        let (_hostname, _timestamp, m) = tmp;
                         m.push((metric.backend_name, compress_metric_names(metric.metric_names), metric.metric_values.unwrap()));
 
                     },
