@@ -23,6 +23,7 @@ use crate::backends::BackendsManager;
 use std::sync::{Arc, Mutex};
 use std::rc::Rc;
 use std::cell::RefCell;
+use crate::cgroup_manager::CgroupManager;
 
 mod backends;
 mod cgroup_manager;
@@ -45,23 +46,19 @@ fn main(){
     let zmq_sender = zeromq::ZmqSender::init();
     zmq_sender.open(&cli_args.zeromq_uri, cli_args.zeromq_linger, cli_args.zeromq_hwm);
 
+    let cgroup_manager = CgroupManager::new(cli_args.regex_job_id.clone(), cli_args.cgroup_rootpath.clone(), sample_period.clone(), cli_args.sample_period);
     let mut backends_manager = BackendsManager::new();
-    backends_manager.init_backends(cli_args.clone(), sample_period.clone(), cli_args.sample_period);
+    backends_manager.init_backends(cli_args, cgroup_manager.clone());
 
     // main loop that pull backends measurements periodically ans send them with zeromq
     loop {
         let now = SystemTime::now();
         println!("{:#?}", now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis());
-        // on appelle les backends et on envoie avec zmq
         let metric = backends_manager.get_all_metrics();
         debug!("time to take measures {} microseconds", now.elapsed().unwrap().as_micros());
         zmq_sender.send_metrics(metric);
         zmq_sender.receive_config(sample_period.clone());
-        println!("sample period {:#?}", sample_period.clone());
-
-
         sleep_to_round_timestamp((*(&*sample_period).lock().unwrap()  * 1000000000.0) as u128);
-//        sleep(Duration::new(sample_period as u64, 0));
 
     }
 }

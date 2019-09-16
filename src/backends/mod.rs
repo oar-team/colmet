@@ -83,10 +83,9 @@ impl BackendsManager {
         BackendsManager { backends }
     }
 
-    pub fn init_backends(&mut self, cli_args: CliArgs, current_sample_period: Arc<Mutex<f64>>, initial_sample_period: f64) {
-        let cgroup_manager = CgroupManager::new(cli_args.regex_job_id.clone(), cli_args.cgroup_rootpath.clone(), current_sample_period, initial_sample_period);
-        let memory_backend = MemoryBackend::new(Arc::clone(&cgroup_manager));
-        let cpu_backend = CpuBackend::new(Arc::clone(&cgroup_manager));
+    pub fn init_backends(&mut self, cli_args: CliArgs, cgroup_manager : Arc<CgroupManager>) {
+        let memory_backend = MemoryBackend::new(cgroup_manager.clone());
+        let cpu_backend = CpuBackend::new(cgroup_manager.clone());
 
         if cli_args.enable_infiniband {
             ()
