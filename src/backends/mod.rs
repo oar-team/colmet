@@ -8,11 +8,14 @@ use crate::backends::metric::Metric;
 use crate::cgroup_manager::CgroupManager;
 use crate::CliArgs;
 use std::time::SystemTime;
+use rustc_serialize::json::DecoderError::ParseError;
+use crate::backends::perfhw::PerfhwBackend;
 
 pub(crate) mod metric;
 
 mod memory;
 mod cpu;
+mod perfhw;
 
 lazy_static! {
 static ref METRIC_NAMES_MAP: HashMap<&'static str, i32> = vec![
@@ -52,6 +55,34 @@ static ref METRIC_NAMES_MAP: HashMap<&'static str, i32> = vec![
         ("nr_periods", 34), // Cpu Backend
         ("nr_throttled", 35),
         ("throttled_time", 36),
+        ("cpu_cycles", 37), // Perfhw Backend
+        ("instructions", 38),
+        ("cache_references", 39),
+        ("cache_misses", 40),
+        ("branch_instructions", 41),
+        ("branch_misses", 42),
+        ("bus_cycles", 43),
+        ("ref_cpu_cycles", 44),
+        ("cache_l1d", 45),
+        ("cache_ll", 46),
+        ("cache_dtlb", 47),
+        ("cache_itlb", 48),
+        ("cache_bpu", 49),
+        ("cache_node", 50),
+        ("cache_op_read", 51),
+        ("cache_op_prefetch", 52),
+        ("cache_result_access", 53),
+        ("cpu_clock", 54),
+        ("task_clock", 55),
+        ("page_faults", 56),
+        ("context_switches", 57),
+        ("cpu_migrations", 58),
+        ("page_faults_min", 59),
+        ("page_faults_maj", 60),
+        ("alignment_faults", 61),
+        ("emulation_faults", 62),
+        ("dummy", 63),
+        ("bpf_output", 64),
         ].into_iter().collect();
 }
 
@@ -85,6 +116,8 @@ impl BackendsManager {
         let memory_backend = MemoryBackend::new(cgroup_manager.clone());
         let cpu_backend = CpuBackend::new(cgroup_manager.clone());
 
+        let perfhw_backend = PerfhwBackend::new(cgroup_manager.clone());
+
         if cli_args.enable_infiniband {
             ()
         }
@@ -99,6 +132,8 @@ impl BackendsManager {
         }
         self.add_backend(Box::new(memory_backend));
         self.add_backend(Box::new(cpu_backend));
+        self.add_backend(Box::new(perfhw_backend));
+
 
     }
 

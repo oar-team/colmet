@@ -25,7 +25,9 @@ mod backends;
 mod cgroup_manager;
 mod zeromq;
 
+
 fn main(){
+
     let cli_args = parse_cli_args();
 
     let sample_period = Arc::new(Mutex::new(cli_args.sample_period));
@@ -81,7 +83,7 @@ fn parse_cli_args() -> CliArgs {
     let matches = App::from_yaml(yaml).get_matches();
     let verbose = matches.occurrences_of("verbose") as i32;
     let sample_period = value_t!(matches, "sample-period", f64).unwrap();
-    println!("sample perdiod {}", sample_period);
+    println!("sample period {}", sample_period);
     let enable_infiniband = value_t!(matches, "enable-infiniband", bool).unwrap();
     let enable_lustre = value_t!(matches, "enable-lustre", bool).unwrap();
     let enable_perfhw = value_t!(matches, "enable-perfhw", bool).unwrap();
