@@ -186,6 +186,10 @@ def main():
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
+    parser.add_argument("--omnipath", action="store_true",
+                        default=False, dest="omnipath",
+                        help="Use this option if the network is Omnipath rather than Infiniband. This affects the values collected with perfquery, multiplying by 8 instead of 4.")
+
 
     group = parser.add_argument_group('Taskstat')
 

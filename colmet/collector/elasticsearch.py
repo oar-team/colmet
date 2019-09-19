@@ -46,7 +46,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
         r = self.s.head(url)
-        if r.status_code ==404:  # create nex index
+        if r.status_code ==404:  # create new index
             mapping = {
                 "mappings": {
                     "properties": {
