@@ -2,7 +2,7 @@
 
 Start of a rewrite of colmet-node in rust.
 
-Test it on Grid5000:
+## Test it on Grid5000:
 
 - Start a job
 
@@ -59,10 +59,10 @@ echo $$ | sudo tee -a /dev/oar_cgroups_links/perf_event$OAR_CPUSET/tasks
 `python3 configure_colmet.py 1.5 "cache_ll,emulation_faults"`
 
 
-Code architecture :
+## Code architecture :
 ![colmet rust architecture](https://raw.githubusercontent.com/oar-team/colmet/colmet-rust/colmet%20rust.png)
  
-What remains to be done :
+## What remains to be done (among other things):
 
 colmet-collector : hdf5 backend, make code error-resistant regardeless the data received from colmet-node
 
