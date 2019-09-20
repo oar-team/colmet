@@ -85,7 +85,6 @@ impl Backend for PerfhwBackend {
 }
 
 fn get_metric_values(cgroup_name: *const u8, metrics_to_get: *const u8, nb_metrics_to_get: usize) -> Vec<i64> {
-
     #[link(name = "_perf_hw")]
     extern {
         fn init_cgroup(cgroup_name: *const u8, metrics: *const u8) -> i32;
@@ -95,10 +94,10 @@ fn get_metric_values(cgroup_name: *const u8, metrics_to_get: *const u8, nb_metri
         fn get_counters(values: *mut i64, cgroup_name: *const u8) -> i32;
     }
 
-    let res = unsafe {init_cgroup(cgroup_name, metrics_to_get)};
-    let mut buffer = Vec::with_capacity(3*64 as usize);
+    let _res = unsafe {init_cgroup(cgroup_name, metrics_to_get)};
+    let mut buffer = Vec::with_capacity(nb_metrics_to_get*64 as usize);
     let buffer_ptr = buffer.as_mut_ptr();
-    let res2 = unsafe {get_counters(buffer_ptr, cgroup_name)};
+    let _res2 = unsafe {get_counters(buffer_ptr, cgroup_name)};
     let metric_values = unsafe { slice::from_raw_parts(buffer_ptr, nb_metrics_to_get).to_vec()};
     metric_values
 }
