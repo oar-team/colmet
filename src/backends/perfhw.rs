@@ -1,8 +1,6 @@
 extern crate gethostname;
 
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::Read;
 use std::sync::Arc;
 use std::time::SystemTime;
 
@@ -32,7 +30,7 @@ impl PerfhwBackend {
 
         let metrics_to_get = Rc::new(RefCell::new(vec!("instructions".to_string(), "cache_misses".to_string(), "page_faults".to_string())));
 
-        for (cgroup_id, cgroup_name) in cgroup_manager.get_cgroups() {
+        for (cgroup_id, _cgroup_name) in cgroup_manager.get_cgroups() {
             let metric_names = (*metrics_to_get).borrow().clone();
             let hostname: String = gethostname::gethostname().to_str().unwrap().to_string();
             let now = SystemTime::now();
@@ -72,7 +70,7 @@ impl Backend for PerfhwBackend {
     fn set_metrics_to_get(& self, metrics_to_get: Vec<String>){
         *(*self.metrics_to_get).borrow_mut() = metrics_to_get.clone();
         let mut metrics = HashMap::new();
-         for (cgroup_id, cgroup_name) in self.cgroup_manager.get_cgroups() {
+         for (cgroup_id, _cgroup_name) in self.cgroup_manager.get_cgroups() {
              let metric_names = metrics_to_get.clone();
              let hostname: String = gethostname::gethostname().to_str().unwrap().to_string();
              let now = SystemTime::now();

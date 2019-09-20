@@ -8,7 +8,6 @@ use crate::backends::metric::Metric;
 use crate::cgroup_manager::CgroupManager;
 use crate::CliArgs;
 use std::time::SystemTime;
-use rustc_serialize::json::DecoderError::ParseError;
 use crate::backends::perfhw::PerfhwBackend;
 
 pub(crate) mod metric;
@@ -20,6 +19,10 @@ mod perfhw;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+
+// start backends and periodically fetch all of them to get the metrics
+
+// used to send more little messages on the network, metric names are replaced by an id, this list must be the same in colmet-collector
 lazy_static! {
 static ref METRIC_NAMES_MAP: HashMap<&'static str, i32> = vec![
         ("cache", 1), // Memory Backend
@@ -89,6 +92,7 @@ static ref METRIC_NAMES_MAP: HashMap<&'static str, i32> = vec![
         ].into_iter().collect();
 }
 
+// replace metric names by their id
 pub fn compress_metric_names(metric_names: Vec<String>) -> Vec<i32> {
         let mut res: Vec<i32> = Vec::new();
         for metric_name in metric_names {
@@ -97,9 +101,8 @@ pub fn compress_metric_names(metric_names: Vec<String>) -> Vec<i32> {
         res
 }
 
-
 pub trait Backend {
-    fn say_hello(&self);
+    fn say_hello(&self); // for debug
     fn get_backend_name(&self) -> String;
     fn open(&self);
     fn close(&self);

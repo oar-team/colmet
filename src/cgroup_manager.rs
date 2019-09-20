@@ -15,11 +15,12 @@ use inotify::{
 };
 use regex::Regex;
 
+
 pub struct CgroupManager {
-    cgroups: Mutex<HashMap<i32, String>>,
-    regex_job_id: String,
-    initial_sample_period: f64,
-    current_sample_period: Arc<Mutex<f64>>,
+    cgroups: Mutex<HashMap<i32, String>>, // cgroup corresponding to user jobs, keys : cgroup id, values : cgroup name
+    regex_job_id: String, // regex to find the cpuset directory
+    initial_sample_period: f64, // sample period as defined by command line argument at the start of colmet
+    current_sample_period: Arc<Mutex<f64>>, // current sample period, it can be changed by user by sending a new config with 0mq
 }
 
 impl CgroupManager {
@@ -52,6 +53,7 @@ impl CgroupManager {
     }
 }
 
+// scan cpuset directory for changes and update cgroups list
 pub fn notify_jobs(cgroup_manager: Arc<CgroupManager>, cgroup_rootpath: String) {
     let regex_job_id = Regex::new(&cgroup_manager.regex_job_id).unwrap();
     println!("{:#?}", cgroup_rootpath);

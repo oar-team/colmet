@@ -59,7 +59,7 @@ impl Backend for CpuBackend {
         (*self.metrics).borrow_mut().clone()
     }
 
-    fn set_metrics_to_get(& self, metrics_to_get: Vec<String>){
+    fn set_metrics_to_get(& self, _metrics_to_get: Vec<String>){
         ()
     }
 }

@@ -10,9 +10,7 @@ use serde::{Deserialize, Serialize};
 use rmps::{Deserializer, Serializer};
 use self::zmq::Message;
 use std::sync::{Arc, Mutex};
-use crate::backends::{BackendsManager, Backend};
-
-use crate::cgroup_manager::CgroupManager;
+use crate::backends::{Backend};
 
 pub struct ZmqSender<'a> {
     sender: zmq::Socket, // sends counters to colmet-collector
@@ -50,6 +48,7 @@ impl ZmqSender<'_> {
         self.sender.send(buf, 0).unwrap();
     }
 
+    // receive message containing a new config for colmet, change sample period and metrics collected by backends (only perfhw at the moment)
     pub fn receive_config(&self, sample_period: Arc<Mutex<f64>>) {
         let mut message = Message::new();
         match self.receiver.recv(&mut message, 1) {
