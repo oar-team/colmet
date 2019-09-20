@@ -34,7 +34,36 @@ METRICS_NAMES = {1: "cache",  # Memory backend
                             34: "nr_periods",  # Cpu Backend
                             35: "nr_throttled",
                             36: "throttled_time",
-                            }
+                            37: "cpu_cycles", # Perfhw
+                            38: "instructions",
+                            39: "cache_references",
+                            40: "cache_misses",
+                            41: "branch_instructions",
+                            42: "branch_misses",
+                            43: "bus_cycles",
+                            44: "ref_cpu_cycles",
+                            45: "cache_l1d",
+                            46: "cache_ll",
+                            47: "c ache_dtlb",
+                            48: "cache_itlb",
+                            49: "cache_bpu",
+                            50: "cache_node",
+                            51: "cache_op_read",
+                            52: "cache_op_prefetch",
+                            53: "cache_result_access",
+                            54: "cpu_clock",
+                            55: "task_clock",
+                            56: "page_faults",
+                            57: "context_switches",
+                            58: "cpu_migrations",
+                            59: "page_faults_min",
+                            60: "page_faults_maj",
+                            61: "alignment_faults",
+                            62: "emulation_faults",
+                            63: "dummy",
+                            64: "bpf_output"
+                 }
+
 
 class Counter:
     def __init__(self, hostname, timestamp, job_id, backend_name, metrics):

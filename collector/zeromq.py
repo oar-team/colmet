@@ -7,6 +7,7 @@ import logging
 import socket
 import msgpack
 
+
 LOG = logging.getLogger()
 
 try:
@@ -15,6 +16,7 @@ try:
 except AttributeError:
     _snd_hwm = zmq.SNDHWM
     _rcv_hwm = zmq.RCVHWM
+
 
 
 class ZMQInputBackend(object):

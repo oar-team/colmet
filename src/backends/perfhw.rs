@@ -11,6 +11,8 @@ use crate::cgroup_manager::CgroupManager;
 use crate::backends::metric::Metric;
 
 use std::slice;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 extern crate libc;
 
@@ -18,22 +20,25 @@ extern crate libc;
 pub struct PerfhwBackend {
     pub backend_name: String,
     cgroup_manager: Arc<CgroupManager>,
-    metrics: HashMap<i32, Metric>,
-    metrics_to_get: Vec<String>,
+    metrics: Rc<RefCell<HashMap<i32, Metric>>>,
+    metrics_to_get: Rc<RefCell<Vec<String>>>,
 }
 
 impl PerfhwBackend {
     pub fn new(cgroup_manager: Arc<CgroupManager>) -> PerfhwBackend {
         let backend_name = "Perfhw".to_string();
-        let mut metrics = HashMap::new();
-        let metrics_to_get = vec!("instructions".to_string(), "cache_misses".to_string(), "page_faults".to_string());
+
+        let metrics = Rc::new(RefCell::new(HashMap::new()));
+
+        let metrics_to_get = Rc::new(RefCell::new(vec!("instructions".to_string(), "cache_misses".to_string(), "page_faults".to_string())));
+
         for (cgroup_id, cgroup_name) in cgroup_manager.get_cgroups() {
-            let metric_names = metrics_to_get.clone();
+            let metric_names = (*metrics_to_get).borrow().clone();
             let hostname: String = gethostname::gethostname().to_str().unwrap().to_string();
             let now = SystemTime::now();
             let timestamp = now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as i32;
             let metric = Metric { job_id: cgroup_id, hostname, timestamp, backend_name: backend_name.clone(), metric_names, metric_values: None };
-            metrics.insert(cgroup_id, metric);
+            (*metrics).borrow_mut().insert(cgroup_id, metric);
         }
         PerfhwBackend { backend_name, cgroup_manager, metrics, metrics_to_get }
     }
@@ -44,20 +49,38 @@ impl Backend for PerfhwBackend {
         println!("hello my name is perfhw backend");
     }
 
+    fn get_backend_name(&self) -> String{
+        return self.backend_name.clone();
+    }
+
     fn open(&self) {}
 
     fn close(&self) {}
 
-    fn get_metrics(&mut self) -> HashMap<i32, Metric> {
+    fn get_metrics(& self) ->HashMap<i32, Metric> {
         for (cgroup_id, cgroup_name) in self.cgroup_manager.get_cgroups() {
             let cgroup_name_string = format!("/oar/{}{}", cgroup_name, "\0").to_string();
             let cgroup_name = cgroup_name_string.as_ptr();
 
-            let metric_values = get_metric_values(cgroup_name, format!("{}{}", self.metrics_to_get.join(","), "\0").as_ptr(), self.metrics_to_get.len());
-            self.metrics.get_mut(&cgroup_id).unwrap().metric_values = Some(metric_values);
+            let metric_values = get_metric_values(cgroup_name, format!("{}{}", (*self.metrics_to_get).borrow().join(","), "\0").as_ptr(), (*self.metrics_to_get).borrow().len());
+            (*self.metrics).borrow_mut().get_mut(&cgroup_id).unwrap().metric_values = Some(metric_values);
         }
         println!("new metric {:#?}", self.metrics.clone());
-        self.metrics.clone()
+        (*self.metrics).borrow_mut().clone()
+    }
+
+    fn set_metrics_to_get(& self, metrics_to_get: Vec<String>){
+        *(*self.metrics_to_get).borrow_mut() = metrics_to_get.clone();
+        let mut metrics = HashMap::new();
+         for (cgroup_id, cgroup_name) in self.cgroup_manager.get_cgroups() {
+             let metric_names = metrics_to_get.clone();
+             let hostname: String = gethostname::gethostname().to_str().unwrap().to_string();
+             let now = SystemTime::now();
+             let timestamp = now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as i32;
+             let metric = Metric { job_id: cgroup_id, hostname, timestamp, backend_name: self.backend_name.clone(), metric_names, metric_values: None };
+             metrics.insert(cgroup_id, metric);
+         }
+        *(*self.metrics).borrow_mut() = metrics;
     }
 }
 

@@ -19,13 +19,16 @@ def main():
     zeromq = ZMQInputBackend()
     zeromq.open(args.zeromq_linger, args.zeromq_hwm, "tcp://0.0.0.0:5556")
     stdout_backend = StdoutBackend()
-    elasticsearch_backend = ElasticsearchOutputBackend(args.elastic_host)
+
+    if args.elastic_host:
+        elasticsearch_backend = ElasticsearchOutputBackend(args.elastic_host)
 
     while True:
         received_data = zeromq.receive()
         stdout_backend.push(received_data)
         if received_data:
-            elasticsearch_backend.push(CounterFactory(received_data).get_counters())
+            if args.elastic_host:
+                elasticsearch_backend.push(CounterFactory(received_data).get_counters())
         sleep(args.sampling_period)
 
 

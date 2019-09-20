@@ -5,6 +5,8 @@ use std::fs::File;
 use std::io::Read;
 use std::sync::Arc;
 use std::time::SystemTime;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::backends::Backend;
 use crate::cgroup_manager::CgroupManager;
@@ -13,13 +15,13 @@ use crate::backends::metric::Metric;
 pub struct MemoryBackend {
     pub backend_name: String,
     cgroup_manager: Arc<CgroupManager>,
-    metrics: HashMap<i32, Metric>,
+    metrics: Rc<RefCell<HashMap<i32, Metric>>>,
 }
 
 impl MemoryBackend {
     pub fn new(cgroup_manager: Arc<CgroupManager>) -> MemoryBackend {
         let backend_name = "Memory".to_string();
-        let mut metrics = HashMap::new();
+        let metrics = Rc::new(RefCell::new(HashMap::new()));
         for (cgroup_id, cgroup_name) in cgroup_manager.get_cgroups() {
             let filename = format!("/sys/fs/cgroup/memory/oar/{}/memory.stat", cgroup_name);
             let metric_names = get_metric_names(filename);
@@ -27,7 +29,7 @@ impl MemoryBackend {
             let now = SystemTime::now();
             let timestamp = now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as i32;
             let metric = Metric { job_id: cgroup_id, hostname, timestamp, backend_name: backend_name.clone(), metric_names, metric_values: None };
-            metrics.insert(cgroup_id, metric);
+            (*metrics).borrow_mut().insert(cgroup_id, metric);
         }
         MemoryBackend { backend_name, cgroup_manager, metrics }
     }
@@ -42,14 +44,22 @@ impl Backend for MemoryBackend {
 
     fn close(&self) {}
 
-    fn get_metrics(&mut self) -> HashMap<i32, Metric> {
+    fn get_backend_name(&self) -> String{
+        return self.backend_name.clone();
+    }
+
+    fn get_metrics(& self) -> HashMap<i32, Metric> {
         for (cgroup_id, cgroup_name) in self.cgroup_manager.get_cgroups() {
             let filename = format!("/sys/fs/cgroup/memory/oar/{}/memory.stat", cgroup_name);
             let metric_values = get_metric_values(filename);
-            self.metrics.get_mut(&cgroup_id).unwrap().metric_values = Some(metric_values);
+            (*self.metrics).borrow_mut().get_mut(&cgroup_id).unwrap().metric_values = Some(metric_values);
         }
 //        println!("new metric {:#?}", self.metrics.clone());
-        self.metrics.clone()
+        (*self.metrics).borrow_mut().clone()
+    }
+
+    fn set_metrics_to_get(& self, metrics_to_get: Vec<String>){
+        ()
     }
 }
 

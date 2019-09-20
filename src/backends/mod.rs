@@ -17,6 +17,9 @@ mod memory;
 mod cpu;
 mod perfhw;
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 lazy_static! {
 static ref METRIC_NAMES_MAP: HashMap<&'static str, i32> = vec![
         ("cache", 1), // Memory Backend
@@ -97,22 +100,24 @@ pub fn compress_metric_names(metric_names: Vec<String>) -> Vec<i32> {
 
 pub trait Backend {
     fn say_hello(&self);
+    fn get_backend_name(&self) -> String;
     fn open(&self);
     fn close(&self);
-    fn get_metrics(&mut self) -> HashMap<i32, Metric>;
+    fn get_metrics(& self) -> HashMap<i32, Metric>;
+    fn set_metrics_to_get(& self, metrics_to_get: Vec<String>);
 }
 
 pub struct BackendsManager {
-    backends: Vec<Box<dyn Backend>>,
+    backends: Rc<RefCell<Vec<Box<dyn Backend>>>>,
 }
 
 impl BackendsManager {
     pub fn new() -> BackendsManager {
-        let backends = Vec::new();
+        let backends = Rc::new(RefCell::new(Vec::new()));
         BackendsManager { backends }
     }
 
-    pub fn init_backends(&mut self, cli_args: CliArgs, cgroup_manager : Arc<CgroupManager>) {
+    pub fn init_backends(& self, cli_args: CliArgs, cgroup_manager : Arc<CgroupManager>) ->  Rc<RefCell<Vec<Box<dyn Backend>>>> {
         let memory_backend = MemoryBackend::new(cgroup_manager.clone());
         let cpu_backend = CpuBackend::new(cgroup_manager.clone());
 
@@ -134,18 +139,21 @@ impl BackendsManager {
         self.add_backend(Box::new(cpu_backend));
         self.add_backend(Box::new(perfhw_backend));
 
-
+        return self.backends.clone();
     }
 
-    pub fn add_backend(&mut self, backend: Box<dyn Backend>) {
-        self.backends.push(backend);
+    pub fn add_backend(& self, backend: Box<dyn Backend>) {
+        (*self.backends).borrow_mut().push(backend);
     }
 
 
-    pub fn get_all_metrics(&mut self) -> HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)> {
+    pub fn get_all_metrics(& self) -> HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)> {
         let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as i64;
         let mut metrics: HashMap<i32, (String, i64, Vec<(String, Vec<i32>, Vec<i64>)>)>= HashMap::new();
-        for backend in &mut self.backends {
+
+        let b = (*self.backends).borrow();
+        let bi = b.iter();
+        for backend in bi {
             for (job_id, metric) in backend.get_metrics() {
                 match metrics.get_mut(&job_id) {
                     Some(tmp) => {
@@ -161,5 +169,6 @@ impl BackendsManager {
         }
         metrics
     }
+
 }
 

@@ -10,19 +10,23 @@ use serde::{Deserialize, Serialize};
 use rmps::{Deserializer, Serializer};
 use self::zmq::Message;
 use std::sync::{Arc, Mutex};
+use crate::backends::{BackendsManager, Backend};
 
-pub struct ZmqSender {
+use crate::cgroup_manager::CgroupManager;
+
+pub struct ZmqSender<'a> {
     sender: zmq::Socket, // sends counters to colmet-collector
     receiver: zmq::Socket, // receives user configuration
+    backends: &'a Vec<Box<dyn Backend>>,
 }
 
-impl ZmqSender {
+impl ZmqSender<'_> {
 
-    pub fn init() -> ZmqSender {
+    pub fn init(backends: &Vec<Box<dyn Backend>>) -> ZmqSender {
         let context = zmq::Context::new();
         let sender = context.socket(zmq::PUSH).unwrap();
         let receiver = context.socket(zmq::PULL).unwrap();
-        ZmqSender{sender, receiver}
+        ZmqSender{sender, receiver, backends}
     }
 
     pub fn open(&self, uri:&str, linger:i32, high_watermark:i32){
@@ -52,7 +56,20 @@ impl ZmqSender {
             Err(_e) => (),
             Ok(_t) => {
                 let mut deserializer = Deserializer::new(&message[..]);
-                *(&*sample_period).lock().unwrap() = Deserialize::deserialize(&mut deserializer).unwrap();
+                let config:HashMap<String, String>  = Deserialize::deserialize(&mut deserializer).unwrap();
+                println!("config {:#?}", config);
+                *(&*sample_period).lock().unwrap() = config["sample_period"].parse().unwrap();
+
+                for backend in self.backends{
+                    if backend.get_backend_name() == "Perfhw"{
+                        let m : Vec<&str> = config["perfhw_metrics"].split(",").collect();
+                        let mut metrics = Vec::new();
+                        for metric in m{
+                            metrics.push(metric.to_string());
+                        }
+                        backend.set_metrics_to_get(metrics);
+                    }
+                }
             }
         }
     }

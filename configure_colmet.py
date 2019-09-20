@@ -12,5 +12,8 @@ sender.setsockopt(zmq.SNDHWM, 1000)
 
 sender.connect("tcp://127.0.0.1:5557")
 
-print(float(sys.argv[1]))
-sender.send(msgpack.packb(float(sys.argv[1])))
+config = {"perfhw_metrics": sys.argv[2], "sample_period": sys.argv[1]}
+
+print("config", config)
+
+sender.send(msgpack.packb(config))
