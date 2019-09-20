@@ -20,7 +20,7 @@ pub struct CpuBackend {
 }
 
 impl CpuBackend {
-    pub fn new(cgroup_manager: Arc<CgroupManager>) -> CpuBackend {
+    pub fn new(cgroup_manager: Arc<CgroupManager>) -> CpuBackend { // this function is almost the same for all backends but there is no inheritance in rust, use composition ?
         let backend_name = "Cpu".to_string();
         let metrics = Rc::new(RefCell::new(HashMap::new()));
         for (cgroup_id, cgroup_name) in cgroup_manager.get_cgroups() {

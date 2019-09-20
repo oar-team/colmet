@@ -23,7 +23,7 @@ pub struct PerfhwBackend {
 }
 
 impl PerfhwBackend {
-    pub fn new(cgroup_manager: Arc<CgroupManager>) -> PerfhwBackend {
+    pub fn new(cgroup_manager: Arc<CgroupManager>) -> PerfhwBackend { // this function is almost the same for all backends but there is no inheritance in rust, use composition ?
         let backend_name = "Perfhw".to_string();
 
         let metrics = Rc::new(RefCell::new(HashMap::new()));
@@ -60,7 +60,7 @@ impl Backend for PerfhwBackend {
             let cgroup_name_string = format!("/oar/{}{}", cgroup_name, "\0").to_string();
             let cgroup_name = cgroup_name_string.as_ptr();
 
-            let metric_values = get_metric_values(cgroup_name, format!("{}{}", (*self.metrics_to_get).borrow().join(","), "\0").as_ptr(), (*self.metrics_to_get).borrow().len());
+            let metric_values = get_metric_values(cgroup_name, format!("{}{}", (*self.metrics_to_get).borrow().join(","), "\0").as_ptr(), (*self.metrics_to_get).borrow().len()); // https://doc.rust-lang.org/std/ffi/struct.CString.html this type seems more appropriate but I cant get it to work
             (*self.metrics).borrow_mut().get_mut(&cgroup_id).unwrap().metric_values = Some(metric_values);
         }
         println!("new metric {:#?}", self.metrics.clone());
