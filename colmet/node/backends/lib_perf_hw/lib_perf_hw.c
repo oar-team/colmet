@@ -100,7 +100,7 @@ void perf_event_list(char *perf_string, int *nb_perf, int **perf_indexes) {
   *perf_indexes=NULL;
   while((token=strtok(perf_string, ",")) != NULL) {
     perf_string = NULL;
-    int i;
+    unsigned int i;
     for(i=0; i<nb_counter_option; i++) {
       if(strcmp(perf_static_info[i].name, token) == 0) {
 	(*nb_perf)++;
@@ -165,7 +165,7 @@ counter_t init_counters(char *cgroup_name, int **perf_indexes) {
 
     // loop on cores because per-cgroup monitoring is not available with cpu = -1 : https://stackoverflow.com/questions/52892668/using-perf-event-open-to-monitor-docker-containers
     // in cgroup-mode the event is measured only if the thread running on the monitored CPU belongs to the designated cgroup http://man7.org/linux/man-pages/man2/perf_event_open.2.html
-    for (int core=0; core<nbcores; core++) {
+    for (unsigned int core=0; core<nbcores; core++) {
       g_counter->counters[i][core] = perf_event_open(&pe, fd1, core, -1, PERF_FLAG_PID_CGROUP|PERF_FLAG_FD_CLOEXEC);
     }
   }
