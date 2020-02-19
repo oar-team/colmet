@@ -2,7 +2,9 @@
 # *-* coding: utf-8 *-*
 import re
 import os.path as op
+import os
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 
 
 here = op.abspath(op.dirname(__file__))
@@ -12,6 +14,7 @@ requirements = [
     'tables',
     'pyinotify',
     'pyzmq',
+    'requests',
 ]
 
 
@@ -24,6 +27,19 @@ def read(fname):
 def get_version():
     return re.compile(r".*__version__ = '(.*?)'", re.S)\
              .match(read(op.join(here, 'colmet', '__init__.py'))).group(1)
+
+
+def install_c_libs():
+    print("installing perfwh C library")
+    os.system("make -C ./colmet/node/backends/lib_perf_hw/")
+    print("installing RAPL C library")
+    os.system("make -C ./colmet/node/backends/lib_rapl/")
+
+
+class CustomInstall(install):
+    def run(self):
+        install.run(self)
+        install_c_libs()
 
 
 setup(
@@ -58,6 +74,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Monitoring',
         'Topic :: System :: Clustering',
-        'Programming Language :: Python :: 2.7'
-    ]
+        'Programming Language :: Python :: 3.5'
+    ],
+    cmdclass={'install': CustomInstall}
 )

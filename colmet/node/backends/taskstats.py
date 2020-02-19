@@ -133,7 +133,7 @@ class TaskStatsNetlink(object):
             if e.errno == errno.EPERM:
                 raise NoEnoughPrivilegeError
             raise
-        for attr_type, attr_value in reply.attrs.iteritems():
+        for attr_type, attr_value in reply.attrs.items():
             if attr_type == TASKSTATS_TYPE_AGGR_PID:
                 reply = attr_value.nested()
                 break

@@ -36,8 +36,7 @@ class TaskInfo(Info):
         Info.__init__(self, input_backend)
         self.tid = tid
         self.mark = True
-        self.backend_request = self.counters_class.build_request(input_backend,
-                                                                 tid)
+        self.backend_request = self.counters_class.build_request(input_backend, tid)
 
     def update_stats(self, timestamp, job_id, hostname):
         '''
@@ -54,6 +53,31 @@ class TaskInfo(Info):
             self.mark = False
         Info.update_stats(self, timestamp, job_id, hostname)
 
+
+class PerfhwInfo(Info):
+    '''
+    Represent Information corresponding to a task
+    '''
+    def __init__(self, job_id, input_backend):
+        Info.__init__(self, input_backend)
+        self.job_id = job_id
+        self.mark = True
+        # self.backend_request = self.counters_class.build_request(input_backend, job_id)
+
+    def update_stats(self, timestamp, job_id, hostname):
+        '''
+        Update the current metrics of the task
+        '''
+        stats = self.counters_class.fetch(self.input_backend,
+                                          self.job_id)
+        if stats:
+            if not self.stats_delta:
+                self.stats_total = stats
+                self.stats_delta = stats
+            stats.delta(self.stats_total, self.stats_delta)
+            self.stats_total = stats
+            self.mark = False
+        Info.update_stats(self, timestamp, job_id, hostname)
 
 class ProcessInfo(Info):
     '''
@@ -115,7 +139,7 @@ class ProcessInfo(Info):
         Retrieve the list of tasks of the current process
         '''
         try:
-            tids = map(int, os.listdir('/proc/%d/task' % self.tgid))
+            tids = list(map(int, os.listdir('/proc/%d/task' % self.tgid)))
         except OSError:
             self.mark = True
             return []
@@ -148,7 +172,7 @@ class CGroupInfo(Info):
         '''
         try:
             f_tasks = open(os.path.join(self.cgroup_path, 'tasks'), 'r')
-            pids = map(int, f_tasks.read().split())
+            pids = list(map(int, f_tasks.read().split()))
             f_tasks.close()
         except OSError:
             return []
@@ -180,7 +204,7 @@ class CGroupInfo(Info):
                 task = self.get_task(tid)
                 task.update_stats(timestamp, job_id, hostname)
 
-            for tid, task in self.tasks.items():
+            for tid, task in list(self.tasks.items()):
                 if task.mark:
                     msg = (
                         "Process/Task %s no more exists."
@@ -247,15 +271,21 @@ class Job(object):
         # TODO rm
         self.void_cpuset = True
 
-        self.job_children.extend(
-            [TaskInfo(tid, input_backend) for tid in options.tids]
-        )
-        self.job_children.extend(
-            [ProcessInfo(pid, input_backend) for pid in options.pids]
-        )
-        self.job_children.extend(
-            [CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups]
-        )
+        if input_backend.__backend_name__ == "perfhwstats":
+            self.job_children.append(
+                PerfhwInfo(job_id, input_backend)
+            )
+        else:
+            self.job_children.extend(
+                [TaskInfo(tid, input_backend) for tid in options.tids]
+            )
+            self.job_children.extend(
+                [ProcessInfo(pid, input_backend) for pid in options.pids]
+            )
+            self.job_children.extend(
+                [CGroupInfo(cgroup, input_backend) for cgroup in options.cgroups]
+            )
+
 
         # to monitor global node resources activities
         if job_id == 0:

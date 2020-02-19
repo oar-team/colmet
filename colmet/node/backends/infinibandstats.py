@@ -1,7 +1,7 @@
 import os
 import re
 
-from subprocess import check_output
+from subprocess import check_output, STDOUT, CalledProcessError
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
@@ -39,23 +39,44 @@ class InfinibandStats(object):
         self.options = option
 
     def get_stats(self):
+
+        if self.options.omnipath:
+            mult_const = 8
+        else:
+            mult_const = 4
         
         infinibandstats_data = {}
-        
-        # perfquery = check_output(["/usr/sbin/perfquery", "-x"])
-        perfquery = check_output(["/usr/sbin/perfquery"])
-        
+
+        perfquery = ""
+
+        try:
+            perfquery = check_output(["/usr/sbin/perfquery", "-x"])
+            perfquery = perfquery.decode("utf-8")
+        except CalledProcessError as e:
+            print("Error calling perfquery : ", e.returncode)
+
         m = re.search(r'PortXmitData:\.*(\d+)', perfquery)
         if m:
-            infinibandstats_data['portXmitData'] = 4 * int(m.group(1))
+            infinibandstats_data['portXmitData'] = mult_const * int(m.group(1))
+        else:
+            infinibandstats_data['portXmitData'] = -1
+
         m = re.search(r'PortRcvData:\.*(\d+)', perfquery)
         if m:
-            infinibandstats_data['portRcvData'] = 4 * int(m.group(1))
+            infinibandstats_data['portRcvData'] = mult_const * int(m.group(1))
+        else:
+            infinibandstats_data['portRcvData'] = -1
+
         m = re.search(r'PortXmitPkts:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portXmitPkts'] = int(m.group(1))
+        else:
+            infinibandstats_data['portXmitPkts'] = -1
+
         m = re.search(r'PortRcvPkts:\.*(\d+)', perfquery)
         if m:
             infinibandstats_data['portRcvPkts'] = int(m.group(1))
-                        
+        else:
+            infinibandstats_data['portRcvPkts'] = -1
+
         return InfinibandstatsCounters(infinibandstats_buffer=infinibandstats_data)

@@ -2,7 +2,7 @@ import logging
 
 LOG = logging.getLogger()
 
-from .base import UInt64, BaseCounters
+from .base import UInt64, Int64, BaseCounters
 
 
 class InfinibandstatsCounters(BaseCounters):
@@ -10,10 +10,10 @@ class InfinibandstatsCounters(BaseCounters):
 
     counters_infinibandstats = {
         # 'key': ( offset,length, type, repr, acc )
-        'portXmitData': (UInt64(), 'bytes', 'none', 'portXmitData'),
-        'portRcvData': (UInt64(), 'bytes', 'none', 'portRcvData'),
-        'portXmitPkts': (UInt64(), 'count', 'none', 'portXmitPkts'),
-        'portRcvPkts': (UInt64(), 'count', 'none', 'portRcvPkts')
+        'portXmitData': (Int64(), 'bytes', 'none', 'portXmitData'),
+        'portRcvData': (Int64(), 'bytes', 'none', 'portRcvData'),
+        'portXmitPkts': (Int64(), 'count', 'none', 'portXmitPkts'),
+        'portRcvPkts': (Int64(), 'count', 'none', 'portRcvPkts')
         }
         
     counters_infinibandstats_to_get = [

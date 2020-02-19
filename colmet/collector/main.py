@@ -1,6 +1,6 @@
-'''
-Colmet-node User Interface
-'''
+"""Colmet-node User Interface"""
+
+from __future__ import print_function
 import logging
 import argparse
 import signal
@@ -42,6 +42,9 @@ class Task(object):
             self.output_backends.append(HDF5OutputBackend(options))
         if self.options.enable_stdout_backend:
             self.output_backends.append(StdoutBackend(options))
+        if self.options.elastic_host is not None:
+            from colmet.collector.elasticsearch import ElasticsearchOutputBackend
+            self.output_backends.append(ElasticsearchOutputBackend(options))
         for backend in self.output_backends:
             backend.open()
 
@@ -63,8 +66,8 @@ class Task(object):
                 try:
                     backend.push(self.counters_list)
                     LOG.debug("%s metrics has been pushed with %s"
-                              % (len(self.counters_list),
-                                 backend.get_backend_name()))
+                          % (len(self.counters_list),
+                             backend.get_backend_name()))
                 except (NoneValueError, TypeError):
                     LOG.debug("Values for metrics are not there.")
         del self.counters_list[:]
@@ -177,11 +180,16 @@ def main():
                             '"zlib" (the default), "lzo", "bzip2" and "blosc" '
                             'are supported.')
 
+    group = parser.add_argument_group('Elasticsearch')
+
+    group.add_argument("--elastic-host", dest='elastic_host', default=None,
+                       help="The address of Elasticsearch server, ex:'localhost:9200'")
+
     args = parser.parse_args()
 
-    if (args.hdf5_filepath is None and args.enable_stdout_backend is False):
+    if args.hdf5_filepath is None and args.enable_stdout_backend is False and args.elastic_host is None:
         parser.error("You need to provide at least one output backend "
-                     "[hdf5|stdout]")
+                     "[hdf5|stdout|elasticsearch]")
 
     # Set the logging value (always display CRITICAL and ERROR)
     logging.basicConfig(

@@ -5,7 +5,7 @@ base functions to register/unregister counter and also pack/unpack data.
 '''
 from functools import reduce
 from datetime import datetime
-from colmet.common.exceptions import CounterAlreadyExistError, NoneValueError
+from ..exceptions import CounterAlreadyExistError, NoneValueError
 
 
 import struct
@@ -49,6 +49,11 @@ class UInt64(BaseType):
     length = struct.calcsize("<%s" % struct_code)
 
 
+class Int64(BaseType):
+    struct_code = 'q'
+    length = struct.calcsize("<%s" % struct_code)
+
+
 class UFloat(BaseType):
     struct_code = 'f'
     length = struct.calcsize("<%s" % struct_code)
@@ -64,7 +69,7 @@ class String(BaseType):
         self.struct_code = '%ss' % length
         self.length = struct.calcsize("<%s" % self.struct_code)
 
-    after_unpack = lambda self, value: value.rstrip("\0")
+    after_unpack = lambda self, value: value.rstrip(b"\0").decode('utf-8')
 
 
 #####################
@@ -83,6 +88,7 @@ class MetaCountersType(type):
     Define the representation of the counters.
     '''
     _counter_representations = {
+        'celsius': lambda value: "%s (celsius)" % str(value),
         'bytes': lambda value: "%s (bytes)" % MetaCountersType._normalize(value, 1024, 10000, ['', 'K', 'M', 'G', 'T']),
         'kbytes': lambda value: "%s (bytes)" % MetaCountersType._normalize(value, 1024, 10000, ['K', 'M', 'G', 'T']),
         "mbytes": lambda value: "%s (bytes)" % MetaCountersType._normalize(value, 1024, 10000, ['M', 'G', 'T']),
@@ -92,7 +98,8 @@ class MetaCountersType(type):
         "nsec": lambda value: "%s (seconds)" % MetaCountersType._normalize(value, 1000, 1000, ['n', 'u', 'm', '']),
         "count": lambda value: "%s (count)" % MetaCountersType._normalize(value, 1000, 10000, ['', 'K', 'M', 'G', 'T']),
         "mbytes-usec": lambda value: "%s (bytes*seconds)" % MetaCountersType._normalize(float(value * 1024 * 1024 / 1000 / 1000), 1024, 10000, [' ', 'K', 'M', 'G', 'T']),
-        "n/a": lambda value: "%s" % str(value)
+        "n/a": lambda value: "%s" % str(value),
+        "string": lambda value: "%s" % str(value)
     }
 
     @staticmethod
@@ -155,7 +162,6 @@ class MetaCountersType(type):
                         attrs[key] = parent_item.copy()
                     else:
                         attrs[key] = parent_item
-
         return type.__new__(cls, name, bases, attrs)
 
     def __init__(self, name, bases, attrs):
@@ -205,9 +211,10 @@ class MetaCountersType(type):
         if c_index is None:
             if len(self._counter_definitions) > 0:
                 c_index = 1 + max([index for (_, (_, _, _, _, index, _)) in
-                                  self._counter_definitions.iteritems()])
+                                  self._counter_definitions.items()])
             else:
                 c_index = 0
+
 
         self._counter_definitions[c_name] = (
             c_type,
@@ -233,7 +240,7 @@ class MetaCountersType(type):
         if h_index is None:
             if len(self._header_definitions) > 0:
                 h_index = 1 + max([index for (_, (_, _, index, _))
-                                  in self._header_definitions.iteritems()])
+                                  in self._header_definitions.items()])
             else:
                 h_index = 0
 
@@ -282,7 +289,7 @@ class MetaCountersType(type):
         self._fmt_counter_ordered_keys = list(c_key_list)
 
 
-class BaseCounters(object):
+class BaseCounters(object, metaclass=MetaCountersType):
     '''
     This class define the base class for a metric. It provides the basic
     functions for packing/unpacking, registering header/counter.
@@ -293,7 +300,8 @@ class BaseCounters(object):
     By default the headers contain the 'metric_backend', the 'hostname',
     the 'job_id', and the 'timestamp'.  '''
 
-    __metaclass__ = MetaCountersType
+
+    # __metaclass__ = MetaCountersType
     __metric_name__ = "base"
     _headers = [('metric_backend', String(255), 'string'),
                 ('hostname', String(255), 'string'),
@@ -310,8 +318,9 @@ class BaseCounters(object):
     @staticmethod
     def create_metric_from_raw(raw):
         from . import get_counters_class
-        backend = struct.unpack('255s', raw[0:255])[0].rstrip("\0")
-        counters_class = get_counters_class(backend)
+        backend = struct.unpack('255s', raw[0:255])[0]
+        backend = backend.rstrip(b"\0")
+        counters_class = get_counters_class(backend.decode("utf-8"))
         counters = counters_class(raw=raw[0:counters_class._fmt_length])
         return counters
 
@@ -319,7 +328,6 @@ class BaseCounters(object):
     def pack_from_list(counters_list):
         length = reduce(operator.add, [counters._fmt_length for counters in counters_list])
         raw = ctypes.create_string_buffer(length)
-
         offset = 0
         for counters in counters_list:
             new_offset = offset + counters._fmt_length
@@ -377,7 +385,7 @@ class BaseCounters(object):
         if self._packed:
             self._buf.raw.zfill(self._fmt_length)
         else:
-            for c_name in self._counter_definitions.keys():
+            for c_name in list(self._counter_definitions):
                 self._set_counter(c_name, None)
 
     def _set_header(self, key, value):
@@ -424,11 +432,11 @@ class BaseCounters(object):
         '''
         msg_counters = {}
         key_maxlen = 0
-        for key in self._counter_definitions.keys():
+        for key in list(self._counter_definitions):
             if len(key) > key_maxlen:
                 key_maxlen = len(key)
         msg_format_values = "\n\t" + prefix + "%" + str(key_maxlen) + "s : %s"
-        for k in self._counter_definitions.keys():
+        for k in list(self._counter_definitions):
             (_, c_repr, _, c_index, _, _) = self._counter_definitions[k]
             if c_index not in msg_counters:
                 msg_counters[c_index] = ""
@@ -437,7 +445,7 @@ class BaseCounters(object):
                 k,
                 self._counter_representations[c_repr](self._get_counter(k))
             )
-        sorted_msg = [msg_counters[k] for k in sorted(msg_counters.keys())]
+        sorted_msg = [msg_counters[k] for k in sorted(list(msg_counters))]
         return (prefix + '{%s\n' + prefix + '}') % ("".join(sorted_msg))
 
     #
@@ -474,7 +482,18 @@ class BaseCounters(object):
 
         fmt_values = ([self._header_definitions[key][0].before_pack(self._get_header(key)) for key in self._fmt_header_ordered_keys]
                       + [self._counter_definitions[key][0].before_pack(self._get_counter(key)) for key in self._fmt_counter_ordered_keys])
+
+        fmt_values_list = list(fmt_values)
+
+        for index, value in enumerate(fmt_values_list):
+            if isinstance(value, str):
+                value = bytes(value, 'utf-8')
+                fmt_values_list[index] = value
+
+        fmt_values = tuple(fmt_values_list)
+
         struct.pack_into(self._fmt, raw_buffer, offset, *fmt_values)
+
 
     def unpack_from(self, raw_buffer, offset=0):
         '''
@@ -520,7 +539,7 @@ class BaseCounters(object):
         d_counters = destination._counter_values
         o_counters = other_stats._counter_values
         s_counters = self._counter_values
-        for (name, (_, _, acc_fn, _, _, _)) in self._counter_definitions.iteritems():
+        for (name, (_, _, acc_fn, _, _, _)) in self._counter_definitions.items():
             d_counters[name] = \
                 self._counter_accumulation_functions[acc_fn](s_counters[name],
                                                              o_counters[name],

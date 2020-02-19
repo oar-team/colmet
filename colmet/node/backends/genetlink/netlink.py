@@ -94,7 +94,13 @@ class Attr:
     def __init__(self, attr_type, data, *values):
         self.type = attr_type
         if len(values):
-            self.data = struct.pack(data, *values)
+            byte_values = ()
+            for value in values:
+                if isinstance(value, str):
+                    byte_values += (bytes(value, 'utf-8'),)
+                else:
+                    byte_values += (value,)
+            self.data = struct.pack(data, *byte_values)
         else:
             self.data = data
 
@@ -102,7 +108,7 @@ class Attr:
         hdr = struct.pack("HH", len(self.data)+4, self.type)
         length = len(self.data)
         pad = ((length + 4 - 1) & ~3 ) - length
-        return hdr + self.data + '\0' * pad
+        return hdr + self.data + b'\0' * pad
 
     def __repr__(self):
         return '<Attr type %d, data "%s">' % (self.type, repr(self.data))
@@ -128,7 +134,7 @@ class StrAttr(Attr):
 
 class NulStrAttr(Attr):
     def __init__(self, attr_type, data):
-        Attr.__init__(self, attr_type, "%dsB" % len(data), data, 0)
+        Attr.__init__(self, attr_type, b"%dsB" % len(data), data, 0)
 
 class U32Attr(Attr):
     def __init__(self, attr_type, val):
@@ -147,7 +153,7 @@ class Nested(Attr):
         contents = []
         for attr in self.attrs:
             contents.append(attr._dump())
-        contents = ''.join(contents)
+        contents = b''.join(contents)
         length = len(contents)
         hdr = struct.pack("HH", length+4, self.type)
         return hdr + contents
@@ -181,7 +187,7 @@ class Message:
             contents = []
             for attr in payload:
                 contents.append(attr._dump())
-            self.payload = ''.join(contents)
+            self.payload = b''.join(contents)
         else:
             self.payload = payload
 

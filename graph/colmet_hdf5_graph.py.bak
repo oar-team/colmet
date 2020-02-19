@@ -10,7 +10,6 @@
 #  Generating 5251912_cpu_count.png...
 
 # Setup the path of the hdf5 file here:
-from __future__ import print_function
 colmetfile = "/scratch/bzizou/colmet/froggy.hdf5"
 
 import sys

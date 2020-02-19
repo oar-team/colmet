@@ -1,6 +1,7 @@
 '''
 Colmet-node User Interface
 '''
+from __future__ import print_function
 import logging
 import argparse
 import signal
@@ -10,15 +11,17 @@ import time
 from colmet import VERSION
 from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
+from colmet.node.backends.RAPLstats import RAPLstatsBackend
+from colmet.node.backends.temperaturestats import TemperaturestatsBackend
+
 from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
+from colmet.node.backends.perfhwstats import PerfhwstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
 
-
 LOG = logging.getLogger()
-
 
 class Task(object):
 
@@ -36,19 +39,33 @@ class Task(object):
             self.input_backends.append(InfinibandstatsBackend(self.options))
         if self.options.enable_lustrestats:
             self.input_backends.append(LustrestatsBackend(self.options))
+        if self.options.enable_perfhw:
+            self.perfhwstats_back = PerfhwstatsBackend(self.options)
+            self.input_backends.append(self.perfhwstats_back)
+        if self.options.enable_RAPLstats:
+            self.RAPLstatsBackend = RAPLstatsBackend(self.options)
+            self.input_backends.append(self.RAPLstatsBackend)
+        if self.options.enable_temperaturestats:
+            self.temperaturestatsBackend = TemperaturestatsBackend(self.options)
+            self.input_backends.append(self.temperaturestatsBackend)
+
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
+
 
     @as_thread
     def check_jobs_thread(self):
+        #TODO ajouter appistats ici
         notifier = \
             AsyncFileNotifier(paths=self.options.cpuset_rootpath,
-                              callback=self.taskstats_backend.update_job_list)
+                              callback=self.update_job_list)
         # Initial job list update
         self.update_job_list()
         notifier.loop()
 
     def update_job_list(self):
         self.taskstats_backend.update_job_list()
+        if self.options.enable_perfhw:
+            self.perfhwstats_back.update_job_list()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
@@ -63,7 +80,9 @@ class Task(object):
     def terminate(self, signum, frame):
         LOG.info("Received a signal (%d)" % signum)
         LOG.info("Terminating %s properly..." % self.name)
+        self.RAPLstatsBackend.close()
         self.zeromq_output_backend.close()
+
         sys.exit(0)
 
     def sleep(self):
@@ -80,20 +99,20 @@ class Task(object):
             for backend in self.input_backends:
                 pulled_counters = backend.pull()
 
-                if backend.get_backend_name() == 'taskstats':
+                if backend.get_backend_name() == 'taskstats'\
+                or backend.get_backend_name() == "perfhwstats":
                     if len(pulled_counters) > 0:
                         for counters in pulled_counters:
                             counters_list += counters
                 else:
                     counters_list += pulled_counters
 
-                LOG.debug("%s metrics has been pulled width %s" %
+                LOG.debug("%s metrics has been pulled with %s" %
                           (len(pulled_counters), backend.get_backend_name()))
 
             LOG.debug("time to take measure: %s sec" % (time.time() - now))
 
             if len(counters_list) > 0:
-                # print "nb counters_list", len(counters_list)
                 try:
                     self.zeromq_output_backend.push(counters_list)
                     LOG.debug("%s metrics has been pushed with zeromq"
@@ -133,7 +152,7 @@ def main():
                              'subdirectories contents. Measures are '
                              'associated to the fictive job with 0 as '
                              'identifier (job_id)')
-    
+
     parser.add_argument('--enable-infiniband', action="store_true",
                         default=False, dest="enable_infinibandstats",
                         help='Enables monitoring of node\'s infiniband port'
@@ -146,7 +165,32 @@ def main():
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
-    
+    parser.add_argument('--enable-perfhw', action="store_true",
+                        default=False, dest="enable_perfhw",
+                        help='Enables monitoring of jobs from the performance API')
+
+    parser.add_argument('--perfhw-list', nargs='+',
+                        default=["instructions","cache_misses", "page_faults"], dest="perfhw_list",
+                        help='space separated list of performance counters')
+
+
+    parser.add_argument("--enable-RAPL", action="store_true",
+                        default=False, dest="enable_RAPLstats",
+                        help='Enables monitoring of node s using RAPL'
+                             'Measures are associated to the fictive job '
+                             'with 0 as identifier (job_id)')
+
+    parser.add_argument("--enable-temperature", action="store_true",
+                        default=False, dest="enable_temperaturestats",
+                        help='Enables monitoring of cpu temperature'
+                             'Measures are associated to the fictive job '
+                             'with 0 as identifier (job_id)')
+
+    parser.add_argument("--omnipath", action="store_true",
+                        default=False, dest="omnipath",
+                        help="Use this option if the network is Omnipath rather than Infiniband. This affects the values collected with perfquery, multiplying by 8 instead of 4.")
+
+
     group = parser.add_argument_group('Taskstat')
 
     group.add_argument('-c', '--cgroup', dest='cgroups',
