@@ -29,16 +29,16 @@ int init_rapl() {
   }
 
   g_rapl->pkgs = malloc(g_rapl->nbpackages * sizeof(powercap_rapl_pkg));
-  for (int package = 0; package < g_rapl->nbpackages; package++)
+  for (unsigned int package = 0; package < g_rapl->nbpackages; package++)
     if (powercap_rapl_init(package, &g_rapl->pkgs[package], 0)) {
       return -1;
     }
 
   g_rapl->names = malloc(sizeof(char*)* g_rapl->nbzones*g_rapl->nbpackages);
-  for (int package = 0; package < g_rapl->nbpackages; package++) {
-    for(int zone=0; zone<g_rapl->nbzones; zone++) {
+  for (unsigned int package = 0; package < g_rapl->nbpackages; package++) {
+    for(unsigned int zone=0; zone<g_rapl->nbzones; zone++) {
      g_rapl->names[package*g_rapl->nbzones+zone]=malloc(MAX_LEN_NAME);
-     int ret = powercap_rapl_get_name(&g_rapl->pkgs[package], rapl_zones[zone], g_rapl->names[package*g_rapl->nbzones+zone], MAX_LEN_NAME);
+     powercap_rapl_get_name(&g_rapl->pkgs[package], rapl_zones[zone], g_rapl->names[package*g_rapl->nbzones+zone], MAX_LEN_NAME);     
     }
   }
   return 0;
@@ -49,8 +49,8 @@ int get_rapl_size(){
 }
 
 int clean_rapl() {
-  for (int package = 0; package < g_rapl->nbpackages; package++) {
-    for (int zone=0; zone<g_rapl->nbzones; zone++)
+  for (unsigned int package = 0; package < g_rapl->nbpackages; package++) {
+    for (unsigned int zone=0; zone<g_rapl->nbzones; zone++)
       free(g_rapl->names[package*g_rapl->nbzones+zone]);
   }
   free(g_rapl->names);
@@ -64,9 +64,9 @@ void get_powercap_rapl_name(char ** values)
 {
   int i = 0;
   char retour[255];
-  for (int package = 0; package < g_rapl->nbpackages; package++)
+  for (unsigned int package = 0; package < g_rapl->nbpackages; package++)
   {
-    for (int zone = 0; zone < g_rapl->nbzones; zone++)
+    for (unsigned int zone = 0; zone < g_rapl->nbzones; zone++)
     {
       if (zone == 0){
         powercap_rapl_get_name(&g_rapl->pkgs[package], g_rapl->zones[zone], retour, sizeof(retour));
@@ -100,9 +100,9 @@ void get_powercap_rapl_name(char ** values)
 
 void get_powercap_rapl_get_energy_uj(uint64_t *values)
 {
-  for (int package = 0; package < g_rapl->nbpackages; package++)
+  for (unsigned int package = 0; package < g_rapl->nbpackages; package++)
   {
-    for (int zone = 0; zone < g_rapl->nbzones; zone++)
+    for (unsigned int zone = 0; zone < g_rapl->nbzones; zone++)
     {
       powercap_rapl_get_energy_uj(&g_rapl->pkgs[package], g_rapl->zones[zone], &values[package * g_rapl->nbzones + zone]);
     }
@@ -111,9 +111,9 @@ void get_powercap_rapl_get_energy_uj(uint64_t *values)
 
 void get_powercap_rapl_get_max_energy_range_uj(uint64_t *values)
 {
-  for (int package = 0; package < g_rapl->nbpackages; package++)
+  for (unsigned int package = 0; package < g_rapl->nbpackages; package++)
   {
-    for (int zone = 0; zone < g_rapl->nbzones; zone++)
+    for (unsigned int zone = 0; zone < g_rapl->nbzones; zone++)
     {
       powercap_rapl_get_max_energy_range_uj(&g_rapl->pkgs[package], g_rapl->zones[zone], &values[package * g_rapl->nbzones + zone]);
     }
