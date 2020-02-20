@@ -44,10 +44,11 @@ class TaskstatsBackend(InputBaseBackend):
         return counters
 
     def pull(self):
-        for job in self.jobs.values():
+        values=list(self.jobs.values())
+        for job in values:
             LOG.debug("pull job :" + str(job.job_id))
             job.update_stats()
-        return [job.get_stats() for job in self.jobs.values()]
+        return [job.get_stats() for job in values]
 
     def get_counters_class(self):
         return TaskstatsCounters

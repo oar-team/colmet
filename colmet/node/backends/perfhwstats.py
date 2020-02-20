@@ -46,9 +46,10 @@ class PerfhwstatsBackend(InputBaseBackend):
         return self.perfhwstats.get_stats(self.filenames[str(job_id)])
 
     def pull(self):
-        for job in self.jobs.values():
+        values=list(self.jobs.values())
+        for job in values:
             job.update_stats()
-        return [job.get_stats() for job in self.jobs.values()]
+        return [job.get_stats() for job in values]
 
     def get_counters_class(self):
         return PerfhwstatsCounters
