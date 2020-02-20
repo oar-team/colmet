@@ -131,7 +131,7 @@ class ProcstatsCounters(BaseCounters):
         'meminfo_vmalloctotal',
         'meminfo_vmallocused',
         'meminfo_vmallocchunk',
-        'meminfo_hardwarecorrupted',
+        #'meminfo_hardwarecorrupted', # not supported on some kernel
         'meminfo_anonhugepages',
         'meminfo_hugepages_total',
         'meminfo_hugepages_free',
