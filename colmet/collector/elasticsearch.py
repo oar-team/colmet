@@ -4,8 +4,7 @@ import requests
 from collections import OrderedDict
 from ..common.backends.base import OutputBaseBackend
 
-LOG = logging.getLogger()
-
+LOG = logging.getLogger("Elastic Backend")
 
 class ElasticsearchOutputBackend(OutputBaseBackend):
     """Elasticsearch output backend class"""
@@ -13,9 +12,10 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
 
     def open(self):
         self.s = requests.Session()
+        LOG.info("Elasticsearch session opened")
 
     def close(self):
-        pass
+        self.s.close()
 
     def push(self, counters_list):
         """Push the metrics in Elasticsearch database"""
@@ -49,6 +49,12 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         url = "{elastic_host}/_bulk/".format(elastic_host=elastic_host)
         headers = {"Content-Type": "application/x-ndjson"}
         r = self.s.post(url=url, headers=headers, data=bulk)
+        if r.status_code != 200:
+            LOG.warning("Got http error from elastic: %s %s" % r.status_code , r.text)
+        else:
+            LOG.info("Elastic bulk push ok: %s" % r.status_code)
+        self.close()
+        self.open()
 
     def index_document(self, elastic_document, index):
         """Index document in Elasticsearch using its http api - DEPRECATED"""
