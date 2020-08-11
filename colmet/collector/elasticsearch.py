@@ -19,6 +19,8 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
 
     def push(self, counters_list):
         """Push the metrics in Elasticsearch database"""
+        indices=[]
+        bulk=''
         for counter in counters_list:
             elastic_document = OrderedDict()
             metric_backend_value = None
@@ -26,16 +28,30 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
                 counter_header_value = counter._get_header(counter_header)
                 if counter_header == "metric_backend":
                     metric_backend_value = counter_header_value.lower()  # name of the backend that is used as index is Elasticsearch
+                    if metric_backend_value not in indices:
+                        indices.append(metric_backend_value)
                 else:
                     elastic_document[counter_header] = counter_header_value
             for counter_metric in list(counter._counter_definitions):  # add metric values
                 counter_metric_value = counter._get_counter(counter_metric)
                 elastic_document[counter_metric] = counter_metric_value
-            elastic_document = json.dumps(elastic_document, indent=2)
-            self.index_document(elastic_document, index=metric_backend_value)
+            #elastic_document = json.dumps(elastic_document, indent=2)
+            #self.index_document(elastic_document, index=metric_backend_value)
+            bulk+='{ "create" : { "_index" : "'+metric_backend_value+'" }}\n'
+            bulk+=json.dumps(elastic_document, indent=None)+'\n'
+        for index in indices:
+            self.create_index_if_necessary(index)
+        self.index_bulk(bulk)
+
+    def index_bulk(self, bulk):
+        """Do a bulk indexing into elasticsearch"""
+        elastic_host = self.options.elastic_host
+        url = "{elastic_host}/_bulk/".format(elastic_host=elastic_host)
+        headers = {"Content-Type": "application/x-ndjson"}
+        r = self.s.post(url=url, headers=headers, data=bulk)
 
     def index_document(self, elastic_document, index):
-        """Index document in Elasticsearch using its http api"""
+        """Index document in Elasticsearch using its http api - DEPRECATED"""
         elastic_host = self.options.elastic_host
         self.create_index_if_necessary(index)
         url = "{elastic_host}/{index}/_doc/".format(elastic_host=elastic_host, index=index)
@@ -46,7 +62,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
         r = self.s.head(url)
-        if r.status_code ==404:  # create new index
+        if r.status_code ==404:  # create nex index
             mapping = {
                 "mappings": {
                     "properties": {
