@@ -12,15 +12,17 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
 
     def open(self):
         self.s = requests.Session()
-        LOG.info("Elasticsearch session opened")
+        LOG.debug("Elasticsearch session opened")
 
     def close(self):
         self.s.close()
+        LOG.debug("Elasticsearch session closed")
 
     def push(self, counters_list):
         """Push the metrics in Elasticsearch database"""
         indices=[]
         bulk=''
+        c=0
         for counter in counters_list:
             elastic_document = OrderedDict()
             metric_backend_value = None
@@ -39,9 +41,13 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             #self.index_document(elastic_document, index=metric_backend_value)
             bulk+='{ "create" : { "_index" : "'+metric_backend_value+'" }}\n'
             bulk+=json.dumps(elastic_document, indent=None)+'\n'
+            c+=1
+        self.open()
         for index in indices:
             self.create_index_if_necessary(index)
+        LOG.info("Elastic: indexing %s docs" % c)
         self.index_bulk(bulk)
+        self.close()
 
     def index_bulk(self, bulk):
         """Do a bulk indexing into elasticsearch"""
@@ -51,10 +57,11 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         r = self.s.post(url=url, headers=headers, data=bulk)
         if r.status_code != 200:
             LOG.warning("Got http error from elastic: %s %s" % r.status_code , r.text)
+        response=json.loads(r.text)
+        if response["errors"]:
+            LOG.warning("Elastic status is ERROR!")
         else:
-            LOG.info("Elastic bulk push ok: %s" % r.status_code)
-        self.close()
-        self.open()
+            LOG.debug("Elastic bulk push ok: took %s ms" % response["took"])
 
     def index_document(self, elastic_document, index):
         """Index document in Elasticsearch using its http api - DEPRECATED"""
@@ -68,7 +75,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
         r = self.s.head(url)
-        if r.status_code ==404:  # create nex index
+        if r.status_code ==404:  # create new index
             mapping = {
                 "mappings": {
                     "properties": {
@@ -82,4 +89,5 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             mapping = json.dumps(mapping)
             headers = {"Content-Type": "application/json"}
             url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
+            LOG.info("Elastic: created missing index %s" % index)
             r = self.s.put(url=url, headers=headers, data=mapping)

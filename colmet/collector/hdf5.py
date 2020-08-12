@@ -492,6 +492,7 @@ class HDF5OutputBackend(OutputBaseBackend):
         put the metrics to the output backend
         '''
         counters_dict = dict()
+        c=0
         for counters in counters_list:
             job_id = counters._get_header('job_id')
             if job_id not in counters_dict:
@@ -501,7 +502,8 @@ class HDF5OutputBackend(OutputBaseBackend):
         for (job_id, c_list) in counters_dict.items():
             jobstat = self._get_job_stat(job_id)
             jobstat.append_stats(c_list)
-
+            c+=len(c_list)
+        LOG.info("HDF5: Pushed %s metrics" % c) 
 
 class FileAccess(object):
     '''
@@ -584,7 +586,7 @@ class JobFile(object):
             self.job_file = JobFile.fileaccess.open_file(self.hdf5_filepath,
                                                          self.job_filemode)
         else:
-            LOG.info("HDF5 compression enabled (lib=%s, level=%s) for %s" %
+            LOG.debug("HDF5 compression enabled (lib=%s, level=%s) for %s" %
                      (self.hdf5_complib, self.hdf5_complevel,
                       self.hdf5_filepath))
             filters = tables.Filters(complevel=self.hdf5_complevel,
