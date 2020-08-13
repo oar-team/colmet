@@ -63,12 +63,18 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         headers = {"Content-Type": "application/x-ndjson"}
         r = self.s.post(url=url, headers=headers, data=bulk)
         if r.status_code != 200:
-            LOG.warning("Got http error from elastic: %s %s" % r.status_code , r.text)
+            LOG.warning("Got http error from elastic: %s %s" , r.status_code , r.text)
         response=json.loads(r.text)
         if response["errors"]:
             LOG.warning("Elastic status is ERROR!")
+            for item in response["items"]:
+                for key in item:
+                    it=item[key]
+                    if it["status"] != 201 :
+                        LOG.warning("Status %s for %s action:", it["status"], key)
+                        LOG.warning(json.dumps(item[key]))
         else:
-            LOG.debug("Elastic bulk push ok: took %s ms" % response["took"])
+            LOG.debug("Elastic bulk push ok: took %s ms" , response["took"])
 
     def create_index_if_necessary(self, index):
         elastic_host = self.options.elastic_host

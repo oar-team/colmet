@@ -14,7 +14,7 @@ class InfinibandstatsCounters(BaseCounters):
         'portRcvData': (Int64(), 'bytes', 'none', 'portRcvData'),
         'portXmitPkts': (Int64(), 'count', 'none', 'portXmitPkts'),
         'portRcvPkts': (Int64(), 'count', 'none', 'portRcvPkts'),
-        'involved_jobs': (String(32), 'string', 'none', 'involved_jobs')
+        'involved_jobs': (String(8192), 'string', 'none', 'involved_jobs')
         }
         
     counters_infinibandstats_to_get = [
