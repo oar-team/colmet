@@ -185,6 +185,9 @@ def main():
     group.add_argument("--elastic-host", dest='elastic_host', default=None,
                        help="The address of Elasticsearch server, ex:'localhost:9200'")
 
+    group.add_argument("--elastic-index-prefix", dest='elastic_index_prefix', default="colmet_",
+                       help="Prefix for indices into elastisearch, ex:'colmet_dahu_'")
+
     args = parser.parse_args()
 
     if args.hdf5_filepath is None and args.enable_stdout_backend is False and args.elastic_host is None:

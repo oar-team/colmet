@@ -23,6 +23,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         indices=[]
         bulk=''
         c=0
+        elastic_index_prefix = self.options.elastic_index_prefix
         for counter in counters_list:
             elastic_document = OrderedDict()
             metric_backend_value = None
@@ -30,8 +31,8 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
                 counter_header_value = counter._get_header(counter_header)
                 if counter_header == "metric_backend":
                     metric_backend_value = counter_header_value.lower()  # name of the backend that is used as index is Elasticsearch
-                    if metric_backend_value not in indices:
-                        indices.append(metric_backend_value)
+                    if elastic_index_prefix+metric_backend_value not in indices:
+                        indices.append(elastic_index_prefix+metric_backend_value)
                 else:
                     elastic_document[counter_header] = counter_header_value
             for counter_metric in list(counter._counter_definitions):  # add metric values
@@ -39,7 +40,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
                 elastic_document[counter_metric] = counter_metric_value
             #elastic_document = json.dumps(elastic_document, indent=2)
             #self.index_document(elastic_document, index=metric_backend_value)
-            bulk+='{ "create" : { "_index" : "'+metric_backend_value+'" }}\n'
+            bulk+='{ "create" : { "_index" : "'+elastic_index_prefix+metric_backend_value+'" }}\n'
             bulk+=json.dumps(elastic_document, indent=None)+'\n'
             c+=1
         self.open()
@@ -62,14 +63,6 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             LOG.warning("Elastic status is ERROR!")
         else:
             LOG.debug("Elastic bulk push ok: took %s ms" % response["took"])
-
-    def index_document(self, elastic_document, index):
-        """Index document in Elasticsearch using its http api - DEPRECATED"""
-        elastic_host = self.options.elastic_host
-        self.create_index_if_necessary(index)
-        url = "{elastic_host}/{index}/_doc/".format(elastic_host=elastic_host, index=index)
-        headers = {"Content-Type": "application/json"}
-        r = self.s.post(url=url, headers=headers, data=elastic_document)
 
     def create_index_if_necessary(self, index):
         elastic_host = self.options.elastic_host
