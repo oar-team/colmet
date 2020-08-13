@@ -37,6 +37,12 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
                     elastic_document[counter_header] = counter_header_value
             for counter_metric in list(counter._counter_definitions):  # add metric values
                 counter_metric_value = counter._get_counter(counter_metric)
+                # Convert strings that are json
+                try:
+                    value = json.loads(counter_metric_value)
+                    counter_metric_value = value
+                except:
+                    pass
                 elastic_document[counter_metric] = counter_metric_value
             #elastic_document = json.dumps(elastic_document, indent=2)
             #self.index_document(elastic_document, index=metric_backend_value)

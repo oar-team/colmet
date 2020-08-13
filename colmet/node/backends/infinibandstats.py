@@ -1,5 +1,7 @@
 import os
 import re
+import glob
+import json
 
 from subprocess import check_output, STDOUT, CalledProcessError
 
@@ -38,12 +40,19 @@ class InfinibandStats(object):
     def __init__(self, option):
         self.options = option
 
-    def get_stats(self):
+    def get_running_jobs(self):
+        job_ids=[]
+        if os.path.exists("/dev/cpuset/oar"):
+            cwd = os.getcwd()
+            os.chdir("/dev/cpuset/oar")
+            for file in glob.glob("*_*"):
+                m = re.search('.*_(\d+)',file)
+                if m is not None:
+                    job_ids.append(int(m.group(1)))
+            os.chdir(cwd)
+        return job_ids
 
-        if self.options.omnipath:
-            mult_const = 8
-        else:
-            mult_const = 4
+    def get_stats(self):
         
         infinibandstats_data = {}
 
@@ -57,13 +66,13 @@ class InfinibandStats(object):
 
         m = re.search(r'PortXmitData:\.*(\d+)', perfquery)
         if m:
-            infinibandstats_data['portXmitData'] = mult_const * int(m.group(1))
+            infinibandstats_data['portXmitData'] = 4 * int(m.group(1))
         else:
             infinibandstats_data['portXmitData'] = -1
 
         m = re.search(r'PortRcvData:\.*(\d+)', perfquery)
         if m:
-            infinibandstats_data['portRcvData'] = mult_const * int(m.group(1))
+            infinibandstats_data['portRcvData'] = 4 * int(m.group(1))
         else:
             infinibandstats_data['portRcvData'] = -1
 
@@ -78,5 +87,8 @@ class InfinibandStats(object):
             infinibandstats_data['portRcvPkts'] = int(m.group(1))
         else:
             infinibandstats_data['portRcvPkts'] = -1
+    
+        jobs=json.dumps(self.get_running_jobs())
+        infinibandstats_data['involved_jobs'] = jobs
 
         return InfinibandstatsCounters(infinibandstats_buffer=infinibandstats_data)
