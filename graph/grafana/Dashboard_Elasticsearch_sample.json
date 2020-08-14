@@ -1,6 +1,14 @@
 {
   "__inputs": [
     {
+      "name": "DS_COLMET:_DAHU RAPL ",
+      "label": "Colmet: Dahu RAPL ",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    },
+    {
       "name": "DS_COLMET:_DAHU TASKSTATS",
       "label": "Colmet: Dahu taskstats",
       "description": "",
@@ -33,6 +41,12 @@
       "version": "1.0.0"
     },
     {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
@@ -42,6 +56,18 @@
       "type": "panel",
       "id": "graph",
       "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
       "version": ""
     }
   ],
@@ -62,9 +88,360 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1597325960111,
+  "iteration": 1597402301084,
   "links": [],
   "panels": [
+    {
+      "datasource": "${DS_COLMET:_DAHU RAPL }",
+      "description": "Sum of all RAPL energy counters during the time period for concerned jobs/nodes",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "joule"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 21,
+      "interval": "5s",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:9683",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "5s",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:9681",
+              "field": "counter_1",
+              "id": "1",
+              "inlineScript": "(doc[\"counter_1\"].value+doc[\"counter_7\"].value+doc[\"counter_5\"].value+doc[\"counter_11\"].value)/1000000",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "(doc[\"counter_1\"].value+doc[\"counter_7\"].value+doc[\"counter_5\"].value+doc[\"counter_11\"].value)/1000000"
+                }
+              },
+              "type": "sum"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Total energy  (CPU & RAM only)",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unique Count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "# of jobs"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 17,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:6030",
+              "field": "hostname.keyword",
+              "id": "2",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "3",
+                "size": "0"
+              },
+              "type": "terms"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:6050",
+              "field": "job_id",
+              "id": "3",
+              "meta": {},
+              "settings": {},
+              "type": "cardinality"
+            }
+          ],
+          "query": "job_id:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "# jobs per node in the time period",
+      "type": "table"
+    },
+    {
+      "datasource": "${DS_COLMET:_DAHU RAPL }",
+      "description": "Total energy converted into kWh",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 22,
+      "interval": "5s",
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:9683",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "5s",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:9681",
+              "field": "counter_1",
+              "id": "1",
+              "inlineScript": "(doc[\"counter_1\"].value+doc[\"counter_7\"].value+doc[\"counter_5\"].value+doc[\"counter_11\"].value)*277/1000000*0.000001",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "(doc[\"counter_1\"].value+doc[\"counter_7\"].value+doc[\"counter_5\"].value+doc[\"counter_11\"].value)*277/1000000*0.000001"
+                }
+              },
+              "type": "sum"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Total energy  (CPU & RAM only)",
+      "type": "gauge"
+    },
+    {
+      "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "displayMode": "auto"
+          },
+          "mappings": [
+            {
+              "from": "",
+              "id": 0,
+              "operator": "",
+              "text": "",
+              "to": "",
+              "type": 1
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unique Count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "# of nodes"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 16,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:6030",
+              "field": "job_id",
+              "id": "2",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "3",
+                "size": "0"
+              },
+              "type": "terms"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:6050",
+              "field": "hostname.keyword",
+              "id": "3",
+              "meta": {},
+              "settings": {},
+              "type": "cardinality"
+            }
+          ],
+          "query": "job_id:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "# nodes per job in the time period",
+      "type": "table"
+    },
     {
       "aliasColors": {},
       "bars": false,
@@ -84,7 +461,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "hiddenSeries": false,
       "id": 2,
@@ -168,7 +545,7 @@
               "type": "derivative"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -235,7 +612,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 8
       },
       "hiddenSeries": false,
       "id": 5,
@@ -319,7 +696,7 @@
               "type": "derivative"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -386,7 +763,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 14
       },
       "hiddenSeries": false,
       "id": 3,
@@ -466,7 +843,7 @@
               "type": "derivative"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -533,7 +910,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 14
       },
       "hiddenSeries": false,
       "id": 4,
@@ -613,7 +990,7 @@
               "type": "derivative"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -679,7 +1056,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 12
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 10,
@@ -740,17 +1117,31 @@
               "$$hashKey": "object:3103",
               "field": "counter_4",
               "id": "1",
+              "inlineScript": "if (_value>0){_value}else{0}",
               "meta": {},
-              "settings": {},
+              "settings": {
+                "script": {
+                  "inline": "if (_value>0){_value}else{0}"
+                }
+              },
               "type": "max"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
       ],
-      "thresholds": [],
+      "thresholds": [
+        {
+          "$$hashKey": "object:7102",
+          "colorMode": "critical",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "yaxis": "left"
+        }
+      ],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
@@ -760,6 +1151,7 @@
         "sort": 0,
         "value_type": "individual"
       },
+      "transformations": [],
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -772,10 +1164,10 @@
         {
           "$$hashKey": "object:3155",
           "format": "short",
-          "label": null,
+          "label": "# / 5s",
           "logBase": 1,
           "max": null,
-          "min": "0",
+          "min": null,
           "show": true
         },
         {
@@ -811,7 +1203,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 12
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 12,
@@ -872,12 +1264,17 @@
               "$$hashKey": "object:3501",
               "field": "counter_1",
               "id": "1",
+              "inlineScript": "if (_value>0){_value}else{0}",
               "meta": {},
-              "settings": {},
+              "settings": {
+                "script": {
+                  "inline": "if (_value>0){_value}else{0}"
+                }
+              },
               "type": "max"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -904,10 +1301,10 @@
         {
           "$$hashKey": "object:3553",
           "format": "short",
-          "label": null,
+          "label": "# / 5s",
           "logBase": 1,
           "max": null,
-          "min": "0",
+          "min": null,
           "show": true
         },
         {
@@ -943,7 +1340,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 18
+        "y": 26
       },
       "hiddenSeries": false,
       "id": 13,
@@ -1004,12 +1401,17 @@
               "$$hashKey": "object:3103",
               "field": "counter_2",
               "id": "1",
+              "inlineScript": "if (_value>0){_value}else{0}",
               "meta": {},
-              "settings": {},
+              "settings": {
+                "script": {
+                  "inline": "if (_value>0){_value}else{0}"
+                }
+              },
               "type": "max"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -1036,10 +1438,10 @@
         {
           "$$hashKey": "object:3155",
           "format": "short",
-          "label": null,
+          "label": "# / 5s",
           "logBase": 1,
           "max": null,
-          "min": "0",
+          "min": null,
           "show": true
         },
         {
@@ -1075,7 +1477,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 26
       },
       "hiddenSeries": false,
       "id": 14,
@@ -1136,12 +1538,17 @@
               "$$hashKey": "object:3103",
               "field": "counter_3",
               "id": "1",
+              "inlineScript": "if (_value>0){_value}else{0}",
               "meta": {},
-              "settings": {},
+              "settings": {
+                "script": {
+                  "inline": "if (_value>0){_value}else{0}"
+                }
+              },
               "type": "max"
             }
           ],
-          "query": "job_id:$Job_ID",
+          "query": "job_id:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -1168,10 +1575,10 @@
         {
           "$$hashKey": "object:3155",
           "format": "short",
-          "label": null,
+          "label": "# / 5s",
           "logBase": 1,
           "max": null,
-          "min": "0",
+          "min": null,
           "show": true
         },
         {
@@ -1223,7 +1630,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 32
       },
       "hiddenSeries": false,
       "id": 7,
@@ -1303,7 +1710,7 @@
               "type": "derivative"
             }
           ],
-          "query": "involved_jobs:$Job_ID",
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -1312,7 +1719,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Infiniband input ",
+      "title": "Omnipath input (infiniband)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1379,7 +1786,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 32
       },
       "hiddenSeries": false,
       "id": 8,
@@ -1457,7 +1864,7 @@
               "type": "derivative"
             }
           ],
-          "query": "involved_jobs:$Job_ID",
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -1466,7 +1873,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Infiniband output",
+      "title": "Omnipath output (infiniband)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1504,9 +1911,353 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_COLMET:_DAHU RAPL }",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "hiddenSeries": false,
+      "id": 18,
+      "interval": "5s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": true,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "7.0.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:222",
+              "fake": true,
+              "field": "hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "6",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "$$hashKey": "object:54",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:52",
+              "field": "counter_1",
+              "id": "1",
+              "inlineScript": "_value/1000000",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "_value/1000000"
+                }
+              },
+              "type": "max"
+            },
+            {
+              "$$hashKey": "object:8635",
+              "field": "counter_7",
+              "id": "6",
+              "inlineScript": "_value/1000000",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "_value/1000000"
+                }
+              },
+              "type": "max"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "CPU 0 & CPU 1 Energy (rapl)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:104",
+          "format": "joule",
+          "label": "CPU Energy / 5s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:105",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_COLMET:_DAHU RAPL }",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 38
+      },
+      "hiddenSeries": false,
+      "id": 19,
+      "interval": "5s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": true,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "7.0.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:222",
+              "fake": true,
+              "field": "hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "6",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "$$hashKey": "object:54",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:52",
+              "field": "counter_5",
+              "id": "1",
+              "inlineScript": "_value/1000000",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "_value/1000000"
+                }
+              },
+              "type": "max"
+            },
+            {
+              "$$hashKey": "object:8635",
+              "field": "counter_11",
+              "id": "6",
+              "inlineScript": "_value/1000000",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "_value/1000000"
+                }
+              },
+              "type": "max"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "DRAM 0 & DRAM 1 Energy (rapl)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:104",
+          "format": "joule",
+          "label": "DRAM Energy / 5s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:105",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
-  "refresh": "5m",
+  "refresh": "1h",
   "schemaVersion": 25,
   "style": "dark",
   "tags": [],
@@ -1533,11 +2284,33 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": "*",
+        "current": {},
+        "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
+        "definition": "{\"find\": \"terms\", \"field\": \"hostname.keyword\", \"orderBy\": \"term\"}",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "Node",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"hostname.keyword\", \"orderBy\": \"term\"}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -1556,5 +2329,5 @@
   "timezone": "",
   "title": "Dahu Colmet Jobs Stats",
   "uid": "RUyeEaIGz",
-  "version": 20
+  "version": 43
 }
