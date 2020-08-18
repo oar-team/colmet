@@ -24,6 +24,9 @@ class RAPLstatsCounters(BaseCounters):
     for i in range(raplsize):
         counters_RAPLstats_to_get.append("counter_" + str(i+1))
 
+    counters_RAPLstats["involved_jobs"] = (String(8192), 'string', 'none', 'involved_jobs')
+    counters_RAPLstats_to_get.append("involved_jobs")
+
     _counters = []
 
     for c_name in counters_RAPLstats_to_get:

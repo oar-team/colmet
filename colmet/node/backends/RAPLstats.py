@@ -2,6 +2,8 @@ import os
 import re
 import ctypes
 import time
+import json
+import glob
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
@@ -74,6 +76,18 @@ class RAPLstats(object):
             metric_name = "no_counter,,"
             metrics_mapping.write("counter_" + str(i + 1) + "," + str(metric_name) + "\n")
 
+    def get_running_jobs(self):
+        job_ids=[]
+        if os.path.exists("/dev/cpuset/oar"):
+            cwd = os.getcwd()
+            os.chdir("/dev/cpuset/oar")
+            for file in glob.glob("*_*"):
+                m = re.search('.*_(\d+)',file)
+                if m is not None:
+                    job_ids.append(int(m.group(1)))
+            os.chdir(cwd)
+        return job_ids
+
     def get_stats(self):
         RAPLstats_data = {}
 
@@ -93,5 +107,7 @@ class RAPLstats(object):
             RAPLstats_data["counter_" + str(i+1)] = -1
 
         self.oldEnergy = energy
+        jobs=json.dumps(self.get_running_jobs())
+        RAPLstats_data['involved_jobs'] = jobs
 
         return RAPLstatsCounters(RAPLstats_buffer=RAPLstats_data)
