@@ -43,7 +43,10 @@ class PerfhwstatsBackend(InputBaseBackend):
         pass
 
     def get_perfhw_stats(self, job_id):
-        return self.perfhwstats.get_stats(self.filenames[str(job_id)])
+        if str(job_id) in self.filenames:
+            return self.perfhwstats.get_stats(self.filenames[str(job_id)])
+        else:
+            LOG.warning("Perfwhstats: no job with id " + str(job_id) + " to monitor!")
 
     def pull(self):
         values=list(self.jobs.values())
