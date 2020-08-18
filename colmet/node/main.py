@@ -13,8 +13,8 @@ from colmet.node.backends.infinibandstats import InfinibandstatsBackend
 from colmet.node.backends.lustrestats import LustrestatsBackend
 from colmet.node.backends.RAPLstats import RAPLstatsBackend
 from colmet.node.backends.temperaturestats import TemperaturestatsBackend
-
 from colmet.node.backends.procstats import ProcstatsBackend
+from colmet.node.backends.jobprocstats import JobprocstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.node.backends.perfhwstats import PerfhwstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
@@ -48,6 +48,9 @@ class Task(object):
         if self.options.enable_temperaturestats:
             self.temperaturestatsBackend = TemperaturestatsBackend(self.options)
             self.input_backends.append(self.temperaturestatsBackend)
+        if self.options.enable_jobproc:
+            self.jobprocstats_back = JobprocstatsBackend(self.options)
+            self.input_backends.append(self.jobprocstats_back)
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -66,6 +69,8 @@ class Task(object):
         self.taskstats_backend.update_job_list()
         if self.options.enable_perfhw:
             self.perfhwstats_back.update_job_list()
+        if self.options.enable_jobproc:
+            self.jobprocstats_back.update_job_list()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
@@ -100,6 +105,7 @@ class Task(object):
                 pulled_counters = backend.pull()
 
                 if backend.get_backend_name() == 'taskstats'\
+                or backend.get_backend_name() == "jobprocstats"\
                 or backend.get_backend_name() == "perfhwstats":
                     if len(pulled_counters) > 0:
                         for counters in pulled_counters:
@@ -169,10 +175,13 @@ def main():
                         default=False, dest="enable_perfhw",
                         help='Enables monitoring of jobs from the performance API')
 
+   parser.add_argument('--enable-jobproc', action="store_true",
+                        default=False, dest="enable_jobproc",
+                        help='Enables monitoring of jobs using /proc filesystem aggregations (currently only /proc/<id>/io)')
+
     parser.add_argument('--perfhw-list', nargs='+',
                         default=["instructions","cache_misses", "page_faults"], dest="perfhw_list",
                         help='space separated list of performance counters')
-
 
     parser.add_argument("--enable-RAPL", action="store_true",
                         default=False, dest="enable_RAPLstats",

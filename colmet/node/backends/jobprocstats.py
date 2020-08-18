@@ -1,4 +1,6 @@
 import os
+import re
+import copy
 import errno
 import struct
 import time
@@ -92,22 +94,36 @@ class jobprocStats(object):
         self.options = option
         self.isInit = False
         self.jobprocvalues = None
+        # init counters for iostats
+        self.jobprocstats_data={}
+        counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes"]       
+        for name in counter_names:                                                                               
+            if name not in self.jobprocstats_data.keys():
+                self.jobprocstats_data[name]=0
 
     def get_stats(self, job_filename):
 
           # Get the list of pids
           cpuset_rootpath = self.options.cpuset_rootpath[0]
-          pids=list(open(cpuset_rootpath+job_filename))
-   
-          # Sum the metrics
-          jobprocstats_data={}
-          for pid in pids:
-              with open("/proc/"+pid+"/io") as iostats
-              for line in iostats:
-                  (key,val) = line.split(": ")
-                  if key in jobprocstats_data.keys():
-                      jobprocstats_data[key]+=int(val)
-                  else
-                      jobprocstats_data[key]=int(val)
+          f=cpuset_rootpath + "/" + job_filename + "/tasks"
+          if os.path.isfile(f):
+              pids=list(open(f))
+ 
+             # Sum the metrics
+              for pid in pids:
+                  pid=pid.strip('\n')
+                  f="/proc/"+pid+"/io"
+                  if os.path.isfile(f):
+                      with open(f) as iostats:
+                          for line in iostats:
+                              (key,val) = line.split(": ")
+                              if key in self.jobprocstats_data.keys():
+                                  self.jobprocstats_data[key]+=int(val)
+                              else:
+                                  self.jobprocstats_data[key]=int(val)
+                  else:
+                      LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
+          else:
+              LOG.warning("jobprocstats: file %s does not exists!",f)
 
-        return JobprocstatsCounters(jobprocstats_buffer=jobprocstats_data)
+          return JobprocstatsCounters(jobprocstats_buffer=self.jobprocstats_data)

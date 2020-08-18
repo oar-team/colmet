@@ -54,7 +54,7 @@ class TaskInfo(Info):
         Info.update_stats(self, timestamp, job_id, hostname)
 
 
-class PerfhwInfo(Info):
+class OtherTaskInfo(Info):
     '''
     Represent Information corresponding to a task
     '''
@@ -271,9 +271,10 @@ class Job(object):
         # TODO rm
         self.void_cpuset = True
 
-        if input_backend.__backend_name__ == "perfhwstats":
+        if input_backend.__backend_name__ == "perfhwstats"\
+           or input_backend.__backend_name__ == "jobprocstats":
             self.job_children.append(
-                PerfhwInfo(job_id, input_backend)
+                OtherTaskInfo(job_id, input_backend)
             )
         else:
             self.job_children.extend(
