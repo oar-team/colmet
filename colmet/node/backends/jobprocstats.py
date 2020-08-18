@@ -94,14 +94,14 @@ class jobprocStats(object):
         self.options = option
         self.isInit = False
         self.jobprocvalues = None
-        # init counters for iostats
-        self.jobprocstats_data={}
-        counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes"]       
-        for name in counter_names:                                                                               
-            if name not in self.jobprocstats_data.keys():
-                self.jobprocstats_data[name]=0
-
+        
     def get_stats(self, job_filename):
+
+          jobprocstats_data={}
+          counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes"]       
+          for name in counter_names:                                                                               
+              if name not in jobprocstats_data.keys():
+                  jobprocstats_data[name]=0
 
           # Get the list of pids
           cpuset_rootpath = self.options.cpuset_rootpath[0]
@@ -117,13 +117,13 @@ class jobprocStats(object):
                       with open(f) as iostats:
                           for line in iostats:
                               (key,val) = line.split(": ")
-                              if key in self.jobprocstats_data.keys():
-                                  self.jobprocstats_data[key]+=int(val)
+                              if key in jobprocstats_data.keys():
+                                  jobprocstats_data[key]+=int(val)
                               else:
-                                  self.jobprocstats_data[key]=int(val)
+                                  jobprocstats_data[key]=int(val)
                   else:
                       LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
           else:
               LOG.warning("jobprocstats: file %s does not exists!",f)
 
-          return JobprocstatsCounters(jobprocstats_buffer=self.jobprocstats_data)
+          return JobprocstatsCounters(jobprocstats_buffer=jobprocstats_data)
