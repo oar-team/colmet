@@ -175,7 +175,7 @@ def main():
                         default=False, dest="enable_perfhw",
                         help='Enables monitoring of jobs from the performance API')
 
-   parser.add_argument('--enable-jobproc', action="store_true",
+    parser.add_argument('--enable-jobproc', action="store_true",
                         default=False, dest="enable_jobproc",
                         help='Enables monitoring of jobs using /proc filesystem aggregations (currently only /proc/<id>/io)')
 
