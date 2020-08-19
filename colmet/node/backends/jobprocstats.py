@@ -37,7 +37,8 @@ class JobprocstatsBackend(InputBaseBackend):
         pass
 
     def get_jobproc_stats(self, job_id):
-        return self.jobprocstats.get_stats(self.filenames[str(job_id)])
+        if str(job_id) in self.filenames:
+            return self.jobprocstats.get_stats(self.filenames[str(job_id)])
 
     def pull(self):
         values=list(self.jobs.values())
