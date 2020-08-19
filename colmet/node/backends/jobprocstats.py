@@ -115,7 +115,12 @@ class jobprocStats(object):
                   f="/proc/"+pid+"/io"
                   if os.path.isfile(f):
                       with open(f) as iostats:
-                          for line in iostats:
+                          try:
+                              contents = iostats.read()
+                          except:
+                              LOG.warning("jobprocstats: error reading file %s", f)
+                              contents=""
+                          for line in contents.splitlines():
                               (key,val) = line.split(": ")
                               if key in jobprocstats_data.keys():
                                   jobprocstats_data[key]+=int(val)
