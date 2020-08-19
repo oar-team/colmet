@@ -113,13 +113,16 @@ class jobprocStats(object):
               for pid in pids:
                   pid=pid.strip('\n')
                   f="/proc/"+pid+"/io"
+                  contents=""
                   if os.path.isfile(f):
-                      with open(f) as iostats:
                           try:
+                              iostats=open(f)
                               contents = iostats.read()
                           except:
                               LOG.warning("jobprocstats: error reading file %s", f)
-                              contents=""
+                          else:
+                              iostats.close()
+
                           for line in contents.splitlines():
                               (key,val) = line.split(": ")
                               if key in jobprocstats_data.keys():
