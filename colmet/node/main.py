@@ -17,6 +17,7 @@ from colmet.node.backends.procstats import ProcstatsBackend
 from colmet.node.backends.jobprocstats import JobprocstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.node.backends.perfhwstats import PerfhwstatsBackend
+from colmet.node.backends.ipmipowerstats import IpmipowerstatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
@@ -51,6 +52,8 @@ class Task(object):
         if self.options.enable_jobproc:
             self.jobprocstats_back = JobprocstatsBackend(self.options)
             self.input_backends.append(self.jobprocstats_back)
+        if self.options.enable_ipmipowerstats:
+            self.input_backends.append(IpmipowerstatsBackend(self.options))
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -199,6 +202,13 @@ def main():
                         default=False, dest="omnipath",
                         help="Use this option if the network is Omnipath rather than Infiniband. This affects the values collected with perfquery, multiplying by 8 instead of 4.")
 
+    parser.add_argument("--enable-ipmipower", action="store_true",
+                        default=False, dest="enable_ipmipowerstats",
+                        help="Enable per node average power consumption during sample period (only tested with Dell servers)")
+ 
+    parser.add_argument('--ipmipower-cmd', nargs='+',
+                        default=["/usr/sbin/ipmi-oem","dell", "power-monitoring-over-interval","5","systempower"], dest="ipmipower_cmd",
+                        help='Command to get average power consumption')
 
     group = parser.add_argument_group('Taskstat')
 
