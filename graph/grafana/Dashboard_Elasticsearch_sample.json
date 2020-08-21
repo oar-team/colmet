@@ -17,6 +17,14 @@
       "pluginName": "Elasticsearch"
     },
     {
+      "name": "DS_COLMET:_DAHU JOBPROC",
+      "label": "Colmet: Dahu jobproc",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    },
+    {
       "name": "DS_COLMET:_DAHU PERFEVENTS",
       "label": "Colmet: Dahu perfevents",
       "description": "",
@@ -88,12 +96,12 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1597402301084,
+  "iteration": 1597761561426,
   "links": [],
   "panels": [
     {
       "datasource": "${DS_COLMET:_DAHU RAPL }",
-      "description": "Sum of all RAPL energy counters during the time period for concerned jobs/nodes",
+      "description": "Sum of all RAPL energy counters during the time period for concerned jobs/nodes.\n\nWARNING: metric for the entire nodes. If your job is not exclusive on a node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -264,7 +272,7 @@
     },
     {
       "datasource": "${DS_COLMET:_DAHU RAPL }",
-      "description": "Total energy converted into kWh",
+      "description": "Total energy converted into kWh\n\nWARNING: metric for the entire nodes. If your job is not exclusive on a node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -531,7 +539,7 @@
                   "inline": "_value/1000000"
                 }
               },
-              "type": "avg"
+              "type": "sum"
             },
             {
               "$$hashKey": "object:740",
@@ -682,7 +690,7 @@
                   "inline": "_value/1000"
                 }
               },
-              "type": "max"
+              "type": "sum"
             },
             {
               "$$hashKey": "object:740",
@@ -749,7 +757,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
+      "datasource": "${DS_COLMET:_DAHU JOBPROC}",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -829,7 +837,7 @@
               "meta": {},
               "pipelineAgg": "select metric",
               "settings": {},
-              "type": "max"
+              "type": "sum"
             },
             {
               "$$hashKey": "object:740",
@@ -852,7 +860,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Read bytes/s (taskstats)",
+      "title": "Read bytes/s (jobproc)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -869,7 +877,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:102",
-          "format": "decbytes",
+          "format": "Bps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -896,7 +904,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
+      "datasource": "${DS_COLMET:_DAHU JOBPROC}",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -976,7 +984,7 @@
               "meta": {},
               "pipelineAgg": "select metric",
               "settings": {},
-              "type": "max"
+              "type": "sum"
             },
             {
               "$$hashKey": "object:740",
@@ -999,7 +1007,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Write bytes/s (taskstats)",
+      "title": "Write bytes/s (jobproc)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1016,7 +1024,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:102",
-          "format": "decbytes",
+          "format": "Bps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1124,7 +1132,7 @@
                   "inline": "if (_value>0){_value}else{0}"
                 }
               },
-              "type": "max"
+              "type": "sum"
             }
           ],
           "query": "job_id:$Job_ID && hostname:$Node",
@@ -1271,7 +1279,7 @@
                   "inline": "if (_value>0){_value}else{0}"
                 }
               },
-              "type": "max"
+              "type": "sum"
             }
           ],
           "query": "job_id:$Job_ID && hostname:$Node",
@@ -1408,7 +1416,7 @@
                   "inline": "if (_value>0){_value}else{0}"
                 }
               },
-              "type": "max"
+              "type": "sum"
             }
           ],
           "query": "job_id:$Job_ID && hostname:$Node",
@@ -1545,7 +1553,7 @@
                   "inline": "if (_value>0){_value}else{0}"
                 }
               },
-              "type": "max"
+              "type": "sum"
             }
           ],
           "query": "job_id:$Job_ID && hostname:$Node",
@@ -1602,6 +1610,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_COLMET_DAHU INFINIBAND}",
+      "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1774,6 +1783,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_COLMET_DAHU INFINIBAND}",
+      "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -1918,6 +1928,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_COLMET:_DAHU RAPL }",
+      "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -2090,6 +2101,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_COLMET:_DAHU RAPL }",
+      "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -2257,7 +2269,7 @@
       }
     }
   ],
-  "refresh": "1h",
+  "refresh": "5m",
   "schemaVersion": 25,
   "style": "dark",
   "tags": [],
@@ -2329,5 +2341,5 @@
   "timezone": "",
   "title": "Dahu Colmet Jobs Stats",
   "uid": "RUyeEaIGz",
-  "version": 43
+  "version": 49
 }
