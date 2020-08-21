@@ -53,6 +53,11 @@ class InfinibandStats(object):
         return job_ids
 
     def get_stats(self):
+
+        if self.options.omnipath:
+            mult_const = 8
+        else:
+            mult_const = 4
         
         infinibandstats_data = {}
 
@@ -66,13 +71,13 @@ class InfinibandStats(object):
 
         m = re.search(r'PortXmitData:\.*(\d+)', perfquery)
         if m:
-            infinibandstats_data['portXmitData'] = 4 * int(m.group(1))
+            infinibandstats_data['portXmitData'] = mult_const * int(m.group(1))
         else:
             infinibandstats_data['portXmitData'] = -1
 
         m = re.search(r'PortRcvData:\.*(\d+)', perfquery)
         if m:
-            infinibandstats_data['portRcvData'] = 4 * int(m.group(1))
+            infinibandstats_data['portRcvData'] = mult_const * int(m.group(1))
         else:
             infinibandstats_data['portRcvData'] = -1
 
