@@ -107,8 +107,11 @@ class jobprocStats(object):
           # Get the list of pids
           cpuset_rootpath = self.options.cpuset_rootpath[0]
           f=cpuset_rootpath + "/" + job_filename + "/tasks"
-          if os.path.isfile(f):
+          try:
               pids=list(open(f))
+          except:
+              LOG.warning("jobprocstats: error reading file %s (disapeared?)", f)
+              pids=[]
  
              # Sum the metrics
               for pid in pids:
@@ -132,7 +135,5 @@ class jobprocStats(object):
                                   jobprocstats_data[key]=int(val)
                   else:
                       LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
-          else:
-              LOG.warning("jobprocstats: file %s does not exists!",f)
 
           return JobprocstatsCounters(jobprocstats_buffer=jobprocstats_data)
