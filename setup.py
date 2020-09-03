@@ -56,6 +56,7 @@ setup(
     url="http://oar.imag.fr/",
     packages=find_packages(),
     long_description=read('README.md') + '\n\n' + read('CHANGES'),
+    long_description_content_type="text/markdown",
     install_requires=requirements,
     platforms=['Linux'],
     license="GNU GPL",
