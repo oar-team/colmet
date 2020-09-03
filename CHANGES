@@ -1,6 +1,17 @@
 Colmet CHANGELOG
 ================
 
+Version 0.6.0
+-------------
+
+Released on September 3rd 2020
+
+- New input backends: lustre, infiniband, temperature, rapl, perfhw, impipower, jobproc
+- New ouptut backend: elasticsearch
+- Example Grafana dashboard for Elasticsearch backend
+- Added "involved_jobs" value for metrics that are global to a node (job 0)
+- Bugfix for "dictionnary changed size during iteration"
+
 Version 0.5.4
 -------------
 
