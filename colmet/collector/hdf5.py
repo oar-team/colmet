@@ -267,6 +267,7 @@ class HDF5RAPLStatsCounters(object):
         hostname = tables.StringCol(255)
         job_id = tables.Int64Col(dflt=-1)
         metric_backend = tables.StringCol(255)
+        involved_jobs = tables.StringCol(8192)
 
         counter_1 = tables.Int64Col(dflt=-1)
         counter_2 = tables.Int64Col(dflt=-1)
@@ -335,6 +336,7 @@ class HDF5InfinibandStatsCounters(object):
         hostname = tables.StringCol(255)
         job_id = tables.Int64Col(dflt=-1)
         metric_backend = tables.StringCol(255)
+        involved_jobs = tables.StringCol(8192)
         
         portXmitData = tables.Int64Col(dflt=-1)
         portRcvData = tables.Int64Col(dflt=-1)
@@ -467,6 +469,106 @@ class HDF5LustreStatsCounters(object):
                 if key not in cls.missing_keys:
                     cls.missing_keys.append(key)
                     LOG.warning(e)
+
+
+class JobprocstatsCounters(object):
+    Counters = get_counters_class("jobprocstats_default")
+
+    class HDF5TableDescription(tables.IsDescription):
+        timestamp = tables.Int64Col(dflt=-1)
+        hostname = tables.StringCol(255)
+        job_id = tables.Int64Col(dflt=-1)
+        metric_backend = tables.StringCol(255)
+
+        rchar = tables.Int64Col(dflt=-1)
+        wchar = tables.Int64Col(dflt=-1)
+        syscr = tables.Int64Col(dflt=-1)
+        syscw = tables.Int64Col(dflt=-1)
+        read_bytes = tables.Int64Col(dflt=-1)
+        write_bytes = tables.Int64Col(dflt=-1)
+        cancelled_write_bytes = tables.Int64Col(dflt=-1)
+
+    missing_keys = []
+
+    @classmethod
+    def get_table_description(cls):
+        return cls.HDF5TableDescription
+
+    @classmethod
+    def to_counters(cls, row):
+        counters = cls.Counters()
+        for key in list(cls.Counters._header_definitions):
+            counters._set_header(key, row[key])
+
+        for key in list(cls.Counters._counter_definitions):
+            counters._set_counter(key, row[key])
+        return counters
+
+    @classmethod
+    def to_row(cls, row, counters):
+        for key in list(cls.Counters._header_definitions):
+            try:
+                row[key] = counters._get_header(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+        for key in list(cls.Counters._counter_definitions):
+            try:
+                row[key] = counters._get_counter(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+
+
+class IpmipowerstatsCounters(object):
+    Counters = get_counters_class("ipmipowerstats_default")
+
+    class HDF5TableDescription(tables.IsDescription):
+
+        timestamp = tables.Int64Col(dflt=-1)
+        hostname = tables.StringCol(255)
+        job_id = tables.Int64Col(dflt=-1)
+        metric_backend = tables.StringCol(255)
+        involved_jobs = tables.StringCol(8192)
+
+        average_power_consumption = tables.Int64Col(dflt=-1)        
+
+    missing_keys = []
+
+    @classmethod
+    def get_table_description(cls):
+        return cls.HDF5TableDescription
+
+    @classmethod
+    def to_counters(cls, row):
+        counters = cls.Counters()
+        for key in list(cls.Counters._header_definitions):
+            counters._set_header(key, row[key])
+
+        for key in list(cls.Counters._counter_definitions):
+            counters._set_counter(key, row[key])
+        return counters
+
+    @classmethod
+    def to_row(cls, row, counters):
+        for key in list(cls.Counters._header_definitions):
+            try:
+                row[key] = counters._get_header(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+        for key in list(cls.Counters._counter_definitions):
+            try:
+                row[key] = counters._get_counter(key)
+            except Exception as e:
+                if key not in cls.missing_keys:
+                    cls.missing_keys.append(key)
+                    LOG.warning(e)
+
+
                     
 class HDF5OutputBackend(OutputBaseBackend):
     '''
@@ -547,7 +649,9 @@ class JobFile(object):
         'temperaturestats_default': HDF5TemperatureStatsCounters,
         'lustrestats_default': HDF5LustreStatsCounters,
         'RAPLstats_default': HDF5RAPLStatsCounters,
-        'perfhwstats_default': HDF5PerfhwCounters
+        'perfhwstats_default': HDF5PerfhwCounters,
+        'jobprocstats_default': JobprocstatsCounters,
+        'ipmipowerstats_default': IpmipowerstatsCounters
     }
     path_level = 4
 
