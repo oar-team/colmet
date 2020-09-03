@@ -23,7 +23,7 @@ It uses zeromq to transport the metrics across the network.
 
 It is currently bound to the [OAR](http://oar.imag.fr) RJMS.
 
-A Grafana sample dashboard is provided for the elasticsearch backend.
+A Grafana [sample dashboard](./graph/grafana) is provided for the elasticsearch backend. Here are some snapshots:
 
 ![](./screenshot1.png)
 
@@ -91,7 +91,18 @@ sudo colmet-node -vvv --zeromq-uri tcp://127.0.0.1:5556
 for the collector :
 
 ```
+# Simple local HDF5 file collect:
 colmet-collector -vvv --zeromq-bind-uri tcp://127.0.0.1:5556 --hdf5-filepath /data/colmet.hdf5 --hdf5-complevel 9
+```
+
+```
+# Collector with an Elasticsearch backend:
+  colmet-collector -vvv \
+    --zeromq-bind-uri tcp://192.168.0.1:5556 \
+    --buffer-size 5000 \
+    --sample-period 3 \
+    --elastic-host http://192.168.0.2:9200 \
+    --elastic-index-prefix colmet_dahu_ 2>>/var/log/colmet_err.log >> /var/log/colmet.log
 ```
 
 You will see the number of counters retrieved in the debug log.
@@ -132,9 +143,9 @@ RAPL is a feature on recent Intel processors that makes possible to know the pow
 
 Usage : start colmet-node with option `--enable-RAPL`
 
-A file named RAPL_mapping.[timestamp].csv is created in the working directory. It established the correspondence between `counter_1`, `counter_2`, etc from hdf5 files and the actual name of the metric as well as the package and zone (core / uncore / dram) of the processor the metric refers to.
+A file named RAPL_mapping.[timestamp].csv is created in the working directory. It established the correspondence between `counter_1`, `counter_2`, etc from collected data and the actual name of the metric as well as the package and zone (core / uncore / dram) of the processor the metric refers to.
 
-If a given counter is not supported by harware the metric name will be "`counter_not_supported_by_hardware`" and `0` values will appear in hdf5 table; `-1` values in hdf5 table means there is no counter mapped to the column.
+If a given counter is not supported by harware the metric name will be "`counter_not_supported_by_hardware`" and `0` values will appear in the collected data; `-1` values in the collected data means there is no counter mapped to the column.
 
 #### Perfhw
 
@@ -146,7 +157,7 @@ Optionnaly choose the metrics you want (max 5 metrics) using options `--perfhw-l
 
 Example : `--enable-perfhw --perfhw-list instructions cpu_cycles cache_misses`
 
-A file named perfhw_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between `counter_1`, `counter_2`, etc from hdf5 files and the actual name of the metric.
+A file named perfhw_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between `counter_1`, `counter_2`, etc from collected data and the actual name of the metric.
 
 Available metrics (refers to perf_event_open documentation for signification) :
 
@@ -183,9 +194,9 @@ bpf_output
 
 #### Temperature
 
-This backend gets temperatures from /sys/class/thermal/thermal_zone*/temp
+This backend gets temperatures from `/sys/class/thermal/thermal_zone*/temp`
 
 Usage : start colmet-node with option `--enable-temperature`
 
-A file named temperature_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between `counter_1`, `counter_2`, etc from hdf5 files and the actual name of the metric.
+A file named temperature_mapping.[timestamp].csv is created in the working directory. It establishes the correspondence between `counter_1`, `counter_2`, etc from collected data and the actual name of the metric.
 
