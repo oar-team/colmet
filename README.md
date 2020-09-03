@@ -10,8 +10,10 @@ grids. It provides currently several backends :
   - rapl: intel processors realtime consumption metrics
   - perfhw: perf_event counters
   - jobproc: get infos from /proc
-  - ipmi: get power metrics from ipmi
+  - ipmipower: get power metrics from ipmi
   - temperature: get temperatures from /sys/class/thermal
+  - infiniband: get infiniband/omnipath network metrics
+  - lustre: get lustre FS stats
 - Output backends:
   - elasticsearch: store the metrics on elasticsearch indexes
   - hdf5: store the metrics on the filesystem
@@ -33,11 +35,28 @@ A Grafana sample dashboard is provided for the elasticsearch backend.
 
 - a Linux kernel that supports
   - Taskstats
+  - intel_rapl (for RAPL backend)
+  - perf_event (for perfhw backend)
+  - ipmi_devintf (for ipmi backend)
 
 - Python Version 2.7 or newer
   - python-zmq 2.2.0 or newer
   - python-tables 3.3.0 or newer
   - python-pyinotify 0.9.3-2 or newer
+  - python-requests
+
+- For the Elasticsearch output backend (recommended for sites with > 50 nodes)
+  - An Elasticsearch server
+  - A Grafana server (for visu)
+
+- For the RAPL input backend:
+  - libpowercap, powercap-utils (https://github.com/powercap/powercap)
+
+- For the infiniband backend:
+  - `perfquery` command line tool
+
+- for the ipmipower backend:
+  - `ipmi-oem` command line tool or other configurable command
 
 ### Installation
 
@@ -81,6 +100,31 @@ You will see the number of counters retrieved in the debug log.
 For more information, please refer to the help of theses scripts (`--help`)
 
 ### Notes about backends
+
+Some input backends may need external libraries that need to be previously compiled and installed:
+
+```
+# For the perfhw backend:
+cd colmet/node/backends/lib_perf_hw/ && make && cp lib_perf_hw.so /usr/local/lib/
+# For the rapl backend:
+cd colmet/node/backends/lib_rapl/ && make && cp lib_rapl.so /usr/local/lib/
+```
+
+Here's acomplete colmet-node start-up process, with perfw, rapl and more backends:
+
+```
+export LIB_PERFHW_PATH=/usr/local/lib/lib_perf_hw.so
+export LIB_RAPL_PATH=/applis/site/colmet/lib_rapl.so
+
+colmet-node -vvv --zeromq-uri tcp://192.168.0.1:5556 \
+   --cpuset_rootpath /dev/cpuset/oar \
+   --enable-infiniband --omnipath \
+   --enable-lustre \
+   --enable-perfhw --perfhw-list instructions cache_misses page_faults cpu_cycles cache_references \
+   --enable-RAPL \
+   --enable-jobproc \
+   --enable-ipmipower >> /var/log/colmet.log 2>&1
+```
 
 #### RAPL - Running Average Power Limit (Intel)
 
