@@ -17,6 +17,14 @@
       "pluginName": "Elasticsearch"
     },
     {
+      "name": "DS_COLMET:_DAHU IPMI POWER",
+      "label": "Colmet: dahu ipmi power",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    },
+    {
       "name": "DS_COLMET:_DAHU JOBPROC",
       "label": "Colmet: Dahu jobproc",
       "description": "",
@@ -96,7 +104,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1597761561426,
+  "iteration": 1599115835389,
   "links": [],
   "panels": [
     {
@@ -124,8 +132,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 12,
+        "h": 6,
+        "w": 8,
         "x": 0,
         "y": 0
       },
@@ -186,91 +194,6 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Unique Count"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "# of jobs"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 17,
-      "options": {
-        "showHeader": true
-      },
-      "pluginVersion": "7.0.3",
-      "targets": [
-        {
-          "alias": "",
-          "bucketAggs": [
-            {
-              "$$hashKey": "object:6030",
-              "field": "hostname.keyword",
-              "id": "2",
-              "settings": {
-                "min_doc_count": 1,
-                "order": "desc",
-                "orderBy": "3",
-                "size": "0"
-              },
-              "type": "terms"
-            }
-          ],
-          "metrics": [
-            {
-              "$$hashKey": "object:6050",
-              "field": "job_id",
-              "id": "3",
-              "meta": {},
-              "settings": {},
-              "type": "cardinality"
-            }
-          ],
-          "query": "job_id:$Job_ID && hostname:$Node",
-          "refId": "A",
-          "timeField": "timestamp"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "# jobs per node in the time period",
-      "type": "table"
-    },
-    {
       "datasource": "${DS_COLMET:_DAHU RAPL }",
       "description": "Total energy converted into kWh\n\nWARNING: metric for the entire nodes. If your job is not exclusive on a node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
@@ -295,10 +218,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 0,
-        "y": 4
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 0
       },
       "id": 22,
       "interval": "5s",
@@ -360,6 +283,321 @@
       "fieldConfig": {
         "defaults": {
           "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unique Count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "# of jobs"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 17,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:6030",
+              "field": "hostname.keyword",
+              "id": "2",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "3",
+                "size": "0"
+              },
+              "type": "terms"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:6050",
+              "field": "job_id",
+              "id": "3",
+              "meta": {},
+              "settings": {},
+              "type": "cardinality"
+            }
+          ],
+          "query": "job_id:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "# jobs per node in the time period",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "hostname.keyword": "Hostname"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_COLMET:_DAHU IPMI POWER}",
+      "description": "5s average power consumption collected by IPMI\n\nWARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 6
+      },
+      "hiddenSeries": false,
+      "id": 24,
+      "interval": "5s",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:2744",
+              "fake": true,
+              "field": "hostname.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "10"
+              },
+              "type": "terms"
+            },
+            {
+              "$$hashKey": "object:2636",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:2634",
+              "field": "average_power_consumption",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "sum"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "System Power consumption (ipmi)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:2698",
+          "format": "watt",
+          "label": "5s average power",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:2699",
+          "format": "watt",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "${DS_COLMET:_DAHU IPMI POWER}",
+      "description": "Sum of average power consumed by the nodes, integrated on the sample period (5s)\n\nWARNING: metric for the entire nodes. If your job is not exclusive on a node, measure is impacted by the other jobs on the same node.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 6
+      },
+      "id": 25,
+      "interval": "5s",
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:9683",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "5s",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:9681",
+              "field": "average_power_consumption",
+              "id": "1",
+              "inlineScript": "_value*5/3600",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "_value*5/3600"
+                }
+              },
+              "type": "sum"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Total energy (ipmi)",
+      "type": "gauge"
+    },
+    {
+      "datasource": "${DS_COLMET:_DAHU TASKSTATS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
             "align": "left",
             "displayMode": "auto"
           },
@@ -403,10 +641,10 @@
         ]
       },
       "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 4
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 6
       },
       "id": 16,
       "options": {
@@ -448,6 +686,18 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "# nodes per job in the time period",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "job_id": "Job ID"
+            }
+          }
+        }
+      ],
       "type": "table"
     },
     {
@@ -466,10 +716,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
+        "h": 7,
+        "w": 8,
         "x": 0,
-        "y": 8
+        "y": 12
       },
       "hiddenSeries": false,
       "id": 2,
@@ -617,10 +867,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 8
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 12
       },
       "hiddenSeries": false,
       "id": 5,
@@ -768,10 +1018,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 14
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 12
       },
       "hiddenSeries": false,
       "id": 3,
@@ -904,153 +1154,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_COLMET:_DAHU JOBPROC}",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 14
-      },
-      "hiddenSeries": false,
-      "id": 4,
-      "interval": "5s",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "bucketAggs": [
-            {
-              "$$hashKey": "object:229",
-              "fake": true,
-              "field": "hostname.keyword",
-              "id": "3",
-              "settings": {
-                "min_doc_count": 1,
-                "order": "desc",
-                "orderBy": "1",
-                "size": "0"
-              },
-              "type": "terms"
-            },
-            {
-              "$$hashKey": "object:59",
-              "field": "timestamp",
-              "id": "2",
-              "settings": {
-                "interval": "auto",
-                "min_doc_count": 0,
-                "trimEdges": 0
-              },
-              "type": "date_histogram"
-            }
-          ],
-          "metrics": [
-            {
-              "$$hashKey": "object:57",
-              "field": "write_bytes",
-              "hide": true,
-              "id": "1",
-              "inlineScript": null,
-              "meta": {},
-              "pipelineAgg": "select metric",
-              "settings": {},
-              "type": "sum"
-            },
-            {
-              "$$hashKey": "object:740",
-              "field": "1",
-              "id": "4",
-              "meta": {},
-              "pipelineAgg": "1",
-              "settings": {
-                "unit": "1s"
-              },
-              "type": "derivative"
-            }
-          ],
-          "query": "job_id:$Job_ID && hostname:$Node",
-          "refId": "A",
-          "timeField": "timestamp"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Write bytes/s (jobproc)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:102",
-          "format": "Bps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:103",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": "${DS_COLMET:_DAHU PERFEVENTS}",
       "fieldConfig": {
         "defaults": {
@@ -1061,10 +1164,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
+        "h": 7,
+        "w": 8,
         "x": 0,
-        "y": 20
+        "y": 19
       },
       "hiddenSeries": false,
       "id": 10,
@@ -1208,10 +1311,294 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 20
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 19
+      },
+      "hiddenSeries": false,
+      "id": 13,
+      "interval": "5s",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:3191",
+              "fake": true,
+              "field": "hostname.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "$$hashKey": "object:3105",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:3103",
+              "field": "counter_2",
+              "id": "1",
+              "inlineScript": "if (_value>0){_value}else{0}",
+              "meta": {},
+              "settings": {
+                "script": {
+                  "inline": "if (_value>0){_value}else{0}"
+                }
+              },
+              "type": "sum"
+            }
+          ],
+          "query": "job_id:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Cache misses (perfevents)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:3155",
+          "format": "short",
+          "label": "# / 5s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:3156",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_COLMET:_DAHU JOBPROC}",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "interval": "5s",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:229",
+              "fake": true,
+              "field": "hostname.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "1",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "$$hashKey": "object:59",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:57",
+              "field": "write_bytes",
+              "hide": true,
+              "id": "1",
+              "inlineScript": null,
+              "meta": {},
+              "pipelineAgg": "select metric",
+              "settings": {},
+              "type": "sum"
+            },
+            {
+              "$$hashKey": "object:740",
+              "field": "1",
+              "id": "4",
+              "meta": {},
+              "pipelineAgg": "1",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            }
+          ],
+          "query": "job_id:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Write bytes/s (jobproc)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:102",
+          "format": "Bps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:103",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_COLMET:_DAHU PERFEVENTS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 26
       },
       "hiddenSeries": false,
       "id": 12,
@@ -1345,146 +1732,9 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 26
-      },
-      "hiddenSeries": false,
-      "id": 13,
-      "interval": "5s",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "bucketAggs": [
-            {
-              "$$hashKey": "object:3191",
-              "fake": true,
-              "field": "hostname.keyword",
-              "id": "3",
-              "settings": {
-                "min_doc_count": 1,
-                "order": "desc",
-                "orderBy": "_term",
-                "size": "0"
-              },
-              "type": "terms"
-            },
-            {
-              "$$hashKey": "object:3105",
-              "field": "timestamp",
-              "id": "2",
-              "settings": {
-                "interval": "auto",
-                "min_doc_count": 0,
-                "trimEdges": 0
-              },
-              "type": "date_histogram"
-            }
-          ],
-          "metrics": [
-            {
-              "$$hashKey": "object:3103",
-              "field": "counter_2",
-              "id": "1",
-              "inlineScript": "if (_value>0){_value}else{0}",
-              "meta": {},
-              "settings": {
-                "script": {
-                  "inline": "if (_value>0){_value}else{0}"
-                }
-              },
-              "type": "sum"
-            }
-          ],
-          "query": "job_id:$Job_ID && hostname:$Node",
-          "refId": "A",
-          "timeField": "timestamp"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Cache misses (perfevents)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:3155",
-          "format": "short",
-          "label": "# / 5s",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:3156",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_COLMET:_DAHU PERFEVENTS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
+        "h": 7,
+        "w": 8,
+        "x": 8,
         "y": 26
       },
       "hiddenSeries": false,
@@ -1636,10 +1886,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 32
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 26
       },
       "hiddenSeries": false,
       "id": 7,
@@ -1782,151 +2032,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_COLMET_DAHU INFINIBAND}",
-      "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 32
-      },
-      "hiddenSeries": false,
-      "id": 8,
-      "interval": "5s",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "bucketAggs": [
-            {
-              "$$hashKey": "object:140",
-              "fake": true,
-              "field": "hostname.keyword",
-              "id": "3",
-              "settings": {
-                "min_doc_count": 1,
-                "order": "desc",
-                "orderBy": "_term",
-                "size": "0"
-              },
-              "type": "terms"
-            },
-            {
-              "$$hashKey": "object:54",
-              "field": "timestamp",
-              "id": "2",
-              "settings": {
-                "interval": "auto",
-                "min_doc_count": 0,
-                "trimEdges": 0
-              },
-              "type": "date_histogram"
-            }
-          ],
-          "metrics": [
-            {
-              "$$hashKey": "object:52",
-              "field": "portXmitData",
-              "hide": true,
-              "id": "1",
-              "meta": {},
-              "settings": {},
-              "type": "avg"
-            },
-            {
-              "$$hashKey": "object:908",
-              "field": "1",
-              "id": "4",
-              "meta": {},
-              "pipelineAgg": "1",
-              "settings": {
-                "unit": "1s"
-              },
-              "type": "derivative"
-            }
-          ],
-          "query": "involved_jobs:$Job_ID && hostname:$Node",
-          "refId": "A",
-          "timeField": "timestamp"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Omnipath output (infiniband)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:104",
-          "format": "bps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:105",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": "${DS_COLMET:_DAHU RAPL }",
       "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
       "fieldConfig": {
@@ -1955,9 +2060,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 12,
+        "w": 8,
         "x": 0,
-        "y": 38
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 18,
@@ -2128,9 +2233,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 38
+        "w": 8,
+        "x": 8,
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 19,
@@ -2267,9 +2372,154 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_COLMET_DAHU INFINIBAND}",
+      "description": "WARNING: metric for the entire node. If your job is not exclusive on the node, measure is impacted by the other jobs on the same node.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 33
+      },
+      "hiddenSeries": false,
+      "id": 8,
+      "interval": "5s",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "$$hashKey": "object:140",
+              "fake": true,
+              "field": "hostname.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": 1,
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "$$hashKey": "object:54",
+              "field": "timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "$$hashKey": "object:52",
+              "field": "portXmitData",
+              "hide": true,
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "avg"
+            },
+            {
+              "$$hashKey": "object:908",
+              "field": "1",
+              "id": "4",
+              "meta": {},
+              "pipelineAgg": "1",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            }
+          ],
+          "query": "involved_jobs:$Job_ID && hostname:$Node",
+          "refId": "A",
+          "timeField": "timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Omnipath output (infiniband)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:104",
+          "format": "bps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:105",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
-  "refresh": "5m",
+  "refresh": "1h",
   "schemaVersion": 25,
   "style": "dark",
   "tags": [],
@@ -2341,5 +2591,5 @@
   "timezone": "",
   "title": "Dahu Colmet Jobs Stats",
   "uid": "RUyeEaIGz",
-  "version": 49
+  "version": 56
 }
