@@ -56,7 +56,7 @@ A Grafana [sample dashboard](./graph/grafana) is provided for the elasticsearch 
   - `perfquery` command line tool
 
 - for the ipmipower backend:
-  - `ipmi-oem` command line tool or other configurable command
+  - `ipmi-oem` command line tool (freeipmi) or other configurable command
 
 ### Installation
 
