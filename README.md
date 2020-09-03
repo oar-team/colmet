@@ -19,6 +19,8 @@ grids. It provides currently several backends :
 
 It uses zeromq to transport the metrics across the network.
 
+It is currently bound to the [OAR](http://oar.imag.fr) RJMS.
+
 A Grafana sample dashboard is provided for the elasticsearch backend.
 
 ![](./screenshot1.png)
@@ -67,9 +69,6 @@ You will see the number of counters retrieved in the debug log.
 
 
 For more information, please refer to the help of theses scripts (--help)
-
-
-This branch adds RAPL, hardware performance (based on perf_event_open interface) and temperature counters to Colmet.
 
 ### Notes about backends
 
