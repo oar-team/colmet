@@ -39,7 +39,8 @@ def install_c_libs():
 class CustomInstall(install):
     def run(self):
         install.run(self)
-        install_c_libs()
+        # Should be installed manually as the libs should match the target system
+        #install_c_libs()
 
 
 setup(
