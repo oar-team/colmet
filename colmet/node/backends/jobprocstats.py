@@ -113,27 +113,27 @@ class jobprocStats(object):
               LOG.warning("jobprocstats: error reading file %s (disapeared?)", f)
               pids=[]
  
-             # Sum the metrics
-              for pid in pids:
-                  pid=pid.strip('\n')
-                  f="/proc/"+pid+"/io"
-                  contents=""
-                  if os.path.isfile(f):
-                          try:
-                              iostats=open(f)
-                              contents = iostats.read()
-                          except:
-                              LOG.warning("jobprocstats: error reading file %s", f)
-                          else:
-                              iostats.close()
+          # Sum the metrics
+          for pid in pids:
+              pid=pid.strip('\n')
+              f="/proc/"+pid+"/io"
+              contents=""
+              if os.path.isfile(f):
+                      try:
+                          iostats=open(f)
+                          contents = iostats.read()
+                      except:
+                          LOG.warning("jobprocstats: error reading file %s", f)
+                      else:
+                          iostats.close()
 
-                          for line in contents.splitlines():
-                              (key,val) = line.split(": ")
-                              if key in jobprocstats_data.keys():
-                                  jobprocstats_data[key]+=int(val)
-                              else:
-                                  jobprocstats_data[key]=int(val)
-                  else:
-                      LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
+                      for line in contents.splitlines():
+                          (key,val) = line.split(": ")
+                          if key in jobprocstats_data.keys():
+                              jobprocstats_data[key]+=int(val)
+                          else:
+                              jobprocstats_data[key]=int(val)
+              else:
+                  LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
 
           return JobprocstatsCounters(jobprocstats_buffer=jobprocstats_data)
