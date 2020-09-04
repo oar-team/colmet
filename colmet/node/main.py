@@ -174,6 +174,10 @@ def main():
                              'Measures are associated to the fictive job '
                              'with 0 as identifier (job_id)')
 
+    parser.add_argument('--lustre-prefix',
+                        default="lustre", dest="lustre_prefix",
+                        help='Name of the Lustre filesystem')
+
     parser.add_argument('--enable-perfhw', action="store_true",
                         default=False, dest="enable_perfhw",
                         help='Enables monitoring of jobs from the performance API')
