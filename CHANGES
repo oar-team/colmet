@@ -1,6 +1,20 @@
 Colmet CHANGELOG
 ================
 
+Version 0.6.3
+-------------
+
+Released on September 4th 2020
+
+- Bugfixes into lustrestats and jobprocstats backend
+
+Version 0.6.2
+-------------
+
+Released on September 3rd 2020
+
+- Python package fix
+
 Version 0.6.1
 -------------
 
