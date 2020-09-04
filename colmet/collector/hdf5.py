@@ -431,6 +431,7 @@ class HDF5LustreStatsCounters(object):
         hostname = tables.StringCol(255)
         job_id = tables.Int64Col(dflt=-1)
         metric_backend = tables.StringCol(255)
+        involved_jobs = tables.StringCol(8192)
         
         lustre_nb_read = tables.Int64Col(dflt=-1)
         lustre_bytes_read = tables.Int64Col(dflt=-1)

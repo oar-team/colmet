@@ -1,5 +1,6 @@
 import os
 import re
+import json
 
 import glob
 
@@ -53,6 +54,18 @@ class LustreStats(object):
     def __init__(self, option):
         self.options = option
 
+    def get_running_jobs(self):                    
+        job_ids=[]                                 
+        if os.path.exists("/dev/cpuset/oar"):      
+            cwd = os.getcwd()                      
+            os.chdir("/dev/cpuset/oar")            
+            for file in glob.glob("*_*"):          
+                m = re.search('.*_(\d+)',file)     
+                if m is not None:                  
+                    job_ids.append(int(m.group(1)))
+            os.chdir(cwd)                          
+        return job_ids                             
+
     def get_stats(self):
 
         lustre_nb_read = 0
@@ -75,5 +88,8 @@ class LustreStats(object):
         lustrestats_data = {'lustre_nb_read': lustre_nb_read, 'lustre_bytes_read': lustre_bytes_read,
                             'lustre_nb_write': lustre_nb_write, 'lustre_bytes_write': lustre_bytes_write
         }
-                        
+         
+        jobs=json.dumps(self.get_running_jobs())
+        lustrestats_data['involved_jobs'] = jobs
+               
         return LustrestatsCounters(lustrestats_buffer=lustrestats_data)

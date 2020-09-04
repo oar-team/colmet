@@ -2,7 +2,7 @@ import logging
 
 LOG = logging.getLogger()
 
-from .base import UInt64, BaseCounters
+from .base import UInt64, BaseCounters, String
 
 
 class LustrestatsCounters(BaseCounters):
@@ -14,13 +14,15 @@ class LustrestatsCounters(BaseCounters):
         'lustre_bytes_read': (UInt64(), 'bytes', 'none', 'lustre_bytes_read'),
         'lustre_nb_write': (UInt64(), 'count', 'none', 'lustre_nb_write'),
         'lustre_bytes_write': (UInt64(), 'bytes', 'none', 'lustre_bytes_write'),
+        'involved_jobs': (String(8192), 'string', 'none', 'involved_jobs')
         }
         
     counters_lustrestats_to_get = [
         'lustre_nb_read',
         'lustre_bytes_read',
         'lustre_nb_write',
-        'lustre_bytes_write'
+        'lustre_bytes_write',
+        'involved_jobs'
     ]
 
     _counters = []
