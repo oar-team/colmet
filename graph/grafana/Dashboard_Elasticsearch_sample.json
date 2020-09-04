@@ -104,7 +104,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1599115835389,
+  "iteration": 1599195622324,
   "links": [],
   "panels": [
     {
@@ -781,12 +781,12 @@
               "field": "cpu_run_real_total",
               "hide": true,
               "id": "1",
-              "inlineScript": "_value/1000000",
+              "inlineScript": "Math.round($__interval_ms) >= 5000 ? _value*5000/$__interval_ms/1000000  :  _value/1000000",
               "meta": {},
               "pipelineAgg": "select metric",
               "settings": {
                 "script": {
-                  "inline": "_value/1000000"
+                  "inline": "Math.round($__interval_ms) >= 5000 ? _value*5000/$__interval_ms/1000000  :  _value/1000000"
                 }
               },
               "type": "sum"
@@ -932,12 +932,12 @@
               "field": "coremem",
               "hide": true,
               "id": "1",
-              "inlineScript": "_value/1000",
+              "inlineScript": "Math.round($__interval_ms) >= 5000 ? _value*5000/$__interval_ms/1000  :  _value/1000",
               "meta": {},
               "pipelineAgg": "select metric",
               "settings": {
                 "script": {
-                  "inline": "_value/1000"
+                  "inline": "Math.round($__interval_ms) >= 5000 ? _value*5000/$__interval_ms/1000  :  _value/1000"
                 }
               },
               "type": "sum"
@@ -2572,7 +2572,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -2591,5 +2591,5 @@
   "timezone": "",
   "title": "Dahu Colmet Jobs Stats",
   "uid": "RUyeEaIGz",
-  "version": 56
+  "version": 57
 }
