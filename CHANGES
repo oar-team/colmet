@@ -1,6 +1,12 @@
 Colmet CHANGELOG
 ================
 
+Version 0.6.4
+-------------
+
+- Added http auth support for elasticsearch backend
+
+
 Version 0.6.3
 -------------
 

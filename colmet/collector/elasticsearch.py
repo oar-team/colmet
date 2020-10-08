@@ -12,6 +12,10 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
 
     def open(self):
         self.s = requests.Session()
+        if self.options.htauth is not None:
+            string = open(self.options.htauth, 'r').read()
+            htuser,htpassword=string.rstrip().split(":",1)
+            self.s.auth = (htuser,htpassword)           
         LOG.debug("Elasticsearch session opened")
 
     def close(self):

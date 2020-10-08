@@ -188,6 +188,10 @@ def main():
     group.add_argument("--elastic-index-prefix", dest='elastic_index_prefix', default="colmet_",
                        help="Prefix for indices into elastisearch, ex:'colmet_dahu_'")
 
+    group.add_argument("-P", "--http-credentials",                                                     
+                      dest="htauth", default=None,                                                    
+                      help="File containing http credentials for elasticsearch if necessary. Syntax: <user>:<passwd>")
+
     args = parser.parse_args()
 
     if args.hdf5_filepath is None and args.enable_stdout_backend is False and args.elastic_host is None:
