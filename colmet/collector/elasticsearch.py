@@ -11,6 +11,11 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
     __backend_name__ = "elasticsearch"
 
     def open(self):
+        if self.options.no_check_cert is True:
+            self.verify=False
+            requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+        else:
+            self.verify=True
         self.s = requests.Session()
         if self.options.htauth is not None:
             string = open(self.options.htauth, 'r').read()
@@ -65,7 +70,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/_bulk/".format(elastic_host=elastic_host)
         headers = {"Content-Type": "application/x-ndjson"}
-        r = self.s.post(url=url, headers=headers, data=bulk)
+        r = self.s.post(url=url, headers=headers, data=bulk, verify=self.verify)
         if r.status_code != 200:
             LOG.warning("Got http error from elastic: %s %s" , r.status_code , r.text)
         response=json.loads(r.text)
@@ -83,7 +88,7 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
     def create_index_if_necessary(self, index):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
-        r = self.s.head(url)
+        r = self.s.head(url,verify=self.verify)
         if r.status_code ==404:  # create new index
             mapping = {
                 "mappings": {
@@ -99,4 +104,4 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             headers = {"Content-Type": "application/json"}
             url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
             LOG.info("Elastic: created missing index %s" % index)
-            r = self.s.put(url=url, headers=headers, data=mapping)
+            r = self.s.put(url=url, headers=headers, data=mapping, verify=self.verify)

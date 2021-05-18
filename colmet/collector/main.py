@@ -191,6 +191,10 @@ def main():
     group.add_argument("-P", "--http-credentials",                                                     
                       dest="htauth", default=None,                                                    
                       help="File containing http credentials for elasticsearch if necessary. Syntax: <user>:<passwd>")
+    
+    group.add_argument("--no-check-certificates", action='store_true',
+                        help='Do not check SSL certificates',
+                        dest='no_check_cert', default=False)
 
     args = parser.parse_args()
 
