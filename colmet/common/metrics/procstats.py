@@ -2,8 +2,7 @@ import logging
 
 LOG = logging.getLogger()
 
-from .base import UInt64, UFloat, BaseCounters
-
+from .base import UInt64, UFloat, BaseCounters, String
 
 class ProcstatsCounters(BaseCounters):
     __metric_name__ = 'procstats_default'
@@ -96,7 +95,8 @@ class ProcstatsCounters(BaseCounters):
         'loadavg_15min': (UFloat(), 'n/a', 'none', 'loadavg_15min'),
         'loadavg_runnable': (UFloat(), 'n/a', 'none', 'loadavg_runnable'),
         'loadavg_total_threads': (UFloat(), 'n/a', 'none',
-                                  'loadavg_total_threads')
+                                  'loadavg_total_threads'),
+        'involved_jobs': (String(8192), 'string', 'none', 'involved_jobs')
     }
 
     counters_procstats_to_get = [
@@ -163,13 +163,14 @@ class ProcstatsCounters(BaseCounters):
         'loadavg_5min',
         'loadavg_15min',
         'loadavg_runnable',
-        'loadavg_total_threads'
+        'loadavg_total_threads',
         # 'sys_numa_zoneallocs',
         # 'sys_numa_zoneallocs',
         # 'sys_numa_foreign_allocs',
         # 'sys_numa_allocation',
         # 'sys_numa_allocation',
         # 'sys_numa_interleave',
+        'involved_jobs'
     ]
 
     _counters = []

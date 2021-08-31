@@ -1,5 +1,6 @@
 import os
 import re
+import json
 
 from colmet.common.backends.base import InputBaseBackend
 from colmet.common.job import Job
@@ -83,6 +84,18 @@ class ProcStats(object):
                 raise
         return numastats
 
+    def get_running_jobs(self):
+        job_ids=[]
+        if os.path.exists("/dev/cpuset/oar"):
+            cwd = os.getcwd()
+            os.chdir("/dev/cpuset/oar")
+            for file in glob.glob("*_*"):
+                m = re.search('.*_(\d+)',file)
+                if m is not None:
+                    job_ids.append(int(m.group(1)))
+            os.chdir(cwd)
+        return job_ids
+
     def get_stats(self):
         # proc.uptime
         procstats_data = {}
@@ -150,5 +163,8 @@ class ProcStats(object):
             procstats_data['loadavg_15min'] = float(m.group(3))
             procstats_data['loadavg_runnable'] = float(m.group(4))
             procstats_data['loadavg_total_threads'] = float(m.group(5))
+
+        jobs=json.dumps(self.get_running_jobs())
+        procstats_data['involved_jobs'] = jobs
 
         return ProcstatsCounters(procstats_buffer=procstats_data)
