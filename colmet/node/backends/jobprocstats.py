@@ -99,7 +99,7 @@ class jobprocStats(object):
     def get_stats(self, job_filename):
 
           jobprocstats_data={}
-          counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes"]       
+          counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes","VmRSS","RssShmem","VmSize"] 
           for name in counter_names:                                                                               
               if name not in jobprocstats_data.keys():
                   jobprocstats_data[name]=0
@@ -116,6 +116,7 @@ class jobprocStats(object):
           # Sum the metrics
           for pid in pids:
               pid=pid.strip('\n')
+              # Iostats
               f="/proc/"+pid+"/io"
               contents=""
               if os.path.isfile(f):
@@ -135,5 +136,32 @@ class jobprocStats(object):
                               jobprocstats_data[key]=int(val)
               else:
                   LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
+
+              # pid stats
+              f="/proc/"+pid+"/status"
+              contents=""
+              if os.path.isfile(f):
+                      try:
+                          status=open(f)
+                          contents = status.read()
+                      except:
+                          LOG.warning("jobprocstats: error reading file %s", f)
+                      else:
+                          status.close()
+
+                      for line in contents.splitlines():
+                          try:
+                              line=line.replace('kB','')
+                              line=line.replace('\t','')
+                              line=line.replace(' ','')
+                              (key,val) = re.split(":\t*",line)
+                          except:
+                              pass
+                          else:
+                              if key in jobprocstats_data.keys():
+                                  jobprocstats_data[key]+=int(val)
+              else:
+                  LOG.debug("jobprocstats: file %s does not exists (pid disapeared?)!",f) 
+
 
           return JobprocstatsCounters(jobprocstats_buffer=jobprocstats_data)

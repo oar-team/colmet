@@ -11,7 +11,7 @@ from .base import UInt8, UInt16, UInt32, UInt64, Int64, String, BaseCounters
 class JobprocstatsCounters(BaseCounters):
     __metric_name__ = 'jobprocstats_default'
 
-    counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes"]
+    counter_names=["rchar","wchar","syscr","syscw","read_bytes","write_bytes","cancelled_write_bytes","VmRSS","RssShmem","VmSize"]
 
     counters_jobprocstats = {}
     counters_jobprocstats_to_get = []
