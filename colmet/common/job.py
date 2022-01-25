@@ -272,7 +272,8 @@ class Job(object):
         self.void_cpuset = True
 
         if input_backend.__backend_name__ == "perfhwstats"\
-           or input_backend.__backend_name__ == "jobprocstats":
+           or input_backend.__backend_name__ == "jobprocstats"\
+           or input_backend.__backend_name__ == "nvidiastats":
             self.job_children.append(
                 OtherTaskInfo(job_id, input_backend)
             )

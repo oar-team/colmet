@@ -18,6 +18,7 @@ from colmet.node.backends.jobprocstats import JobprocstatsBackend
 from colmet.node.backends.taskstats import TaskstatsBackend
 from colmet.node.backends.perfhwstats import PerfhwstatsBackend
 from colmet.node.backends.ipmipowerstats import IpmipowerstatsBackend
+from colmet.node.backends.nvidiastats import NvidiastatsBackend
 from colmet.common.backends.zeromq import ZMQOutputBackend
 from colmet.common.utils import AsyncFileNotifier, as_thread
 from colmet.common.exceptions import Error, NoneValueError
@@ -54,6 +55,9 @@ class Task(object):
             self.input_backends.append(self.jobprocstats_back)
         if self.options.enable_ipmipowerstats:
             self.input_backends.append(IpmipowerstatsBackend(self.options))
+        if self.options.enable_nvidia:
+            self.nvidiastats_back = NvidiastatsBackend(self.options)
+            self.input_backends.append(self.nvidiastats_back)
 
         self.zeromq_output_backend = ZMQOutputBackend(self.options)
 
@@ -74,6 +78,8 @@ class Task(object):
             self.perfhwstats_back.update_job_list()
         if self.options.enable_jobproc:
             self.jobprocstats_back.update_job_list()
+        if self.options.enable_nvidia:
+            self.nvidiastats_back.update_job_list()
 
     def start(self):
         LOG.info("Starting %s" % self.name)
@@ -109,6 +115,7 @@ class Task(object):
 
                 if backend.get_backend_name() == 'taskstats'\
                 or backend.get_backend_name() == "jobprocstats"\
+                or backend.get_backend_name() == "nvidiastats"\
                 or backend.get_backend_name() == "perfhwstats":
                     if len(pulled_counters) > 0:
                         for counters in pulled_counters:
@@ -213,6 +220,10 @@ def main():
     parser.add_argument('--ipmipower-cmd', nargs='+',
                         default=["/usr/sbin/ipmi-oem","dell", "power-monitoring-over-interval","5","systempower"], dest="ipmipower_cmd",
                         help='Command to get average power consumption')
+
+    parser.add_argument('--enable-nvidia', action="store_true",
+                        default=False, dest="enable_nvidia",
+                        help='Enables monitoring of jobs running on NVIDIA GPUS')
 
     group = parser.add_argument_group('Taskstat')
 
