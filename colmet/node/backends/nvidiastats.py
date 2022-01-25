@@ -147,8 +147,8 @@ class nvidiaStats(object):
               if data["uuid"] in gpus:
                   for name in counter_names:
                       if name == "temperature":
-                          nvidiastats_data[name]=float(data[name])
+                          nvidiastats_data[name]=int(float(data[name]))
                       elif name != "uuid":
-                          nvidiastats_data[name]+=float(data[name])
+                          nvidiastats_data[name]+=int(float(data[name]))
 
           return NvidiastatsCounters(nvidiastats_buffer=nvidiastats_data)
