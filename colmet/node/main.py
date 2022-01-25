@@ -116,7 +116,7 @@ class Task(object):
                 else:
                     counters_list += pulled_counters
 
-                LOG.debug("%s metrics has been pulled with %s" %
+                LOG.debug("%s metrics have been pulled with %s" %
                           (len(pulled_counters), backend.get_backend_name()))
 
             LOG.debug("time to take measure: %s sec" % (time.time() - now))
@@ -124,7 +124,7 @@ class Task(object):
             if len(counters_list) > 0:
                 try:
                     self.zeromq_output_backend.push(counters_list)
-                    LOG.debug("%s metrics has been pushed with zeromq"
+                    LOG.debug("%s metrics have been pushed with zeromq"
                               % (len(counters_list)))
                 except (NoneValueError, TypeError):
                     LOG.debug("Values for metrics are not there.")

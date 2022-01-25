@@ -65,7 +65,7 @@ class Task(object):
             if len(self.counters_list) > 0:
                 try:
                     backend.push(self.counters_list)
-                    LOG.debug("%s metrics has been pushed with %s"
+                    LOG.debug("%s metrics have been pushed with %s"
                           % (len(self.counters_list),
                              backend.get_backend_name()))
                 except (NoneValueError, TypeError):
@@ -103,7 +103,7 @@ class Task(object):
             self.counters_list = \
                 self.input_backend.pull(self.options.buffer_size)
 
-            LOG.debug("%s metrics has been pulled from zeromq" %
+            LOG.debug("%s metrics have been pulled from zeromq" %
                       len(self.counters_list))
 
             LOG.debug("time to take measure: %s sec" % (time.time() - now))
