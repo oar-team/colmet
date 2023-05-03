@@ -28,7 +28,10 @@ class ZMQInputBackend(InputBaseBackend):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PULL)
         self.socket.setsockopt(zmq.LINGER, self.options.zeromq_linger)
-        self.socket.setsockopt(_rcv_hwm, self.options.zeromq_hwm)
+        try:
+          self.socket.setsockopt(_rcv_hwm, self.options.zeromq_hwm)
+        except(AttributeError, zmq.error.ZMQError):
+          self.socket.setsockopt(zmq.RCVHWM, self.options.zeromq_hwm)
         LOG.debug("Use the bind URI '%s'" % self.options.zeromq_bind_uri)
         self.socket.bind(self.options.zeromq_bind_uri)
 
