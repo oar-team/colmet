@@ -1,6 +1,10 @@
 Colmet CHANGELOG
 ================
 
+Version 0.6.9
+-------------
+- Fix for newer pyzmq versions
+
 Version 0.6.8
 -------------
 - Added nvidia GPU support
