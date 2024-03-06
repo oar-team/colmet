@@ -14,11 +14,11 @@ from colmet.common.metrics.base import BaseCounters
 from colmet.common.backends.base import InputBaseBackend, OutputBaseBackend
 
 try:
-    _snd_hwm = zmq.HWM
-    _rcv_hwm = zmq.HWM
-except AttributeError:
     _snd_hwm = zmq.SNDHWM
     _rcv_hwm = zmq.RCVHWM
+except AttributeError:
+    _snd_hwm = zmq.HWM
+    _rcv_hwm = zmq.HWM
 
 
 class ZMQInputBackend(InputBaseBackend):
