@@ -1,6 +1,10 @@
 Colmet CHANGELOG
 ================
 
+Version 0.6.10
+- Fixed missing exceptions handling into elasticsearch backend
+- ZMQ: Prefer SNDHWM and RCVHWM to HWM
+
 Version 0.6.9
 -------------
 - Fix for newer pyzmq versions
