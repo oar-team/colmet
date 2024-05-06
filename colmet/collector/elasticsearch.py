@@ -73,24 +73,28 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/_bulk/".format(elastic_host=elastic_host)
         headers = {"Content-Type": "application/x-ndjson"}
+        r = None
         try:
-          r = self.s.post(url=url, headers=headers, data=bulk, verify=self.verify)
+            r = self.s.post(url=url, headers=headers, data=bulk, verify=self.verify)
         except Exception as e:
             LOG.error("Error connecting to Elasticsearch: %s", e)
-        if r.status_code != 200:
-            LOG.warning("Got http error from elastic: %s %s" , r.status_code , r.text)
-        response=json.loads(r.text)
-        if response["errors"]:
-            LOG.warning("Elastic status is ERROR!")
-            for item in response["items"]:
-                for key in item:
-                    it=item[key]
-                    if it["status"] != 201 :
-                        LOG.warning("Status %s for %s action:", it["status"], key)
-                        LOG.warning(json.dumps(item[key]))
+        if r is None:
+            LOG.error("Could not get response from elastic, bulk indexing may have failed!")
         else:
-            LOG.debug("Elastic bulk push ok: took %s ms" , response["took"])
-
+            if r.status_code != 200:
+                LOG.warning("Got http error from elastic: %s %s" , r.status_code , r.text)
+            response=json.loads(r.text)
+            if response["errors"]:
+                LOG.warning("Elastic status is ERROR!")
+                for item in response["items"]:
+                    for key in item:
+                        it=item[key]
+                        if it["status"] != 201 :
+                            LOG.warning("Status %s for %s action:", it["status"], key)
+                            LOG.warning(json.dumps(item[key]))
+            else:
+                LOG.debug("Elastic bulk push ok: took %s ms" , response["took"])
+    
     def create_index_if_necessary(self, index):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/{index}".format(elastic_host=elastic_host, index=index)
