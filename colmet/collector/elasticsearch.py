@@ -60,7 +60,10 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
             c+=1
         self.open()
         for index in indices:
-            self.create_index_if_necessary(index)
+            try:
+                self.create_index_if_necessary(index)
+            except: 
+                LOG.warning("Elastic: checking index %s failed! Bulk indexing may fail...", index)
         LOG.info("Elastic: indexing %s docs" % c)
         self.index_bulk(bulk)
         self.close()
@@ -70,7 +73,10 @@ class ElasticsearchOutputBackend(OutputBaseBackend):
         elastic_host = self.options.elastic_host
         url = "{elastic_host}/_bulk/".format(elastic_host=elastic_host)
         headers = {"Content-Type": "application/x-ndjson"}
-        r = self.s.post(url=url, headers=headers, data=bulk, verify=self.verify)
+        try:
+          r = self.s.post(url=url, headers=headers, data=bulk, verify=self.verify)
+        except Exception as e:
+            LOG.error("Error connecting to Elasticsearch: %s", e)
         if r.status_code != 200:
             LOG.warning("Got http error from elastic: %s %s" , r.status_code , r.text)
         response=json.loads(r.text)
