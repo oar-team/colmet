@@ -119,9 +119,17 @@ class Task(object):
                 or backend.get_backend_name() == "perfhwstats":
                     if len(pulled_counters) > 0:
                         for counters in pulled_counters:
-                            counters_list += counters
+                            if type(counters) is not None:
+                              try:
+                                for c in counters:
+                                  c._format_counters()
+                              except:
+                                LOG.debug("Counters could not be formatted, ignoring data of %s" % backend.get_backend_name())
+                              else:
+                                counters_list += counters
                 else:
-                    counters_list += pulled_counters
+                    if type(pulled_counters) is not None:
+                      counters_list += pulled_counters
 
                 LOG.debug("%s metrics have been pulled with %s" %
                           (len(pulled_counters), backend.get_backend_name()))

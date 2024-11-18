@@ -223,7 +223,7 @@ class CGroupInfo(Info):
             self.void_cpuset = False
 
         else:  # no task in this cgroup....
-            LOG.info("no taks in this cgroup")
+            LOG.info("no task in this cgroup")
             # raise VoidCpusetError
 
         Info.update_stats(self, timestamp, job_id, hostname)

@@ -2,8 +2,9 @@ Colmet CHANGELOG
 ================
 
 Version 0.6.10
-- Fixed missing exceptions handling into elasticsearch backend
+- Fixed missing exceptions handling into elasticsearch backend (collector)
 - ZMQ: Prefer SNDHWM and RCVHWM to HWM
+- Fixed: taskstats data could block other data to be collected when cpuset is empty (node)
 
 Version 0.6.9
 -------------
